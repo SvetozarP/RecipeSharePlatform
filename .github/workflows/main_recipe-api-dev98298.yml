@@ -75,7 +75,9 @@ jobs:
           cd backend
           # Create startup script
           echo '#!/bin/sh' > startup.sh
+          echo 'SITE_DIR=$(dirname $(dirname $(find /tmp -name "antenv" -type d)))' >> startup.sh
           echo 'mkdir -p /home/site/wwwroot' >> startup.sh
+          echo 'cd $SITE_DIR' >> startup.sh
           echo 'cp -r * /home/site/wwwroot/' >> startup.sh
           echo 'cd /home/site/wwwroot' >> startup.sh
           echo 'python -m venv antenv' >> startup.sh
@@ -136,7 +138,8 @@ jobs:
             export EMAIL_HOST_USER="${{ secrets.EMAIL_HOST_USER || '' }}" && \
             export EMAIL_HOST_PASSWORD="${{ secrets.EMAIL_HOST_PASSWORD || '' }}" && \
             export FRONTEND_URL="${{ secrets.FRONTEND_URL || 'https://recipe-sharing.azurewebsites.net' }}" && \
-            cd /tmp/8ddcaff0a207643 && \
+            SITE_DIR=$(dirname $(dirname $(find /tmp -name "antenv" -type d))) && \
+            cd $SITE_DIR && \
             chmod +x startup.sh && \
             ./startup.sh
           
