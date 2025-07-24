@@ -76,16 +76,12 @@ jobs:
           # Create startup script
           cat > startup.sh << 'EOL'
           #!/bin/sh
-          SITE_DIR=$(dirname $(dirname $(find /tmp -name "antenv" -type d)))
-          cd $SITE_DIR
-          mkdir -p /home/site/wwwroot
-          cp -r * /home/site/wwwroot/
           cd /home/site/wwwroot
           python -m venv antenv
           . antenv/bin/activate
           pip install --no-cache-dir -r requirements.txt
           python manage.py migrate --noinput
-          gunicorn --chdir /home/site/wwwroot config.wsgi:application --bind=0.0.0.0:8000
+          gunicorn config.wsgi:application --bind=0.0.0.0:8000
           EOL
           chmod +x startup.sh
           
@@ -118,13 +114,18 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_DAC3758E440A4723ABBA182D2DFDFD7D }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_2491E9699F3E4FE4ACDA072B4021A3E6 }}
 
+      - name: Extract and prepare deployment
+        run: |
+          unzip release.zip
+          chmod +x startup.sh
+
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
         with:
           app-name: 'recipe-api-dev98298'
           slot-name: 'Production'
-          package: release.zip
+          package: .
           startup-command: |
             export DJANGO_SETTINGS_MODULE="config.settings.production" && \
             export DJANGO_SECRET_KEY="${{ secrets.DJANGO_SECRET_KEY }}" && \
@@ -140,9 +141,6 @@ jobs:
             export EMAIL_HOST_USER="${{ secrets.EMAIL_HOST_USER || '' }}" && \
             export EMAIL_HOST_PASSWORD="${{ secrets.EMAIL_HOST_PASSWORD || '' }}" && \
             export FRONTEND_URL="${{ secrets.FRONTEND_URL || 'https://recipe-sharing.azurewebsites.net' }}" && \
-            SITE_DIR=$(dirname $(dirname $(find /tmp -name "antenv" -type d))) && \
-            cd $SITE_DIR && \
-            ls -la && \
-            chmod +x startup.sh && \
+            cd /home/site/wwwroot && \
             ./startup.sh
           
