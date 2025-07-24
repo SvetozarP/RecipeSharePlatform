@@ -65,6 +65,7 @@ yarn-error.log*
 /bazel-out
 chrome-profiler-events*.json
 speed-measure-plugin*.json
+node_modules/
 
 # System Files
 .DS_Store
