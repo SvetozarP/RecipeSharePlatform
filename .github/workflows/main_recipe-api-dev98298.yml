@@ -43,14 +43,9 @@ jobs:
           cd backend
           pytest
         env:
-          DJANGO_SETTINGS_MODULE: config.settings.production
+          DJANGO_SETTINGS_MODULE: config.settings.testing
           DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
           JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
-          DB_NAME: ${{ secrets.DB_NAME }}
-          DB_USER: ${{ secrets.DB_USER }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          DB_HOST: ${{ secrets.DB_HOST }}
-          DB_PORT: ${{ secrets.DB_PORT }}
 
       - name: Check migrations
         run: |
