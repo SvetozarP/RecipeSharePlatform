@@ -62,8 +62,9 @@ jobs:
           cd backend
           python manage.py collectstatic --noinput
         env:
-          DJANGO_SETTINGS_MODULE: config.settings.production
+          DJANGO_SETTINGS_MODULE: config.settings.testing
           DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
 
       - name: Zip artifact for deployment
         run: |
