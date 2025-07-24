@@ -36,7 +36,7 @@ def auth_client(api_client, user):
 class TestRegistration:
     """Test user registration endpoint."""
 
-    url = reverse('accounts:register')
+    url = '/api/v1/auth/register/'
 
     def test_user_can_register(self, api_client):
         """Test successful user registration."""
@@ -85,7 +85,7 @@ class TestRegistration:
 class TestLogin:
     """Test login endpoint."""
 
-    url = reverse('accounts:login')
+    url = '/api/v1/auth/login/'
 
     def test_user_can_login(self, api_client, user):
         """Test successful user login."""
@@ -114,7 +114,7 @@ class TestLogin:
 class TestLogout:
     """Test logout endpoint."""
 
-    url = reverse('accounts:logout')
+    url = '/api/v1/auth/logout/'
 
     def test_user_can_logout(self, auth_client, user):
         """Test successful user logout."""
@@ -133,7 +133,7 @@ class TestLogout:
 class TestChangePassword:
     """Test change password endpoint."""
 
-    url = reverse('accounts:change_password')
+    url = '/api/v1/auth/password/change/'
 
     def test_user_can_change_password(self, auth_client, user):
         """Test successful password change."""
@@ -151,7 +151,7 @@ class TestChangePassword:
             'email': user.email,
             'password': 'newtestpass123'
         }
-        response = auth_client.post(reverse('accounts:login'), login_data)
+        response = auth_client.post('/api/v1/auth/login/', login_data)
         assert response.status_code == status.HTTP_200_OK
 
     def test_cannot_change_password_with_wrong_old_password(self, auth_client):
