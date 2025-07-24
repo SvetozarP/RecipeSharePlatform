@@ -75,12 +75,14 @@ jobs:
           cd backend
           # Create startup script
           echo '#!/bin/sh' > startup.sh
+          echo 'mkdir -p /home/site/wwwroot' >> startup.sh
+          echo 'cp -r * /home/site/wwwroot/' >> startup.sh
           echo 'cd /home/site/wwwroot' >> startup.sh
           echo 'python -m venv antenv' >> startup.sh
-          echo 'source antenv/bin/activate' >> startup.sh
+          echo '. antenv/bin/activate' >> startup.sh
           echo 'pip install --no-cache-dir -r requirements.txt' >> startup.sh
           echo 'python manage.py migrate --noinput' >> startup.sh
-          echo 'gunicorn config.wsgi:application --bind=0.0.0.0:8000' >> startup.sh
+          echo 'gunicorn --chdir /home/site/wwwroot config.wsgi:application --bind=0.0.0.0:8000' >> startup.sh
           chmod +x startup.sh
           
           # Create deployment package
@@ -134,6 +136,7 @@ jobs:
             export EMAIL_HOST_USER="${{ secrets.EMAIL_HOST_USER || '' }}" && \
             export EMAIL_HOST_PASSWORD="${{ secrets.EMAIL_HOST_PASSWORD || '' }}" && \
             export FRONTEND_URL="${{ secrets.FRONTEND_URL || 'https://recipe-sharing.azurewebsites.net' }}" && \
+            cd /tmp/8ddcaff0a207643 && \
             chmod +x startup.sh && \
             ./startup.sh
           
