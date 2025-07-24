@@ -46,16 +46,13 @@ jobs:
           DJANGO_SETTINGS_MODULE: config.settings.production
           DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
           JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
 
-      - name: Set up PostgreSQL for migrations check
-        uses: harmon758/postgresql-action@v1
-        with:
-          postgresql version: '13'
-          postgresql db: ${{ secrets.DB_NAME }}
-          postgresql user: ${{ secrets.DB_USER }}
-          postgresql password: ${{ secrets.DB_PASSWORD }}
-
-      - name: Check migrations with PostgreSQL
+      - name: Check migrations
         run: |
           cd backend
           python manage.py makemigrations --check --dry-run
@@ -67,8 +64,8 @@ jobs:
           DB_NAME: ${{ secrets.DB_NAME }}
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          DB_HOST: localhost
-          DB_PORT: 5432
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
 
       - name: Collect static files
         run: |
@@ -121,5 +118,13 @@ jobs:
         with:
           app-name: 'recipe-api-dev98298'
           slot-name: 'Production'
-          startup-command: 'cd /home/site/wwwroot && python manage.py migrate --noinput && gunicorn config.wsgi:application --bind=0.0.0.0:8000'
+          startup-command: |
+            cd /home/site/wwwroot && \
+            export DB_NAME="${{ secrets.DB_NAME }}" && \
+            export DB_USER="${{ secrets.DB_USER }}" && \
+            export DB_PASSWORD="${{ secrets.DB_PASSWORD }}" && \
+            export DB_HOST="${{ secrets.DB_HOST }}" && \
+            export DB_PORT="${{ secrets.DB_PORT }}" && \
+            python manage.py migrate --noinput && \
+            gunicorn config.wsgi:application --bind=0.0.0.0:8000
           
