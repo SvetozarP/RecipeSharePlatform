@@ -75,10 +75,11 @@ jobs:
           cd backend
           # Create startup script
           echo '#!/bin/sh' > startup.sh
-          echo 'export PYTHONPATH=/tmp/antenv/lib/python3.9/site-packages:$PYTHONPATH' >> startup.sh
-          echo 'cd $APP_PATH' >> startup.sh
+          echo 'SITE_DIR=$(dirname $(dirname $(find /tmp -name "antenv" -type d)))' >> startup.sh
+          echo 'cd $SITE_DIR' >> startup.sh
+          echo 'export PYTHONPATH=$SITE_DIR:$PYTHONPATH' >> startup.sh
           echo 'python manage.py migrate --noinput' >> startup.sh
-          echo 'gunicorn --chdir $APP_PATH config.wsgi:application --bind=0.0.0.0:8000' >> startup.sh
+          echo 'gunicorn config.wsgi:application --bind=0.0.0.0:8000' >> startup.sh
           chmod +x startup.sh
           
           # Create deployment package
@@ -126,8 +127,6 @@ jobs:
             export DB_PASSWORD="${{ secrets.DB_PASSWORD }}" && \
             export DB_HOST="${{ secrets.DB_HOST }}" && \
             export DB_PORT="${{ secrets.DB_PORT }}" && \
-            export APP_PATH="/tmp/8ddcaf440dd85e8" && \
-            cd $APP_PATH && \
             chmod +x startup.sh && \
             ./startup.sh
           
