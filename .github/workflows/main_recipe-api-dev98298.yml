@@ -2,19 +2,22 @@
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 # More info on Python, GitHub Actions, and Azure App Service: https://aka.ms/python-webapps-actions
 
-name: Build and deploy Python app to Azure Web App - recipe-api-dev98298
+name: Build and deploy Django backend to Azure Web App
 
 on:
   push:
     branches:
       - main
+    paths:
+      - 'backend/**'
+      - '.github/workflows/main_recipe-api-dev98298.yml'
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read #This is required for actions/checkout
+      contents: read
 
     steps:
       - uses: actions/checkout@v4
@@ -30,27 +33,61 @@ jobs:
           source venv/bin/activate
       
       - name: Install dependencies
-        run: pip install -r backend/requirements.txt
+        run: |
+          cd backend
+          pip install -r requirements.txt
         
-      # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
+      - name: Run Django tests
+        run: |
+          cd backend
+          python manage.py test
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.development
+          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+
+      - name: Run database migrations
+        run: |
+          cd backend
+          python manage.py makemigrations
+          python manage.py migrate
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.production
+          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+
+      - name: Collect static files
+        run: |
+          cd backend
+          python manage.py collectstatic --noinput
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.production
+          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
 
       - name: Zip artifact for deployment
-        run: zip release.zip ./* -r
+        run: |
+          cd backend
+          zip -r ../release.zip ./*
 
       - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v4
         with:
           name: python-app
-          path: |
-            release.zip
-            !venv/
+          path: release.zip
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
+    environment:
+      name: 'Production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
+      id-token: write
+      contents: read
 
     steps:
       - name: Download artifact from build job
@@ -60,7 +97,6 @@ jobs:
 
       - name: Unzip artifact for deployment
         run: unzip release.zip
-
       
       - name: Login to Azure
         uses: azure/login@v2
@@ -75,4 +111,5 @@ jobs:
         with:
           app-name: 'recipe-api-dev98298'
           slot-name: 'Production'
+          startup-command: 'cd /home/site/wwwroot && python manage.py migrate --noinput && gunicorn config.wsgi:application --bind=0.0.0.0:8000'
           

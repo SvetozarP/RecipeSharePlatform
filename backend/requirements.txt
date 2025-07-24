@@ -5,3 +5,4 @@ python-decouple==3.8
 psycopg2-binary==2.9.9
 azure-storage-blob==12.18.3
 Pillow==10.1.0 
+gunicorn==21.2.0
