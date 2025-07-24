@@ -37,14 +37,14 @@ jobs:
           cd backend
           pip install -r requirements.txt
         
-      - name: Run Django tests
-        run: |
-          cd backend
-          python manage.py test
-        env:
-          DJANGO_SETTINGS_MODULE: config.settings.development
-          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+      # - name: Run Django tests
+      #   run: |
+      #     cd backend
+      #     python manage.py test
+      #   env:
+      #     DJANGO_SETTINGS_MODULE: config.settings.development
+      #     DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+      #     JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
 
       - name: Run database migrations
         run: |

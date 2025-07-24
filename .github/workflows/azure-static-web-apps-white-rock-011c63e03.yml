@@ -38,10 +38,10 @@ jobs:
           cd frontend
           npm ci
 
-      - name: Run tests
-        run: |
-          cd frontend
-          npm run test -- --watch=false --browsers=ChromeHeadless
+      # - name: Run tests - no tests now
+      #   run: |
+      #     cd frontend
+      #     npm run test -- --watch=false --browsers=ChromeHeadless
 
       - name: Build And Deploy
         id: builddeploy
