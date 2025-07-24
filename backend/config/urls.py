@@ -4,6 +4,7 @@ URL configuration for recipe sharing platform project.
 
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
 
@@ -28,4 +29,9 @@ urlpatterns = [
     path('api/v1/', include([
         path('auth/', include('accounts.urls')),
     ])),
-] 
+]
+
+if settings.DEBUG:
+    urlpatterns += [
+        path('__debug__/', include('debug_toolbar.urls')),
+    ] 

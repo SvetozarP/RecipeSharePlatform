@@ -3,9 +3,15 @@ Views for user registration and authentication.
 """
 
 from django.contrib.auth import get_user_model
-from rest_framework import generics, status
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.conf import settings
+from rest_framework import status, generics
 from rest_framework.response import Response
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -15,6 +21,8 @@ from .serializers import (
     RegisterSerializer,
     CustomTokenObtainPairSerializer,
     ChangePasswordSerializer,
+    PasswordResetRequestSerializer,
+    PasswordResetConfirmSerializer
 )
 
 User = get_user_model()
@@ -100,3 +108,64 @@ class ChangePasswordView(BaseAPIView):
         request.user.save()
 
         return self.get_success_response(message="Password updated successfully.") 
+
+class PasswordResetRequestView(generics.GenericAPIView):
+    """
+    Request password reset link
+    """
+    serializer_class = PasswordResetRequestSerializer
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data['email']
+        
+        try:
+            user = User.objects.get(email=email)
+            # Generate reset token
+            token = default_token_generator.make_token(user)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            
+            # Build reset link - frontend URL
+            reset_link = f"{settings.FRONTEND_URL}/reset-password/{uid}/{token}"
+            
+            # Render email template
+            html_message = render_to_string('accounts/password_reset_email.html', {
+                'reset_link': reset_link,
+            })
+            
+            # Send email
+            send_mail(
+                f'{settings.EMAIL_SUBJECT_PREFIX}Password Reset Request',
+                'Click the following link to reset your password: ' + reset_link,  # Plain text version
+                settings.DEFAULT_FROM_EMAIL,
+                [email],
+                fail_silently=False,
+                html_message=html_message,
+            )
+        except User.DoesNotExist:
+            # Don't reveal whether a user exists
+            pass
+        
+        return Response(
+            {"detail": "Password reset link sent if account exists."},
+            status=status.HTTP_200_OK
+        )
+
+class PasswordResetConfirmView(generics.GenericAPIView):
+    """
+    Confirm password reset and set new password
+    """
+    serializer_class = PasswordResetConfirmSerializer
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        
+        return Response(
+            {"detail": "Password has been reset successfully."},
+            status=status.HTTP_200_OK
+        ) 

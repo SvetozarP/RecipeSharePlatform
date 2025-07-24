@@ -151,3 +151,10 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:4200",  # Angular development server
 ] 
+
+# Frontend URL for password reset
+FRONTEND_URL = config('FRONTEND_URL', default='http://localhost:4200')
+
+# Email configuration
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@recipe-sharing.com')
+EMAIL_SUBJECT_PREFIX = '[Recipe Sharing] ' 
