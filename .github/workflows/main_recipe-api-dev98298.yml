@@ -107,17 +107,17 @@ jobs:
         with:
           name: python-app
 
+      - name: Extract and prepare deployment
+        run: |
+          unzip release.zip
+          chmod +x startup.sh
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_A192B6B3D6974208845C7450A636618B }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_DAC3758E440A4723ABBA182D2DFDFD7D }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_2491E9699F3E4FE4ACDA072B4021A3E6 }}
-
-      - name: Extract and prepare deployment
-        run: |
-          unzip release.zip
-          chmod +x startup.sh
 
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
@@ -141,6 +141,8 @@ jobs:
             export EMAIL_HOST_USER="${{ secrets.EMAIL_HOST_USER || '' }}" && \
             export EMAIL_HOST_PASSWORD="${{ secrets.EMAIL_HOST_PASSWORD || '' }}" && \
             export FRONTEND_URL="${{ secrets.FRONTEND_URL || 'https://recipe-sharing.azurewebsites.net' }}" && \
+            export PYTHONPATH="/home/site/wwwroot" && \
             cd /home/site/wwwroot && \
+            chmod +x startup.sh && \
             ./startup.sh
           
