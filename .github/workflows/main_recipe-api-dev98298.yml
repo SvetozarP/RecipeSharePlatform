@@ -75,11 +75,10 @@ jobs:
           cd backend
           # Create startup script
           echo '#!/bin/sh' > startup.sh
-          echo 'SITE_DIR=$(dirname $(dirname $(find /tmp -name "antenv" -type d)))' >> startup.sh
-          echo 'cd $SITE_DIR' >> startup.sh
+          echo 'cd /home/site/wwwroot' >> startup.sh
+          echo 'python -m venv antenv' >> startup.sh
           echo 'source antenv/bin/activate' >> startup.sh
-          echo 'export PYTHONPATH=$SITE_DIR:$PYTHONPATH' >> startup.sh
-          echo 'pip install --no-cache-dir -r requirements/production.txt' >> startup.sh
+          echo 'pip install --no-cache-dir -r requirements.txt' >> startup.sh
           echo 'python manage.py migrate --noinput' >> startup.sh
           echo 'gunicorn config.wsgi:application --bind=0.0.0.0:8000' >> startup.sh
           chmod +x startup.sh
