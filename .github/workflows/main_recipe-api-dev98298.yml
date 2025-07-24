@@ -76,8 +76,9 @@ jobs:
           # Create startup script
           echo '#!/bin/sh' > startup.sh
           echo 'cd /home/site/wwwroot' >> startup.sh
+          echo 'export PYTHONPATH=/home/site/wwwroot:$PYTHONPATH' >> startup.sh
           echo 'python manage.py migrate --noinput' >> startup.sh
-          echo 'gunicorn --bind=0.0.0.0:8000 config.wsgi:application' >> startup.sh
+          echo 'gunicorn --chdir /home/site/wwwroot config.wsgi:application --bind=0.0.0.0:8000' >> startup.sh
           chmod +x startup.sh
           
           # Create deployment package
@@ -125,5 +126,7 @@ jobs:
             export DB_PASSWORD="${{ secrets.DB_PASSWORD }}" && \
             export DB_HOST="${{ secrets.DB_HOST }}" && \
             export DB_PORT="${{ secrets.DB_PORT }}" && \
+            cd /home/site/wwwroot && \
+            chmod +x startup.sh && \
             ./startup.sh
           
