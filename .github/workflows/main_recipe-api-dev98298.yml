@@ -77,7 +77,9 @@ jobs:
           echo '#!/bin/sh' > startup.sh
           echo 'SITE_DIR=$(dirname $(dirname $(find /tmp -name "antenv" -type d)))' >> startup.sh
           echo 'cd $SITE_DIR' >> startup.sh
+          echo 'source antenv/bin/activate' >> startup.sh
           echo 'export PYTHONPATH=$SITE_DIR:$PYTHONPATH' >> startup.sh
+          echo 'pip install -r requirements/base.txt' >> startup.sh
           echo 'python manage.py migrate --noinput' >> startup.sh
           echo 'gunicorn config.wsgi:application --bind=0.0.0.0:8000' >> startup.sh
           chmod +x startup.sh
@@ -133,6 +135,9 @@ jobs:
             export EMAIL_HOST_USER="${{ secrets.EMAIL_HOST_USER || '' }}" && \
             export EMAIL_HOST_PASSWORD="${{ secrets.EMAIL_HOST_PASSWORD || '' }}" && \
             export FRONTEND_URL="${{ secrets.FRONTEND_URL || 'https://recipe-sharing.azurewebsites.net' }}" && \
+            python -m pip install --upgrade pip && \
+            python -m venv antenv && \
+            source antenv/bin/activate && \
             chmod +x startup.sh && \
             ./startup.sh
           
