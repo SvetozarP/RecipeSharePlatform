@@ -74,21 +74,23 @@ jobs:
         run: |
           cd backend
           # Create startup script
-          echo '#!/bin/sh' > startup.sh
-          echo 'SITE_DIR=$(dirname $(dirname $(find /tmp -name "antenv" -type d)))' >> startup.sh
-          echo 'mkdir -p /home/site/wwwroot' >> startup.sh
-          echo 'cd $SITE_DIR' >> startup.sh
-          echo 'cp -r * /home/site/wwwroot/' >> startup.sh
-          echo 'cd /home/site/wwwroot' >> startup.sh
-          echo 'python -m venv antenv' >> startup.sh
-          echo '. antenv/bin/activate' >> startup.sh
-          echo 'pip install --no-cache-dir -r requirements.txt' >> startup.sh
-          echo 'python manage.py migrate --noinput' >> startup.sh
-          echo 'gunicorn --chdir /home/site/wwwroot config.wsgi:application --bind=0.0.0.0:8000' >> startup.sh
+          cat > startup.sh << 'EOL'
+          #!/bin/sh
+          SITE_DIR=$(dirname $(dirname $(find /tmp -name "antenv" -type d)))
+          cd $SITE_DIR
+          mkdir -p /home/site/wwwroot
+          cp -r * /home/site/wwwroot/
+          cd /home/site/wwwroot
+          python -m venv antenv
+          . antenv/bin/activate
+          pip install --no-cache-dir -r requirements.txt
+          python manage.py migrate --noinput
+          gunicorn --chdir /home/site/wwwroot config.wsgi:application --bind=0.0.0.0:8000
+          EOL
           chmod +x startup.sh
           
           # Create deployment package
-          zip -r ../release.zip ./* 
+          zip -r ../release.zip ./* startup.sh
 
       - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v4
@@ -140,6 +142,7 @@ jobs:
             export FRONTEND_URL="${{ secrets.FRONTEND_URL || 'https://recipe-sharing.azurewebsites.net' }}" && \
             SITE_DIR=$(dirname $(dirname $(find /tmp -name "antenv" -type d))) && \
             cd $SITE_DIR && \
+            ls -la && \
             chmod +x startup.sh && \
             ./startup.sh
           
