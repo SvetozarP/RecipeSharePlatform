@@ -2,6 +2,7 @@
 Django settings for recipe sharing platform project.
 """
 
+from datetime import timedelta
 from pathlib import Path
 from decouple import config
 
@@ -22,6 +23,8 @@ INSTALLED_APPS = [
     # Third party apps
     'rest_framework',
     'corsheaders',
+    # Local apps
+    'core.apps.CoreConfig',
 ]
 
 MIDDLEWARE = [
@@ -31,8 +34,11 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'core.middleware.authentication.JWTAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'core.middleware.logging.RequestLoggingMiddleware',
+    'core.middleware.error_handler.ErrorHandlerMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -90,9 +96,25 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'core.middleware.authentication.JWTAuthentication',
     ],
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
+    'DEFAULT_PARSER_CLASSES': [
+        'rest_framework.parsers.JSONParser',
+        'rest_framework.parsers.FormParser',
+        'rest_framework.parsers.MultiPartParser',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
 }
+
+# JWT settings
+JWT_SECRET_KEY = config('JWT_SECRET_KEY', default=SECRET_KEY)
+JWT_ALGORITHM = 'HS256'
+JWT_ACCESS_TOKEN_LIFETIME = timedelta(minutes=30)
+JWT_REFRESH_TOKEN_LIFETIME = timedelta(days=7)
 
 # CORS settings
 CORS_ALLOW_CREDENTIALS = True 
