@@ -73,18 +73,6 @@ jobs:
       - name: Create deployment package
         run: |
           cd backend
-          # Create startup script
-          cat > startup.sh << 'EOL'
-          #!/bin/sh
-          cd /home/site/wwwroot
-          python -m venv antenv
-          . antenv/bin/activate
-          pip install --no-cache-dir -r requirements.txt
-          python manage.py migrate --noinput
-          gunicorn config.wsgi:application --bind=0.0.0.0:8000
-          EOL
-          chmod +x startup.sh
-          
           # Create deployment package
           zip -r ../release.zip .
 
@@ -110,7 +98,6 @@ jobs:
       - name: Extract and prepare deployment
         run: |
           unzip release.zip
-          chmod +x startup.sh
 
       - name: Login to Azure
         uses: azure/login@v2
@@ -141,8 +128,11 @@ jobs:
             export EMAIL_HOST_USER="${{ secrets.EMAIL_HOST_USER || '' }}" && \
             export EMAIL_HOST_PASSWORD="${{ secrets.EMAIL_HOST_PASSWORD || '' }}" && \
             export FRONTEND_URL="${{ secrets.FRONTEND_URL || 'https://recipe-sharing.azurewebsites.net' }}" && \
-            export PYTHONPATH="/home/site/wwwroot" && \
-            cd /home/site/wwwroot && \
-            chmod +x startup.sh && \
-            ./startup.sh
+            SITE_DIR=$(dirname $(dirname $(find /tmp -name "antenv" -type d))) && \
+            cd $SITE_DIR && \
+            python -m venv antenv && \
+            . antenv/bin/activate && \
+            pip install --no-cache-dir -r requirements.txt && \
+            python manage.py migrate --noinput && \
+            gunicorn config.wsgi:application --bind=0.0.0.0:8000
           
