@@ -13,7 +13,7 @@ SECRET_KEY = 'django-insecure-test-key-not-for-production'
 JWT_SECRET_KEY = SECRET_KEY
 JWT_ALGORITHM = 'HS256'
 
-# Database
+# Database - Always use SQLite for testing
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
