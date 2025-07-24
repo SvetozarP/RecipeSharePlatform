@@ -1,66 +1,65 @@
 """
-Health check views.
-Provides endpoints for monitoring system health.
+Health check views for monitoring system status.
 """
 
-from django.db import connection
-from django.core.cache import cache
-from rest_framework.permissions import AllowAny
+from datetime import datetime
+from django.db import connection, DatabaseError
+from django.utils import timezone
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from .base import BaseAPIView
 
-
-class HealthCheckView(BaseAPIView):
+class HealthCheckView(APIView):
     """
-    View for checking system health.
-    Checks database and cache connectivity.
+    Health check endpoint that verifies system components.
     """
-
-    permission_classes = [AllowAny]
+    authentication_classes = []  # No authentication required
+    permission_classes = []  # No permissions required
 
     def get(self, request):
-        """
-        Check system health.
-        
-        Returns:
-            200 OK if all systems are healthy
-            503 Service Unavailable if any system is unhealthy
-        """
-        health_status = {
-            'status': 'healthy',
-            'database': self._check_database(),
-            'cache': self._check_cache(),
+        """Return system health status."""
+        # Test database connection
+        db_status = self._check_database()
+
+        # Get cache status
+        cache_status = self._check_cache()
+
+        # Determine overall status
+        is_healthy = db_status == "connected"
+        response_status = status.HTTP_200_OK if is_healthy else status.HTTP_503_SERVICE_UNAVAILABLE
+
+        response_data = {
+            "status": "healthy" if is_healthy else "unhealthy",
+            "timestamp": timezone.now().isoformat(),
+            "services": {
+                "database": db_status,
+                "cache": cache_status
+            }
         }
 
-        # Overall status is healthy only if all checks pass
-        if not all(health_status.values()):
-            health_status['status'] = 'unhealthy'
-            return self.get_error_response(
-                message='System is unhealthy',
-                code='system_unhealthy',
-                status_code=503,
-                details=health_status
-            )
+        return Response(response_data, status=response_status)
 
-        return self.get_success_response(
-            data=health_status,
-            message='System is healthy'
-        )
-
-    def _check_database(self) -> bool:
+    def _check_database(self):
         """Check database connectivity."""
         try:
-            with connection.cursor() as cursor:
-                cursor.execute('SELECT 1')
-                cursor.fetchone()
-            return True
-        except Exception:
-            return False
+            # For SQLite, just checking if the connection is usable
+            if connection.vendor == 'sqlite':
+                return "connected" if connection.is_usable() else "disconnected"
 
-    def _check_cache(self) -> bool:
+            # For other databases, try a simple query
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT 1")
+                cursor.fetchone()
+            return "connected"
+        except DatabaseError:
+            return "disconnected"
+
+    def _check_cache(self):
         """Check cache connectivity."""
         try:
-            cache.set('health_check', 'ok', 1)
-            return cache.get('health_check') == 'ok'
+            from django.core.cache import cache
+            cache.get('health_check_test')
+            return "connected"
         except Exception:
-            return False 
+            return "disconnected" 

@@ -4,14 +4,17 @@ URL configuration for recipe sharing platform project.
 
 from django.contrib import admin
 from django.urls import path, include
-from django.http import JsonResponse
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.response import Response
 
 from core.views.health import HealthCheckView
 
-# Health check endpoint
+@api_view(['GET'])
+@authentication_classes([])  # No authentication required
+@permission_classes([])  # No permissions required
 def simple_health_check(request):
     """Simple health check endpoint."""
-    return JsonResponse({"status": "healthy"})
+    return Response({"status": "healthy"})
 
 urlpatterns = [
     # Admin interface
@@ -23,6 +26,6 @@ urlpatterns = [
 
     # API endpoints
     path('api/v1/', include([
-        # Add API endpoints here
+        path('auth/', include('accounts.urls')),
     ])),
 ] 
