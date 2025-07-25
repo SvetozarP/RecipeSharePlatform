@@ -74,7 +74,7 @@ jobs:
         run: |
           cd backend
           cp requirements/base.txt requirements.txt
-          
+      
           # Create startup script
           cat > start.sh << 'EOL'
           #!/bin/sh
@@ -84,12 +84,11 @@ jobs:
           gunicorn config.wsgi:application --bind=0.0.0.0:8000
           EOL
           chmod +x start.sh
-          
-          # Move everything to a temp folder to flatten
+      
+          # Flatten and zip
           mkdir ../deploy
           cp -r . ../deploy
-          mv start.sh ../deploy/
-
+      
           cd ../deploy
           zip -r ../release.zip .
 
