@@ -73,6 +73,8 @@ jobs:
       - name: Create deployment package
         run: |
           cd backend
+          # Copy requirements to root for Oryx
+          cp requirements/base.txt requirements.txt
           # Create deployment package
           zip -r ../release.zip .
 
@@ -130,9 +132,10 @@ jobs:
             export FRONTEND_URL="${{ secrets.FRONTEND_URL || 'https://recipe-sharing.azurewebsites.net' }}" && \
             SITE_DIR=$(dirname $(dirname $(find /tmp -name "antenv" -type d))) && \
             cd $SITE_DIR && \
+            export PYTHONPATH=$SITE_DIR && \
             python -m venv antenv && \
             . antenv/bin/activate && \
             pip install --no-cache-dir -r requirements.txt && \
             python manage.py migrate --noinput && \
-            gunicorn config.wsgi:application --bind=0.0.0.0:8000
+            gunicorn --pythonpath $SITE_DIR config.wsgi:application --bind=0.0.0.0:8000
           
