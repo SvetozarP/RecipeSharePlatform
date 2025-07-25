@@ -144,5 +144,6 @@ jobs:
             export EMAIL_HOST_PASSWORD="${{ secrets.EMAIL_HOST_PASSWORD || '' }}" && \
             export FRONTEND_URL="${{ secrets.FRONTEND_URL || 'https://recipe-sharing.azurewebsites.net' }}" && \
             cd /home/site/wwwroot && \
+            ls && \
             ./start.sh
           
