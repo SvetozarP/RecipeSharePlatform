@@ -41,7 +41,7 @@ class RecipeFactory(factory.django.DjangoModelFactory):
         'carbohydrates': fake.random_int(min=0, max=100),
         'fat': fake.random_int(min=0, max=50)
     })
-    image_url = factory.LazyFunction(lambda: fake.image_url())
+    images = factory.LazyFunction(lambda: {})  # Default to empty images dict
     author = factory.SubFactory('accounts.tests.factories.UserFactory')
     is_published = factory.LazyFunction(lambda: fake.boolean())
     tags = factory.LazyFunction(lambda: [

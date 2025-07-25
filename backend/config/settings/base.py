@@ -90,6 +90,28 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
+# Media files (User uploaded content)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# File upload settings
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024  # 5MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
+FILE_UPLOAD_PERMISSIONS = 0o644
+
+# Content storage settings
+CONTENT_STORAGE = {
+    'RECIPE_IMAGES_UPLOAD_PATH': 'recipes/images/',
+    'ALLOWED_IMAGE_EXTENSIONS': ['.jpg', '.jpeg', '.png', '.webp'],
+    'MAX_IMAGE_SIZE': 5 * 1024 * 1024,  # 5MB
+    'IMAGE_QUALITY': 85,
+    'THUMBNAIL_SIZES': {
+        'small': (150, 150),
+        'medium': (300, 300),
+        'large': (800, 600),
+    }
+}
+
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

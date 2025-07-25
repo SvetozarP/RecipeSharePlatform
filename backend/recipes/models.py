@@ -1,14 +1,14 @@
 """
-Models for recipe management.
+Recipe models for the recipe management system.
 """
-
+import uuid
+from django.core.exceptions import ValidationError
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from django.contrib.auth import get_user_model
-from django.core.exceptions import ValidationError
-import uuid
 
 from core.models.base import BaseModel
+
 
 User = get_user_model()
 
@@ -16,15 +16,13 @@ User = get_user_model()
 def validate_list(value):
     """Validate that value is a list."""
     if not isinstance(value, list):
-        raise ValidationError(_('Value must be a list.'))
-    if not value:
-        raise ValidationError(_('At least one item is required.'))
+        raise ValidationError(_('Value must be a list'))
 
 
 def validate_dict(value):
     """Validate that value is a dictionary."""
-    if value is not None and not isinstance(value, dict):
-        raise ValidationError(_('Value must be a dictionary.'))
+    if not isinstance(value, dict):
+        raise ValidationError(_('Value must be a dictionary'))
 
 
 class Recipe(BaseModel):
@@ -97,11 +95,11 @@ class Recipe(BaseModel):
         validators=[validate_dict]
     )
 
-    # Media
-    image_url = models.URLField(
-        null=True,
+    # Media - Updated to use JSONField for storing multiple image URLs
+    images = models.JSONField(
+        default=dict,
         blank=True,
-        help_text=_("URL to the recipe's main image")
+        help_text=_("Dictionary containing original and thumbnail image URLs")
     )
 
     # Metadata
@@ -145,3 +143,42 @@ class Recipe(BaseModel):
     def total_time(self):
         """Calculate total time in minutes."""
         return self.prep_time + self.cook_time
+
+    @property
+    def main_image_url(self):
+        """Get the main image URL (original size)."""
+        return self.images.get('original') if self.images else None
+        
+    @property
+    def thumbnail_url(self):
+        """Get the medium thumbnail URL."""
+        return self.images.get('medium') if self.images else None
+
+    def has_images(self):
+        """Check if recipe has any images."""
+        return bool(self.images and self.images.get('original'))
+
+    def save(self, *args, **kwargs):
+        """Override save to handle version increments."""
+        if self.pk:
+            # Only check for changes if this is an update (not a new recipe)
+            try:
+                old_recipe = Recipe.objects.get(pk=self.pk)
+                if self._has_content_changed(old_recipe):
+                    self.version += 1
+            except Recipe.DoesNotExist:
+                # If we can't find the old recipe, don't increment version
+                pass
+        super().save(*args, **kwargs)
+
+    def _has_content_changed(self, old_recipe):
+        """Check if recipe content has changed."""
+        content_fields = [
+            'title', 'description', 'ingredients', 'instructions',
+            'prep_time', 'cook_time', 'servings', 'difficulty',
+            'cooking_method', 'nutrition_info'
+        ]
+        for field in content_fields:
+            if getattr(self, field) != getattr(old_recipe, field):
+                return True
+        return False

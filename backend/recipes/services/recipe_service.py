@@ -1,182 +1,135 @@
 """
 Service layer for recipe management.
 """
-
-from typing import List, Optional, Dict, Any
 from django.core.exceptions import ValidationError
-from django.utils.translation import gettext_lazy as _
+from django.db import transaction
+from django.contrib.auth import get_user_model
 
-from core.interfaces.service import BaseService
-from core.events.bus import EventBus
-from ..repositories.recipe_repository import RecipeRepository
 from ..models import Recipe
+from ..repositories.recipe_repository import RecipeRepository
+
+User = get_user_model()
 
 
-class RecipeService(BaseService):
-    """Business logic for recipe management."""
+class RecipeService:
+    """Service for managing recipe operations."""
 
     def __init__(self):
-        super().__init__(RecipeRepository())
+        self.repository = RecipeRepository()
 
-    def create_recipe(self, recipe_data: Dict[str, Any], author_id: str) -> Recipe:
-        """Create a new recipe."""
-        # Validate required fields
-        required_fields = ['title', 'description', 'prep_time', 'cook_time', 'servings', 'ingredients', 'instructions']
-        for field in required_fields:
-            if field not in recipe_data:
-                raise ValidationError({field: [_('This field is required.')]})
-
-        # Create recipe
-        recipe = self.repository.create_recipe(recipe_data, author_id)
-
-        # Publish event
-        EventBus.publish('recipe.created', {
-            'recipe_id': str(recipe.id),
-            'author_id': str(author_id),
-            'title': recipe.title
-        })
-
-        return recipe
-
-    def get_recipe(self, recipe_id: str, user_id: Optional[str] = None) -> Optional[Recipe]:
+    def create_recipe(self, recipe_data, author_id):
         """
-        Get recipe by ID.
+        Create a new recipe.
         
-        If user_id is provided, checks if the user can access the recipe.
+        Args:
+            recipe_data: Recipe data dictionary
+            author_id: ID of the user creating the recipe
+            
+        Returns:
+            Recipe: Created recipe instance
+            
+        Raises:
+            ValidationError: If data is invalid
         """
-        recipe = self.repository.get_recipe_by_id(recipe_id)
-        if not recipe:
-            return None
+        try:
+            with transaction.atomic():
+                # Get author
+                author = User.objects.get(id=author_id)
+                recipe_data['author'] = author
+                
+                # Create recipe
+                recipe = self.repository.create(recipe_data)
+                return recipe
+                
+        except User.DoesNotExist:
+            raise ValidationError("Author not found")
+        except Exception as e:
+            raise ValidationError(f"Failed to create recipe: {str(e)}")
 
-        # Check access
-        if not recipe.is_published and (not user_id or str(recipe.author_id) != user_id):
-            return None
+    def get_recipe_by_id(self, recipe_id):
+        """
+        Get a recipe by ID.
+        
+        Args:
+            recipe_id: Recipe UUID
+            
+        Returns:
+            Recipe: Recipe instance
+            
+        Raises:
+            Recipe.DoesNotExist: If recipe not found
+        """
+        return self.repository.get_by_id(recipe_id)
 
-        return recipe
+    def update_recipe(self, recipe_id, recipe_data, user_id):
+        """
+        Update a recipe.
+        
+        Args:
+            recipe_id: Recipe UUID
+            recipe_data: Updated recipe data
+            user_id: ID of the user making the update
+            
+        Returns:
+            Recipe: Updated recipe instance
+            
+        Raises:
+            ValidationError: If user doesn't have permission or data is invalid
+        """
+        try:
+            recipe = self.repository.get_by_id(recipe_id)
+            
+            # Check permissions
+            if str(recipe.author.id) != user_id:
+                raise ValidationError("Permission denied")
+            
+            # Update recipe
+            updated_recipe = self.repository.update(recipe_id, recipe_data)
+            return updated_recipe
+            
+        except Recipe.DoesNotExist:
+            raise ValidationError("Recipe not found")
 
-    def get_recipes(self, filters: Dict[str, Any] = None) -> List[Recipe]:
-        """Get all recipes, optionally filtered."""
-        return self.repository.get_recipes(filters)
+    def delete_recipe(self, recipe_id):
+        """
+        Delete a recipe.
+        
+        Args:
+            recipe_id: Recipe UUID
+            
+        Returns:
+            bool: True if deleted successfully
+        """
+        try:
+            return self.repository.delete(recipe_id)
+        except Recipe.DoesNotExist:
+            raise ValidationError("Recipe not found")
 
-    def update_recipe(self, recipe_id: str, recipe_data: Dict[str, Any], user_id: str) -> Optional[Recipe]:
-        """Update recipe data."""
-        recipe = self.repository.get_recipe_by_id(recipe_id)
-        if not recipe:
-            return None
+    def get_recipes(self, filters=None):
+        """
+        Get recipes with optional filters.
+        
+        Args:
+            filters: Dictionary of filters
+            
+        Returns:
+            QuerySet: Filtered recipes
+        """
+        return self.repository.get_filtered(filters or {})
 
-        # Check ownership
-        if str(recipe.author_id) != user_id:
-            raise ValidationError(_('You do not have permission to edit this recipe.'))
+    def search_recipes(self, query, include_unpublished=False):
+        """
+        Search recipes by query.
+        
+        Args:
+            query: Search query string
+            include_unpublished: Whether to include unpublished recipes
+            
+        Returns:
+            QuerySet: Matching recipes
+        """
+        return self.repository.search(query, include_unpublished)
 
-        # Update recipe
-        updated_recipe = self.repository.update_recipe(recipe_id, recipe_data)
 
-        # Publish event
-        if updated_recipe:
-            EventBus.publish('recipe.updated', {
-                'recipe_id': str(recipe_id),
-                'author_id': user_id,
-                'title': updated_recipe.title
-            })
-
-        return updated_recipe
-
-    def delete_recipe(self, recipe_id: str, user_id: str) -> bool:
-        """Delete a recipe."""
-        recipe = self.repository.get_recipe_by_id(recipe_id)
-        if not recipe:
-            return False
-
-        # Check ownership
-        if str(recipe.author_id) != user_id:
-            raise ValidationError(_('You do not have permission to delete this recipe.'))
-
-        # Delete recipe
-        success = self.repository.delete_recipe(recipe_id)
-
-        # Publish event
-        if success:
-            EventBus.publish('recipe.deleted', {
-                'recipe_id': str(recipe_id),
-                'author_id': user_id
-            })
-
-        return success
-
-    def get_user_recipes(self, user_id: str) -> List[Recipe]:
-        """Get all recipes by a specific user."""
-        return self.repository.get_user_recipes(user_id)
-
-    def search_recipes(self, query: str, include_unpublished: bool = False) -> List[Recipe]:
-        """Search recipes by title, description, or ingredients."""
-        recipes = self.repository.search_recipes(query)
-        if not include_unpublished:
-            recipes = [r for r in recipes if r.is_published]
-        return recipes
-
-    def get_recipes_by_tags(self, tags: List[str], include_unpublished: bool = False) -> List[Recipe]:
-        """Get recipes by tags."""
-        recipes = self.repository.get_recipes_by_tags(tags)
-        if not include_unpublished:
-            recipes = [r for r in recipes if r.is_published]
-        return recipes
-
-    def get_recipes_by_difficulty(self, difficulty: str, include_unpublished: bool = False) -> List[Recipe]:
-        """Get recipes by difficulty level."""
-        recipes = self.repository.get_recipes_by_difficulty(difficulty)
-        if not include_unpublished:
-            recipes = [r for r in recipes if r.is_published]
-        return recipes
-
-    def get_recipes_by_cooking_method(self, method: str, include_unpublished: bool = False) -> List[Recipe]:
-        """Get recipes by cooking method."""
-        recipes = self.repository.get_recipes_by_cooking_method(method)
-        if not include_unpublished:
-            recipes = [r for r in recipes if r.is_published]
-        return recipes
-
-    def publish_recipe(self, recipe_id: str, user_id: str) -> Optional[Recipe]:
-        """Publish a recipe."""
-        recipe = self.repository.get_recipe_by_id(recipe_id)
-        if not recipe:
-            return None
-
-        # Check ownership
-        if str(recipe.author_id) != user_id:
-            raise ValidationError(_('You do not have permission to publish this recipe.'))
-
-        # Update recipe
-        recipe = self.repository.update_recipe(recipe_id, {'is_published': True})
-
-        # Publish event
-        if recipe:
-            EventBus.publish('recipe.published', {
-                'recipe_id': str(recipe_id),
-                'author_id': user_id,
-                'title': recipe.title
-            })
-
-        return recipe
-
-    def unpublish_recipe(self, recipe_id: str, user_id: str) -> Optional[Recipe]:
-        """Unpublish a recipe."""
-        recipe = self.repository.get_recipe_by_id(recipe_id)
-        if not recipe:
-            return None
-
-        # Check ownership
-        if str(recipe.author_id) != user_id:
-            raise ValidationError(_('You do not have permission to unpublish this recipe.'))
-
-        # Update recipe
-        recipe = self.repository.update_recipe(recipe_id, {'is_published': False})
-
-        # Publish event
-        if recipe:
-            EventBus.publish('recipe.unpublished', {
-                'recipe_id': str(recipe_id),
-                'author_id': user_id,
-                'title': recipe.title
-            })
-
-        return recipe 
+# Service instance
+recipe_service = RecipeService() 
