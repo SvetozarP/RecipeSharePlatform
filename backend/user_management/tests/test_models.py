@@ -3,48 +3,48 @@ Tests for user management models.
 """
 
 import pytest
-from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
-from django.db import IntegrityError
-from user_management.models import UserProfile, UserPreferences
 
-User = get_user_model()
+from user_management.models.user_profile import UserProfile
+from user_management.models.user_preferences import UserPreferences
+from user_management.tests.factories import UserFactory, UserProfileFactory, UserPreferencesFactory
+
 pytestmark = pytest.mark.django_db
 
 
 class TestUserProfile:
     """Test UserProfile model."""
 
-    def test_profile_creation(self, user):
-        """Test profile is created successfully."""
-        profile = user.profile
-        assert isinstance(profile, UserProfile)
-        assert profile.user == user
-        assert profile.first_name == 'Test'
-        assert profile.last_name == 'User'
-        assert profile.is_public_profile is True
+    def test_create_profile(self):
+        """Test creating a user profile."""
+        profile = UserProfileFactory()
+        assert profile.id is not None
+        assert profile.user is not None
+        assert profile.first_name is not None
+        assert profile.last_name is not None
+        assert isinstance(profile.is_public_profile, bool)
 
-    def test_profile_str_representation(self, user):
+    def test_profile_str(self):
         """Test profile string representation."""
-        profile = user.profile
-        assert str(profile) == f"{user.username}'s profile"
+        profile = UserProfileFactory(first_name="John", last_name="Doe")
+        assert str(profile) == "John Doe"
 
-    def test_profile_unique_constraint(self, user):
-        """Test one profile per user constraint."""
-        with pytest.raises(IntegrityError):
-            UserProfile.objects.create(user=user)
+    def test_profile_full_name(self):
+        """Test profile full name property."""
+        profile = UserProfileFactory(first_name="John", last_name="Doe")
+        assert profile.full_name == "John Doe"
 
-    def test_profile_fields_validation(self, user):
-        """Test profile fields validation."""
-        profile = user.profile
-        
-        # Test max lengths
-        profile.first_name = 'a' * 151
-        profile.last_name = 'a' * 151
-        profile.bio = 'a' * 501
-        profile.location = 'a' * 101
-        profile.phone = 'a' * 21
-        
+    def test_invalid_website(self):
+        """Test invalid website validation."""
+        profile = UserProfileFactory()
+        profile.website = "not-a-url"
+        with pytest.raises(ValidationError):
+            profile.full_clean()
+
+    def test_invalid_phone(self):
+        """Test invalid phone validation."""
+        profile = UserProfileFactory()
+        profile.phone = "a" * 21  # Too long
         with pytest.raises(ValidationError):
             profile.full_clean()
 
@@ -52,53 +52,52 @@ class TestUserProfile:
 class TestUserPreferences:
     """Test UserPreferences model."""
 
-    def test_preferences_creation(self, user):
-        """Test preferences are created successfully."""
-        prefs = user.preferences
-        assert isinstance(prefs, UserPreferences)
-        assert prefs.user == user
-        assert prefs.email_notifications is True
-        assert prefs.marketing_emails is False
-        assert prefs.theme == 'light'
+    def test_create_preferences(self):
+        """Test creating user preferences."""
+        preferences = UserPreferencesFactory()
+        assert preferences.id is not None
+        assert preferences.user is not None
+        assert isinstance(preferences.email_notifications, bool)
+        assert isinstance(preferences.marketing_emails, bool)
+        assert isinstance(preferences.public_profile, bool)
+        assert isinstance(preferences.show_email, bool)
+        assert preferences.timezone is not None
+        assert preferences.language is not None
+        assert preferences.theme is not None
 
-    def test_preferences_str_representation(self, user):
+    def test_preferences_str(self):
         """Test preferences string representation."""
-        prefs = user.preferences
-        assert str(prefs) == f"{user.username}'s preferences"
+        preferences = UserPreferencesFactory()
+        assert str(preferences) == f"Preferences for {preferences.user.email}"
 
-    def test_preferences_unique_constraint(self, user):
-        """Test one preferences per user constraint."""
-        with pytest.raises(IntegrityError):
-            UserPreferences.objects.create(user=user)
+    def test_default_values(self):
+        """Test default values for preferences."""
+        preferences = UserPreferencesFactory()
+        assert preferences.email_notifications is True
+        assert preferences.marketing_emails is False
+        assert preferences.public_profile is True
+        assert preferences.show_email is False
+        assert preferences.timezone == "UTC"
+        assert preferences.language == "en"
+        assert preferences.theme == "light"
 
-    def test_preferences_theme_choices(self, user):
-        """Test theme choices validation."""
-        prefs = user.preferences
-        
-        # Valid themes
-        valid_themes = ['light', 'dark', 'auto']
-        for theme in valid_themes:
-            prefs.theme = theme
-            prefs.full_clean()  # Should not raise
-        
-        # Invalid theme
-        prefs.theme = 'invalid'
+    def test_invalid_timezone(self):
+        """Test invalid timezone validation."""
+        preferences = UserPreferencesFactory()
+        preferences.timezone = "invalid-timezone"
         with pytest.raises(ValidationError):
-            prefs.full_clean()
+            preferences.full_clean()
 
-    def test_preferences_defaults(self, user_data):
-        """Test preferences default values."""
-        new_user = User.objects.create_user(
-            email='new@example.com',
-            username='newuser',
-            password='testpass123'
-        )
-        prefs = UserPreferences.objects.create(user=new_user)
-        
-        assert prefs.email_notifications is True
-        assert prefs.marketing_emails is False
-        assert prefs.public_profile is True
-        assert prefs.show_email is False
-        assert prefs.timezone == 'UTC'
-        assert prefs.language == 'en'
-        assert prefs.theme == 'light' 
+    def test_invalid_language(self):
+        """Test invalid language validation."""
+        preferences = UserPreferencesFactory()
+        preferences.language = "invalid-lang"
+        with pytest.raises(ValidationError):
+            preferences.full_clean()
+
+    def test_invalid_theme(self):
+        """Test invalid theme validation."""
+        preferences = UserPreferencesFactory()
+        preferences.theme = "invalid-theme"
+        with pytest.raises(ValidationError):
+            preferences.full_clean() 

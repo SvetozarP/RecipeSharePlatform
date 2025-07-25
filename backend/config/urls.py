@@ -11,6 +11,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/auth/', include('accounts.urls', namespace='accounts')),
     path('api/v1/', include('user_management.urls', namespace='user_management')),
+    path('api/v1/', include('recipes.urls', namespace='recipes')),
     
     # Health checks
     path('health/', SimpleHealthCheckView.as_view(), name='simple_health_check'),

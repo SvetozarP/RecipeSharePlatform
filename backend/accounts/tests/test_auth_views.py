@@ -8,7 +8,7 @@ from rest_framework import status
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from accounts.tests.factories import UserFactory
+from .factories import UserFactory
 
 pytestmark = pytest.mark.django_db
 

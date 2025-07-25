@@ -6,6 +6,8 @@ import pytest
 from django.urls import reverse
 from rest_framework import status
 
+from user_management.tests.factories import UserFactory
+
 pytestmark = pytest.mark.django_db
 
 

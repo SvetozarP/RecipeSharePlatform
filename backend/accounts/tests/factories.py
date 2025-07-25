@@ -1,5 +1,5 @@
 """
-Test factories for accounts app.
+Factories for accounts tests.
 """
 
 import factory
@@ -7,18 +7,16 @@ from django.contrib.auth import get_user_model
 from faker import Faker
 
 fake = Faker()
+User = get_user_model()
+
 
 class UserFactory(factory.django.DjangoModelFactory):
     """Factory for User model."""
 
     class Meta:
-        model = get_user_model()
+        model = User
 
-    username = factory.LazyAttribute(lambda _: fake.user_name())
-    email = factory.LazyAttribute(lambda _: fake.email())
-    first_name = factory.LazyAttribute(lambda _: fake.first_name())
-    last_name = factory.LazyAttribute(lambda _: fake.last_name())
+    email = factory.LazyFunction(lambda: fake.email())
+    username = factory.LazyFunction(lambda: fake.user_name())
     password = factory.PostGenerationMethodCall('set_password', 'testpass123')
-    is_active = True
-    is_staff = False
-    is_superuser = False 
+    is_active = True 

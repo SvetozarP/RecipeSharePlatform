@@ -4,6 +4,8 @@ User preferences model.
 
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
+import pytz
 from core.models import BaseModel
 
 User = get_user_model()
@@ -30,8 +32,21 @@ class UserPreferences(BaseModel):
         ('auto', 'Auto')
     ])
     
+    def clean(self):
+        """Validate the model fields."""
+        super().clean()
+        
+        # Validate timezone
+        if self.timezone and self.timezone not in pytz.all_timezones:
+            raise ValidationError({'timezone': 'Invalid timezone'})
+    
+    def save(self, *args, **kwargs):
+        """Override save to call clean."""
+        self.clean()
+        super().save(*args, **kwargs)
+    
     def __str__(self):
-        return f"{self.user.username}'s preferences"
+        return f"Preferences for {self.user.email}"
     
     class Meta:
         db_table = 'user_preferences' 

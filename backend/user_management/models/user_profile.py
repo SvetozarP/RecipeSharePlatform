@@ -24,7 +24,14 @@ class UserProfile(BaseModel):
     is_public_profile = models.BooleanField(default=True)
     is_email_notifications = models.BooleanField(default=True)
     
+    @property
+    def full_name(self):
+        """Return the full name of the user."""
+        return f"{self.first_name} {self.last_name}".strip()
+    
     def __str__(self):
+        if self.first_name and self.last_name:
+            return f"{self.first_name} {self.last_name}"
         return f"{self.user.username}'s profile"
     
     class Meta:

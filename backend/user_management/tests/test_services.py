@@ -6,7 +6,11 @@ import pytest
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
-from user_management.models import UserProfile, UserPreferences
+
+from user_management.services.user_service import UserService
+from user_management.services.auth_service import AuthService
+from user_management.services.profile_service import ProfileService
+from user_management.tests.factories import UserFactory, UserProfileFactory, UserPreferencesFactory
 
 User = get_user_model()
 pytestmark = pytest.mark.django_db
