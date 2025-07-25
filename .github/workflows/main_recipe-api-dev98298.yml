@@ -73,7 +73,6 @@ jobs:
       - name: Create deployment package
         run: |
           cd backend
-          # Copy requirements to root for Oryx
           cp requirements/base.txt requirements.txt
           
           # Create startup script
@@ -86,7 +85,12 @@ jobs:
           EOL
           chmod +x start.sh
           
-          # Create deployment package
+          # Move everything to a temp folder to flatten
+          mkdir ../deploy
+          cp -r . ../deploy
+          mv start.sh ../deploy/
+
+          cd ../deploy
           zip -r ../release.zip .
 
       - name: Upload artifact for deployment jobs
