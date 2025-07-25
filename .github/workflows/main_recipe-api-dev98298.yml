@@ -111,7 +111,6 @@ jobs:
       - name: Extract and prepare deployment
         run: |
           unzip release.zip
-          chmod +x start.sh
 
       - name: Login to Azure
         uses: azure/login@v2
@@ -127,7 +126,7 @@ jobs:
           app-name: 'recipe-api-dev98298'
           slot-name: 'Production'
           package: 'release.zip'
-          startup-command: 'cd /home/site/wwwroot && chmod +x start.sh && ./start.sh'
+          startup-command: 'cd /home/site/wwwroot && sh start.sh'
   
         # Optional: show deployment complete
       - name: Deployment finished
