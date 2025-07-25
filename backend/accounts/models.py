@@ -5,6 +5,7 @@ User model and related models for the accounts app.
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+import uuid
 
 from core.models.base import BaseModel
 
@@ -43,6 +44,14 @@ class User(AbstractUser, BaseModel):
     Extends the base User model with additional fields and
     uses email as the unique identifier instead of username.
     """
+
+    # Override id field to use UUID
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+        help_text=_("Unique identifier for this record")
+    )
 
     username = models.CharField(
         _('username'),
