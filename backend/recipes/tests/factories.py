@@ -6,10 +6,26 @@ import factory
 from django.contrib.auth import get_user_model
 from faker import Faker
 
-from ..models import Recipe
+from ..models import Recipe, Category
 
 fake = Faker()
 User = get_user_model()
+
+
+class CategoryFactory(factory.django.DjangoModelFactory):
+    """Factory for Category model."""
+
+    class Meta:
+        model = Category
+
+    name = factory.LazyFunction(lambda: fake.word().capitalize())
+    description = factory.LazyFunction(lambda: fake.paragraph())
+    slug = factory.LazyAttribute(lambda obj: fake.slug())
+    icon = factory.LazyFunction(lambda: fake.random_element(elements=['utensils', 'bread', 'cake', 'coffee', 'pizza']))
+    color = factory.LazyFunction(lambda: fake.color())
+    parent = None  # Default to root category
+    order = factory.LazyFunction(lambda: fake.random_int(min=0, max=100))
+    is_active = True
 
 
 class RecipeFactory(factory.django.DjangoModelFactory):

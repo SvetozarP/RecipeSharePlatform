@@ -25,6 +25,148 @@ def validate_dict(value):
         raise ValidationError(_('Value must be a dictionary'))
 
 
+class Category(BaseModel):
+    """Model for recipe categories with hierarchy support."""
+    
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+        help_text=_("Unique identifier for this category")
+    )
+    name = models.CharField(
+        max_length=100,
+        help_text=_("Category name")
+    )
+    description = models.TextField(
+        blank=True,
+        help_text=_("Category description")
+    )
+    slug = models.SlugField(
+        max_length=100,
+        unique=True,
+        help_text=_("URL-friendly category identifier")
+    )
+    icon = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text=_("Icon class or identifier for the category")
+    )
+    color = models.CharField(
+        max_length=7,
+        blank=True,
+        help_text=_("Hex color code for category (e.g., #FF5733)")
+    )
+    
+    # Hierarchy support
+    parent = models.ForeignKey(
+        'self',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='children',
+        help_text=_("Parent category for hierarchy")
+    )
+    
+    # Ordering and visibility
+    order = models.PositiveIntegerField(
+        default=0,
+        help_text=_("Display order within parent category")
+    )
+    is_active = models.BooleanField(
+        default=True,
+        help_text=_("Whether this category is active and visible")
+    )
+    
+    class Meta:
+        verbose_name = _('category')
+        verbose_name_plural = _('categories')
+        ordering = ['parent__name', 'order', 'name']
+        indexes = [
+            models.Index(fields=['slug']),
+            models.Index(fields=['parent']),
+            models.Index(fields=['is_active']),
+            models.Index(fields=['order']),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['slug'],
+                condition=models.Q(parent__isnull=True),
+                name='unique_root_category_slug'
+            ),
+            models.UniqueConstraint(
+                fields=['parent', 'slug'],
+                condition=models.Q(parent__isnull=False),
+                name='unique_child_category_slug'
+            ),
+        ]
+
+    def __str__(self):
+        """Return string representation."""
+        if self.parent:
+            return f"{self.parent.name} > {self.name}"
+        return self.name
+
+    @property
+    def full_path(self):
+        """Get the full category path."""
+        path = [self.name]
+        parent = self.parent
+        while parent:
+            path.insert(0, parent.name)
+            parent = parent.parent
+        return " > ".join(path)
+
+    @property
+    def level(self):
+        """Get the hierarchy level (0 for root categories)."""
+        level = 0
+        parent = self.parent
+        while parent:
+            level += 1
+            parent = parent.parent
+        return level
+
+    def get_ancestors(self):
+        """Get all ancestor categories."""
+        ancestors = []
+        parent = self.parent
+        while parent:
+            ancestors.insert(0, parent)
+            parent = parent.parent
+        return ancestors
+
+    def get_descendants(self):
+        """Get all descendant categories."""
+        descendants = []
+        children = self.children.filter(is_active=True)
+        for child in children:
+            descendants.append(child)
+            descendants.extend(child.get_descendants())
+        return descendants
+
+    def clean(self):
+        """Validate the category."""
+        super().clean()
+        
+        # Prevent circular references
+        if self.parent:
+            parent = self.parent
+            while parent:
+                if parent == self:
+                    raise ValidationError(_("Category cannot be its own ancestor"))
+                parent = parent.parent
+
+        # Validate hierarchy depth (max 3 levels)
+        if self.level >= 3:
+            raise ValidationError(_("Category hierarchy cannot exceed 3 levels"))
+
+    def save(self, *args, **kwargs):
+        """Override save to validate before saving."""
+        self.clean()
+        super().save(*args, **kwargs)
+
+
 class Recipe(BaseModel):
     """Model for storing recipe information."""
 
@@ -109,6 +251,15 @@ class Recipe(BaseModel):
         related_name='recipes',
         help_text=_("User who created this recipe")
     )
+    
+    # Categories relationship
+    categories = models.ManyToManyField(
+        Category,
+        blank=True,
+        related_name='recipes',
+        help_text=_("Categories this recipe belongs to")
+    )
+    
     is_published = models.BooleanField(
         default=False,
         help_text=_("Whether this recipe is publicly visible")
@@ -157,6 +308,16 @@ class Recipe(BaseModel):
     def has_images(self):
         """Check if recipe has any images."""
         return bool(self.images and self.images.get('original'))
+    
+    @property
+    def category_names(self):
+        """Get list of category names for this recipe."""
+        return [category.name for category in self.categories.filter(is_active=True)]
+    
+    @property 
+    def category_paths(self):
+        """Get list of full category paths for this recipe."""
+        return [category.full_path for category in self.categories.filter(is_active=True)]
 
     def save(self, *args, **kwargs):
         """Override save to handle version increments."""

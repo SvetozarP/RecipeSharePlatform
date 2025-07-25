@@ -118,3 +118,4 @@ coverage.xml
 .env.production/
 devel/
 terraform/
+backend/docs/api/categories.md
