@@ -130,7 +130,7 @@ jobs:
           app-name: 'recipe-api-dev98298'
           slot-name: 'Production'
           package: 'release.zip'
-          startup-command: 'cd /home/site/wwwroot && sh start.sh'
+          startup-command: 'sh start.sh'
   
         # Optional: show deployment complete
       - name: Deployment finished
