@@ -79,12 +79,11 @@ jobs:
           # Create startup script
           cat > start.sh << 'EOL'
           #!/bin/sh
-          export PYTHONPATH=$PWD
           python -m venv antenv
           . antenv/bin/activate
           pip install --no-cache-dir -r requirements.txt
           python manage.py migrate --noinput
-          gunicorn --pythonpath $PWD config.wsgi:application --bind=0.0.0.0:8000
+          gunicorn config.wsgi:application --bind=0.0.0.0:8000
           EOL
           chmod +x start.sh
           
@@ -113,6 +112,7 @@ jobs:
       - name: Extract and prepare deployment
         run: |
           unzip release.zip
+          cd backend
           chmod +x start.sh
 
       - name: Login to Azure
