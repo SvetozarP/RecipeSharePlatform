@@ -53,10 +53,22 @@ jobs:
           DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
           JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
 
+      - name: Verify production requirements
+        run: |
+          cd backend
+          source venv/bin/activate
+          # Install production requirements and verify PostgreSQL driver
+          pip install -r requirements.txt
+          python -c "import psycopg2; print('✅ PostgreSQL driver (psycopg2) is available')"
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.production
+          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+
       - name: Prepare deployment package
         run: |
           cd backend
-          cp requirements/base.txt requirements.txt  # Azure looks for this
+          # Keep the existing requirements.txt that points to production.txt
           zip -r ../release.zip .
         
       - name: Upload artifact
