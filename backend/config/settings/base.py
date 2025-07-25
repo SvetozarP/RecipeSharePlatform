@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     # Local apps
     'core.apps.CoreConfig',
     'accounts.apps.AccountsConfig',
+    'user_management.apps.UserManagementConfig',
 ]
 
 MIDDLEWARE = [

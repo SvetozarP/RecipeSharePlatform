@@ -1,63 +1,43 @@
-from abc import ABC, abstractmethod
+"""
+Base repository interface for user management.
+"""
+
 from django.contrib.auth import get_user_model
-from ..models import UserProfile, UserPreferences
+from core.interfaces.repository import DjangoRepository
+from user_management.models import UserProfile, UserPreferences
 
 User = get_user_model()
 
-class UserRepositoryInterface(ABC):
-    """Base interface for user data access"""
+
+class UserRepository(DjangoRepository):
+    """Repository for User model."""
+    def __init__(self):
+        super().__init__(User)
     
-    @abstractmethod
-    def create_user(self, user_data: dict) -> User:
-        """Create a new user"""
-        pass
-    
-    @abstractmethod
-    def get_user_by_id(self, user_id: int) -> User:
-        """Get user by ID"""
-        pass
-    
-    @abstractmethod
-    def get_user_by_email(self, email: str) -> User:
-        """Get user by email"""
-        pass
-    
-    @abstractmethod
-    def update_user(self, user_id: int, user_data: dict) -> User:
-        """Update user data"""
-        pass
-    
-    @abstractmethod
-    def deactivate_user(self, user_id: int) -> bool:
-        """Soft delete user account"""
-        pass
-    
-    @abstractmethod
     def create_profile(self, user: User) -> UserProfile:
-        """Create user profile"""
-        pass
+        """Create user profile."""
+        return UserProfile.objects.create(user=user)
     
-    @abstractmethod
-    def get_profile(self, user_id: int) -> UserProfile:
-        """Get user profile"""
-        pass
-    
-    @abstractmethod
-    def update_profile(self, user_id: int, profile_data: dict) -> UserProfile:
-        """Update user profile"""
-        pass
-    
-    @abstractmethod
     def create_preferences(self, user: User) -> UserPreferences:
-        """Create user preferences"""
-        pass
+        """Create user preferences."""
+        return UserPreferences.objects.create(user=user)
+
+
+class ProfileRepository(DjangoRepository):
+    """Repository for UserProfile model."""
+    def __init__(self):
+        super().__init__(UserProfile)
     
-    @abstractmethod
-    def get_preferences(self, user_id: int) -> UserPreferences:
-        """Get user preferences"""
-        pass
-    
-    @abstractmethod
     def update_preferences(self, user_id: int, preferences_data: dict) -> UserPreferences:
-        """Update user preferences"""
-        pass 
+        """Update user preferences."""
+        preferences = UserPreferences.objects.get(user_id=user_id)
+        for key, value in preferences_data.items():
+            setattr(preferences, key, value)
+        preferences.save()
+        return preferences
+
+
+class PreferencesRepository(DjangoRepository):
+    """Repository for UserPreferences model."""
+    def __init__(self):
+        super().__init__(UserPreferences) 

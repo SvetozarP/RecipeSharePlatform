@@ -1,82 +1,80 @@
+"""
+Authentication service implementation.
+"""
+
 from django.utils import timezone
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, get_user_model
 from django.core.exceptions import ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
-from core.interfaces.service import Service
+from core.interfaces.service import BaseService
 from core.events.bus import EventBus
-from ..repositories.user_repository import UserRepository
+from user_management.repositories.base import UserRepository
 
-class AuthService(Service):
+User = get_user_model()
+
+
+class AuthService(BaseService):
     """Authentication business logic"""
     
     def __init__(self):
-        self.repository = UserRepository()
+        super().__init__(UserRepository())
+    
+    def create(self, **kwargs) -> User:
+        """Create a new user."""
+        return super().create(**kwargs)
+    
+    def update(self, id: int, **kwargs) -> User:
+        """Update user data."""
+        return super().update(id, **kwargs)
+    
+    def delete(self, id: int) -> bool:
+        """Delete user account."""
+        return super().delete(id)
+    
+    def get_by_id(self, id: int) -> User:
+        """Get user by ID."""
+        return super().get_by_id(id)
+    
+    def get_all(self) -> list[User]:
+        """Get all users."""
+        return super().get_all()
     
     def login_user(self, email: str, password: str) -> dict:
-        """Authenticate user and return tokens"""
-        try:
-            # Authenticate user
-            user = authenticate(email=email, password=password)
-            
-            if not user:
-                raise ValidationError("Invalid credentials")
-            
-            if not user.is_active:
-                raise ValidationError("Account is deactivated")
-            
-            # Generate tokens
-            refresh = RefreshToken.for_user(user)
-            
-            # Get user profile data
-            profile = self.repository.get_profile(user.id)
-            preferences = self.repository.get_preferences(user.id)
-            
-            # Publish login event
-            EventBus.publish('user.login', {
-                'user_id': user.id,
-                'timestamp': timezone.now()
-            })
-            
-            return {
-                'tokens': {
-                    'access': str(refresh.access_token),
-                    'refresh': str(refresh)
-                },
-                'user': {
-                    'id': user.id,
-                    'email': user.email,
-                    'username': user.username
-                },
-                'profile': {
-                    'first_name': profile.first_name,
-                    'last_name': profile.last_name,
-                    'is_public_profile': profile.is_public_profile
-                } if profile else None,
-                'preferences': {
-                    'timezone': preferences.timezone,
-                    'language': preferences.language,
-                    'theme': preferences.theme
-                } if preferences else None
+        """Authenticate user and return tokens."""
+        user = authenticate(email=email, password=password)
+        
+        if not user:
+            raise ValidationError("Invalid credentials")
+        
+        if not user.is_active:
+            raise ValidationError("Account is deactivated")
+        
+        # Generate tokens
+        refresh = RefreshToken.for_user(user)
+        
+        # Publish login event
+        EventBus.publish('user.login', {
+            'user_id': user.id,
+            'timestamp': timezone.now(),
+            'ip_address': None  # Will be set by middleware
+        })
+        
+        return {
+            'access_token': str(refresh.access_token),
+            'refresh_token': str(refresh),
+            'user': {
+                'id': user.id,
+                'email': user.email,
+                'username': user.username
             }
-            
-        except ValidationError as e:
-            raise ValidationError(str(e))
-        except Exception as e:
-            raise Exception(f"Error during login: {str(e)}")
+        }
     
     def logout_user(self, refresh_token: str) -> bool:
-        """Logout user by blacklisting refresh token"""
+        """Logout user by blacklisting refresh token."""
         try:
             token = RefreshToken(refresh_token)
             token.blacklist()
-            
-            # Publish logout event
-            EventBus.publish('user.logout', {
-                'timestamp': timezone.now()
-            })
-            
             return True
-            
         except Exception:
             return False
     
