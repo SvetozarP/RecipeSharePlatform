@@ -76,18 +76,6 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
-                    "created_at",
-                    models.DateTimeField(
-                        auto_now_add=True, help_text="When this record was created"
-                    ),
-                ),
-                (
-                    "updated_at",
-                    models.DateTimeField(
-                        auto_now=True, help_text="When this record was last updated"
-                    ),
-                ),
-                (
                     "username",
                     models.CharField(
                         error_messages={
