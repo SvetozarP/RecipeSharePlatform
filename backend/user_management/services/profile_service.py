@@ -4,6 +4,7 @@ Profile service implementation.
 
 from django.utils import timezone
 from django.core.exceptions import ValidationError
+from typing import Optional
 from core.interfaces.service import BaseService
 from core.events.bus import EventBus
 from user_management.models import UserProfile
@@ -130,7 +131,7 @@ class ProfileService(BaseService):
         
         return self.get_profile(user_id)
     
-    def validate_profile_access(self, viewer_id: int | None, profile_id: int) -> bool:
+    def validate_profile_access(self, viewer_id: Optional[int], profile_id: int) -> bool:
         """Validate if viewer has access to profile."""
         profile = self.get_by_id(profile_id)
         if not profile:
