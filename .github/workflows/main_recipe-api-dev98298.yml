@@ -1,7 +1,3 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-# More info on Python, GitHub Actions, and Azure App Service: https://aka.ms/python-webapps-actions
-
 name: Build and deploy Django backend to Azure Web App
 
 on:
@@ -26,73 +22,44 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python version
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.9'
 
-      - name: Create and start virtual environment
+      - name: Install dependencies and run tests
         run: |
+          cd backend
           python -m venv venv
           source venv/bin/activate
-      
-      - name: Install dependencies
-        run: |
-          cd backend
+          pip install --upgrade pip
           pip install -r requirements/base.txt
           pip install -r requirements/testing.txt
-        
-      - name: Run Django tests
-        run: |
-          cd backend
           pytest
         env:
           DJANGO_SETTINGS_MODULE: config.settings.testing
           DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
           JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
 
-      - name: Check migrations
+      - name: Run migrations and collect static files
         run: |
           cd backend
+          source venv/bin/activate
           python manage.py makemigrations --check --dry-run
-          python manage.py migrate --plan
+          python manage.py migrate
+          python manage.py collectstatic --noinput
         env:
-          DJANGO_SETTINGS_MODULE: config.settings.testing
+          DJANGO_SETTINGS_MODULE: config.settings.production
           DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
           JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
 
-      - name: Collect static files
+      - name: Prepare deployment package
         run: |
           cd backend
-          python manage.py collectstatic --noinput
-        env:
-          DJANGO_SETTINGS_MODULE: config.settings.testing
-          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
-
-      - name: Create deployment package
-        run: |
-          cd backend
-          cp requirements/base.txt requirements.txt
-      
-          # Create startup script
-          cat > start.sh << 'EOL'
-          #!/bin/sh
-          pip install --no-cache-dir -r requirements.txt
-          python manage.py migrate --noinput
-          python manage.py collectstatic --noinput
-          gunicorn config.wsgi:application --bind=0.0.0.0:8000
-          EOL
-          chmod +x start.sh
-      
-          # Flatten and zip
-          mkdir ../deploy
-          cp -r . ../deploy
-      
-          cd ../deploy
+          cp requirements/base.txt requirements.txt  # Azure looks for this
           zip -r ../release.zip .
-
-      - name: Upload artifact for deployment jobs
+        
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: python-app
@@ -106,14 +73,13 @@ jobs:
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
-      - name: Download artifact from build job
+      - name: Download artifact
         uses: actions/download-artifact@v4
         with:
           name: python-app
 
-      - name: Extract and prepare deployment
-        run: |
-          unzip release.zip
+      - name: Extract deployment package
+        run: unzip release.zip
 
       - name: Login to Azure
         uses: azure/login@v2
@@ -129,9 +95,6 @@ jobs:
           app-name: 'recipe-api-dev98298'
           slot-name: 'Production'
           package: 'release.zip'
-          startup-command: 'sh start.sh'
-  
-        # Optional: show deployment complete
-      - name: Deployment finished
-        run: echo "Deployment to Azure Web App successful!"
-          
+
+      - name: Done!
+        run: echo "🚀 Deployment successful!"
