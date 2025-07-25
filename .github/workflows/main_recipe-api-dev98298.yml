@@ -75,6 +75,19 @@ jobs:
           cd backend
           # Copy requirements to root for Oryx
           cp requirements/base.txt requirements.txt
+          
+          # Create startup script
+          cat > start.sh << 'EOL'
+          #!/bin/sh
+          export PYTHONPATH=$PWD
+          python -m venv antenv
+          . antenv/bin/activate
+          pip install --no-cache-dir -r requirements.txt
+          python manage.py migrate --noinput
+          gunicorn --pythonpath $PWD config.wsgi:application --bind=0.0.0.0:8000
+          EOL
+          chmod +x start.sh
+          
           # Create deployment package
           zip -r ../release.zip .
 
@@ -100,6 +113,7 @@ jobs:
       - name: Extract and prepare deployment
         run: |
           unzip release.zip
+          chmod +x start.sh
 
       - name: Login to Azure
         uses: azure/login@v2
@@ -130,12 +144,6 @@ jobs:
             export EMAIL_HOST_USER="${{ secrets.EMAIL_HOST_USER || '' }}" && \
             export EMAIL_HOST_PASSWORD="${{ secrets.EMAIL_HOST_PASSWORD || '' }}" && \
             export FRONTEND_URL="${{ secrets.FRONTEND_URL || 'https://recipe-sharing.azurewebsites.net' }}" && \
-            SITE_DIR=$(dirname $(dirname $(find /tmp -name "antenv" -type d))) && \
-            cd $SITE_DIR && \
-            export PYTHONPATH=$SITE_DIR && \
-            python -m venv antenv && \
-            . antenv/bin/activate && \
-            pip install --no-cache-dir -r requirements.txt && \
-            python manage.py migrate --noinput && \
-            gunicorn --pythonpath $SITE_DIR config.wsgi:application --bind=0.0.0.0:8000
+            cd /home/site/wwwroot && \
+            ./start.sh
           
