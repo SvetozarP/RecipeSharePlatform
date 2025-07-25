@@ -11,6 +11,13 @@ ALLOWED_HOSTS = [
     config('WEBSITE_HOSTNAME', default='*'),  # Azure App Service hostname
 ]
 
+# Remove debug toolbar from installed apps
+if 'debug_toolbar' in INSTALLED_APPS:
+    INSTALLED_APPS.remove('debug_toolbar')
+
+if 'debug_toolbar.middleware.DebugToolbarMiddleware' in MIDDLEWARE:
+    MIDDLEWARE.remove('debug_toolbar.middleware.DebugToolbarMiddleware')
+
 # Database - PostgreSQL for production
 if config('DB_NAME', default=None):
     DATABASES = {
