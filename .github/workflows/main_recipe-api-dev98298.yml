@@ -127,4 +127,9 @@ jobs:
           app-name: 'recipe-api-dev98298'
           slot-name: 'Production'
           package: 'release.zip'
+          startup-command: 'cd /home/site/wwwroot && chmod +x start.sh && ./start.sh'
+  
+        # Optional: show deployment complete
+      - name: Deployment finished
+        run: echo "Deployment to Azure Web App successful!"
           
