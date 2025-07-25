@@ -79,10 +79,9 @@ jobs:
           # Create startup script
           cat > start.sh << 'EOL'
           #!/bin/sh
-          python -m venv antenv
-          . antenv/bin/activate
           pip install --no-cache-dir -r requirements.txt
           python manage.py migrate --noinput
+          python manage.py collectstatic --noinput
           gunicorn config.wsgi:application --bind=0.0.0.0:8000
           EOL
           chmod +x start.sh
@@ -121,28 +120,11 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_DAC3758E440A4723ABBA182D2DFDFD7D }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_2491E9699F3E4FE4ACDA072B4021A3E6 }}
 
-      - name: 'Deploy to Azure Web App'
+      - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
         with:
           app-name: 'recipe-api-dev98298'
           slot-name: 'Production'
-          package: .
-          startup-command: |
-            export DJANGO_SETTINGS_MODULE="config.settings.production" && \
-            export DJANGO_SECRET_KEY="${{ secrets.DJANGO_SECRET_KEY }}" && \
-            export JWT_SECRET_KEY="${{ secrets.JWT_SECRET_KEY }}" && \
-            export DB_NAME="${{ secrets.DB_NAME }}" && \
-            export DB_USER="${{ secrets.DB_USER }}" && \
-            export DB_PASSWORD="${{ secrets.DB_PASSWORD }}" && \
-            export DB_HOST="${{ secrets.DB_HOST }}" && \
-            export DB_PORT="${{ secrets.DB_PORT }}" && \
-            export EMAIL_HOST="${{ secrets.EMAIL_HOST || 'smtp.gmail.com' }}" && \
-            export EMAIL_PORT="${{ secrets.EMAIL_PORT || '587' }}" && \
-            export EMAIL_USE_TLS="${{ secrets.EMAIL_USE_TLS || 'True' }}" && \
-            export EMAIL_HOST_USER="${{ secrets.EMAIL_HOST_USER || '' }}" && \
-            export EMAIL_HOST_PASSWORD="${{ secrets.EMAIL_HOST_PASSWORD || '' }}" && \
-            export FRONTEND_URL="${{ secrets.FRONTEND_URL || 'https://recipe-sharing.azurewebsites.net' }}" && \
-            cd /home/site/wwwroot && \
-            sh start.sh
+          package: 'release.zip'
           
