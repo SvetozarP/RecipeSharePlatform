@@ -1,0 +1,11 @@
+# Azure App Service Startup Commands
+# These commands run automatically when the app starts in Azure
+
+# Run database migrations
+python manage.py migrate --settings=config.settings.production
+
+# Create admin user (if not exists)
+python manage.py create_admin --settings=config.settings.production
+
+# Start Gunicorn server
+gunicorn --bind 0.0.0.0:8000 config.wsgi:application 

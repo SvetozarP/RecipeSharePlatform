@@ -54,21 +54,24 @@ jobs:
           DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
           JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
 
-      - name: Run migrations and collect static files
+      - name: Check migrations and collect static files
         run: |
           cd backend
           source venv/bin/activate
           python manage.py makemigrations --check --dry-run
-          python manage.py migrate
+          # Skip migrations during build - run them after deployment in Azure
           python manage.py collectstatic --noinput
         env:
           DJANGO_SETTINGS_MODULE: config.settings.production
           DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
           JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          # Use SQLite fallback during build (no DB_* vars = SQLite mode)
 
       - name: Prepare deployment package
         run: |
           cd backend
+          # Make startup script executable
+          chmod +x startup.sh
           # Keep the existing requirements.txt that points to production.txt
           zip -r ../release.zip .
         
@@ -119,23 +122,10 @@ jobs:
           slot-name: 'Production'
           package: 'release.zip'
 
-      - name: Run production migrations and setup
+      - name: Configure Azure App Service startup
         run: |
-          # Run migrations on production PostgreSQL database
-          python manage.py migrate --settings=config.settings.production
-          # Create admin user
-          python manage.py create_admin --settings=config.settings.production
-        env:
-          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
-          ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
-          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
-          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
-          DB_NAME: ${{ secrets.DB_NAME }}
-          DB_USER: ${{ secrets.DB_USER }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          DB_HOST: ${{ secrets.DB_HOST }}
-          DB_PORT: ${{ secrets.DB_PORT }}
+          echo "Migrations and admin user creation will run automatically when the app starts in Azure"
+          echo "Azure App Service will execute the startup commands defined in the deployed package"
 
       - name: Done!
         run: echo "🚀 Deployment successful!"

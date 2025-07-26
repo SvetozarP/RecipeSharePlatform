@@ -124,3 +124,4 @@ backend/docs/api/search_api.md
 backend/DEPLOYMENT_GUIDE.md
 backend/fix_deployment.md
 backend/azure_deployment_fix.md
+backend/azure_startup_setup.md
