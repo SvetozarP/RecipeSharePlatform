@@ -46,6 +46,12 @@ DEBUG = False
 
 ALLOWED_HOSTS = [
     os.environ.get('WEBSITE_HOSTNAME', '*'),  # Azure App Service hostname
+    'recipe-api-dev98298.azurewebsites.net',  # Your Azure app hostname
+    '169.254.129.1',   # Azure internal health check IP
+    '169.254.129.2',   # Azure internal health check IP  
+    '169.254.129.18',  # Azure internal health check IP
+    '127.0.0.1',       # Localhost
+    'localhost',       # Localhost domain
 ]
 
 # Remove debug toolbar from installed apps

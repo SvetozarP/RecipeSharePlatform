@@ -119,8 +119,11 @@ jobs:
           slot-name: 'Production'
           package: 'release.zip'
 
-      - name: Run create_admin script
+      - name: Run production migrations and setup
         run: |
+          # Run migrations on production PostgreSQL database
+          python manage.py migrate --settings=config.settings.production
+          # Create admin user
           python manage.py create_admin --settings=config.settings.production
         env:
           DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
@@ -128,6 +131,11 @@ jobs:
           ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
           ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
 
       - name: Done!
         run: echo "🚀 Deployment successful!"
