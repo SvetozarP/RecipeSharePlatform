@@ -13,6 +13,12 @@ from core.models.base import BaseModel
 User = get_user_model()
 
 
+def validate_rating(value):
+    """Validate that rating is between 1 and 5."""
+    if not 1 <= value <= 5:
+        raise ValidationError(_('Rating must be between 1 and 5'))
+
+
 def validate_list(value):
     """Validate that value is a list."""
     if not isinstance(value, list):
@@ -319,6 +325,63 @@ class Recipe(BaseModel):
         """Get list of full category paths for this recipe."""
         return [category.full_path for category in self.categories.filter(is_active=True)]
 
+    @property
+    def average_rating(self):
+        """Calculate average rating for this recipe."""
+        from django.db.models import Avg
+        result = self.ratings.aggregate(avg_rating=Avg('rating'))
+        return round(result['avg_rating'], 2) if result['avg_rating'] else 0.0
+
+    @property
+    def rating_count(self):
+        """Get total number of ratings for this recipe."""
+        return self.ratings.count()
+
+    @property
+    def rating_distribution(self):
+        """Get distribution of ratings (1-5 stars)."""
+        from django.db.models import Count
+        distribution = {i: 0 for i in range(1, 6)}
+        ratings = self.ratings.values('rating').annotate(count=Count('rating'))
+        for rating in ratings:
+            distribution[rating['rating']] = rating['count']
+        return distribution
+
+    @property
+    def star_display(self):
+        """Return star display for average rating."""
+        avg = self.average_rating
+        full_stars = int(avg)
+        half_star = avg - full_stars >= 0.5
+        empty_stars = 5 - full_stars - (1 if half_star else 0)
+        
+        display = "★" * full_stars
+        if half_star:
+            display += "☆"
+        display += "☆" * empty_stars
+        return display
+
+    def update_rating_stats(self):
+        """Update cached rating statistics (can be extended for caching)."""
+        # This method can be extended to update cached rating statistics
+        # For now, it's a placeholder for future caching implementation
+        pass
+
+    def has_user_rated(self, user):
+        """Check if a specific user has rated this recipe."""
+        if not user.is_authenticated:
+            return False
+        return self.ratings.filter(user=user).exists()
+
+    def get_user_rating(self, user):
+        """Get the rating given by a specific user."""
+        if not user.is_authenticated:
+            return None
+        try:
+            return self.ratings.get(user=user)
+        except self.ratings.model.DoesNotExist:
+            return None
+
     def save(self, *args, **kwargs):
         """Override save to handle version increments."""
         if self.pk:
@@ -343,3 +406,98 @@ class Recipe(BaseModel):
             if getattr(self, field) != getattr(old_recipe, field):
                 return True
         return False
+
+
+class Rating(BaseModel):
+    """Model for recipe ratings and reviews."""
+
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+        help_text=_("Unique identifier for this rating")
+    )
+    
+    # Relationships
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='ratings',
+        help_text=_("Recipe being rated")
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='ratings',
+        help_text=_("User who created this rating")
+    )
+    
+    # Rating fields
+    rating = models.PositiveIntegerField(
+        validators=[validate_rating],
+        help_text=_("Rating value from 1 to 5 stars")
+    )
+    review = models.CharField(
+        blank=True,
+        max_length=2000,
+        help_text=_("Optional review text")
+    )
+    
+    # Additional metadata
+    is_verified_purchase = models.BooleanField(
+        default=False,
+        help_text=_("Whether this rating is from a verified user who made the recipe")
+    )
+    helpful_count = models.PositiveIntegerField(
+        default=0,
+        help_text=_("Number of users who found this review helpful")
+    )
+
+    class Meta:
+        verbose_name = _('rating')
+        verbose_name_plural = _('ratings')
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['recipe']),
+            models.Index(fields=['user']),
+            models.Index(fields=['rating']),
+            models.Index(fields=['created_at']),
+            models.Index(fields=['helpful_count']),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['recipe', 'user'],
+                name='unique_recipe_user_rating'
+            ),
+        ]
+
+    def __str__(self):
+        """Return string representation."""
+        return f"{self.user.email} rated {self.recipe.title} - {self.rating} stars"
+
+    @property
+    def star_display(self):
+        """Return star display representation."""
+        return "★" * self.rating + "☆" * (5 - self.rating)
+
+    def save(self, *args, **kwargs):
+        """Override save to update recipe rating statistics."""
+        is_new = self.pk is None
+        old_rating = None
+        
+        if not is_new:
+            try:
+                old_rating = Rating.objects.get(pk=self.pk).rating
+            except Rating.DoesNotExist:
+                pass
+        
+        super().save(*args, **kwargs)
+        
+        # Update recipe rating statistics
+        self.recipe.update_rating_stats()
+
+    def delete(self, *args, **kwargs):
+        """Override delete to update recipe rating statistics."""
+        recipe = self.recipe
+        super().delete(*args, **kwargs)
+        recipe.update_rating_stats()

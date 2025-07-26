@@ -6,7 +6,7 @@ import factory
 from django.contrib.auth import get_user_model
 from faker import Faker
 
-from ..models import Recipe, Category
+from ..models import Recipe, Category, Rating
 
 fake = Faker()
 User = get_user_model()
@@ -62,4 +62,18 @@ class RecipeFactory(factory.django.DjangoModelFactory):
     is_published = factory.LazyFunction(lambda: fake.boolean())
     tags = factory.LazyFunction(lambda: [
         fake.word() for _ in range(fake.random_int(min=1, max=5))
-    ]) 
+    ])
+
+
+class RatingFactory(factory.django.DjangoModelFactory):
+    """Factory for Rating model."""
+
+    class Meta:
+        model = Rating
+
+    recipe = factory.SubFactory(RecipeFactory)
+    user = factory.SubFactory('accounts.tests.factories.UserFactory')
+    rating = factory.LazyFunction(lambda: fake.random_int(min=1, max=5))
+    review = factory.LazyFunction(lambda: fake.paragraph())
+    is_verified_purchase = factory.LazyFunction(lambda: fake.boolean())
+    helpful_count = factory.LazyFunction(lambda: fake.random_int(min=0, max=20)) 

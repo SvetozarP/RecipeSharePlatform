@@ -9,7 +9,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q
 from django.utils.text import slugify
 
-from .models import Recipe, Category
+from .models import Recipe, Category, Rating
 from .serializers import (
     RecipeSerializer, 
     RecipeListSerializer, 
@@ -17,7 +17,12 @@ from .serializers import (
     RecipeUpdateSerializer,
     CategorySerializer,
     CategoryListSerializer,
-    CategoryTreeSerializer
+    CategoryTreeSerializer,
+    RatingSerializer,
+    RatingCreateSerializer,
+    RatingUpdateSerializer,
+    RatingListSerializer,
+    RecipeRatingStatsSerializer
 )
 from .services.recipe_service import recipe_service
 from core.services.storage_service import storage_service
@@ -475,3 +480,133 @@ class RecipeViewSet(viewsets.ViewSet):
             'page_size': page_size,
             'results': serializer.data
         })
+
+
+class RatingViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for managing recipe ratings.
+    
+    Provides CRUD operations for ratings with proper permissions and filtering.
+    """
+    queryset = Rating.objects.all()
+    serializer_class = RatingSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['recipe', 'rating', 'is_verified_purchase']
+    search_fields = ['review']
+    ordering_fields = ['rating', 'created_at', 'helpful_count']
+    ordering = ['-created_at']
+
+    def get_serializer_class(self):
+        """Return appropriate serializer based on action."""
+        if self.action == 'create':
+            return RatingCreateSerializer
+        elif self.action in ['update', 'partial_update']:
+            return RatingUpdateSerializer
+        elif self.action == 'list':
+            return RatingListSerializer
+        return RatingSerializer
+
+    def get_queryset(self):
+        """Filter queryset based on permissions and query parameters."""
+        queryset = Rating.objects.select_related('user', 'recipe')
+        
+        # Filter by recipe if provided
+        recipe_id = self.request.query_params.get('recipe_id')
+        if recipe_id:
+            queryset = queryset.filter(recipe_id=recipe_id)
+        
+        # Filter by user for own ratings
+        if self.action in ['update', 'partial_update', 'destroy']:
+            queryset = queryset.filter(user=self.request.user)
+        
+        return queryset
+
+    def perform_create(self, serializer):
+        """Create rating with current user."""
+        serializer.save(user=self.request.user)
+    
+    def create(self, request, *args, **kwargs):
+        """Create a new rating and return full details."""
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        rating = serializer.save(user=request.user)
+        
+        # Return full rating details using the main serializer
+        response_serializer = RatingSerializer(rating, context={'request': request})
+        headers = self.get_success_headers(response_serializer.data)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def perform_update(self, serializer):
+        """Ensure users can only update their own ratings."""
+        if serializer.instance.user != self.request.user:
+            raise permissions.PermissionDenied("You can only update your own ratings.")
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        """Ensure users can only delete their own ratings."""
+        if instance.user != self.request.user:
+            raise permissions.PermissionDenied("You can only delete your own ratings.")
+        super().perform_destroy(instance)
+
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
+    def mark_helpful(self, request, pk=None):
+        """Mark a rating as helpful."""
+        rating = self.get_object()
+        
+        # Prevent users from marking their own ratings as helpful
+        if rating.user == request.user:
+            return Response(
+                {'error': 'You cannot mark your own rating as helpful.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Simple increment for now - could be extended with user tracking
+        rating.helpful_count += 1
+        rating.save()
+        
+        return Response({
+            'message': 'Rating marked as helpful.',
+            'helpful_count': rating.helpful_count
+        })
+
+    @action(detail=False, methods=['get'])
+    def my_ratings(self, request):
+        """Get current user's ratings."""
+        if not request.user.is_authenticated:
+            return Response(
+                {'error': 'Authentication required.'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+        queryset = self.get_queryset().filter(user=request.user)
+        queryset = self.filter_queryset(queryset)
+        
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = RatingListSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        
+        serializer = RatingListSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def recipe_stats(self, request):
+        """Get rating statistics for a specific recipe."""
+        recipe_id = request.query_params.get('recipe_id')
+        if not recipe_id:
+            return Response(
+                {'error': 'recipe_id parameter is required.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            recipe = Recipe.objects.get(id=recipe_id)
+        except Recipe.DoesNotExist:
+            return Response(
+                {'error': 'Recipe not found.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        serializer = RecipeRatingStatsSerializer(recipe)
+        return Response(serializer.data)

@@ -4,7 +4,7 @@ Serializers for recipe data.
 from rest_framework import serializers
 from django.core.exceptions import ValidationError as DjangoValidationError
 
-from .models import Recipe, Category
+from .models import Recipe, Category, Rating
 from core.services.storage_service import storage_service
 
 
@@ -399,3 +399,130 @@ class RecipeListSerializer(serializers.ModelSerializer):
             'tags', 'created_at'
         ]
         read_only_fields = fields 
+
+
+class RatingSerializer(serializers.ModelSerializer):
+    """Serializer for Rating model with full details."""
+    
+    user_email = serializers.EmailField(source='user.email', read_only=True)
+    user_name = serializers.CharField(source='user.get_full_name', read_only=True)
+    recipe_title = serializers.CharField(source='recipe.title', read_only=True)
+    star_display = serializers.CharField(read_only=True)
+    
+    class Meta:
+        model = Rating
+        fields = [
+            'id', 'recipe', 'user', 'rating', 'review',
+            'is_verified_purchase', 'helpful_count',
+            'user_email', 'user_name', 'recipe_title', 'star_display',
+            'created_at', 'updated_at'
+        ]
+        read_only_fields = [
+            'id', 'user', 'user_email', 'user_name', 'recipe_title', 
+            'star_display', 'helpful_count', 'created_at', 'updated_at'
+        ]
+
+    def validate(self, data):
+        """Validate rating data."""
+        request = self.context.get('request')
+        if request and hasattr(request, 'user'):
+            recipe = data.get('recipe')
+            user = request.user
+            
+            # Check if user already rated this recipe (for create only)
+            if not self.instance and Rating.objects.filter(recipe=recipe, user=user).exists():
+                raise serializers.ValidationError({
+                    'recipe': 'You have already rated this recipe. Use update to modify your rating.'
+                })
+                
+            # Check if user is trying to rate their own recipe
+            if recipe and recipe.author == user:
+                raise serializers.ValidationError({
+                    'recipe': 'You cannot rate your own recipe.'
+                })
+        
+        return data
+
+    def create(self, validated_data):
+        """Create a new rating."""
+        request = self.context.get('request')
+        if request and hasattr(request, 'user'):
+            validated_data['user'] = request.user
+        return super().create(validated_data)
+
+
+class RatingCreateSerializer(serializers.ModelSerializer):
+    """Simplified serializer for creating ratings."""
+    
+    class Meta:
+        model = Rating
+        fields = ['recipe', 'rating', 'review']
+
+    def validate(self, data):
+        """Validate rating data."""
+        request = self.context.get('request')
+        if request and hasattr(request, 'user'):
+            recipe = data.get('recipe')
+            user = request.user
+            
+            # Check if user already rated this recipe
+            if Rating.objects.filter(recipe=recipe, user=user).exists():
+                raise serializers.ValidationError({
+                    'recipe': 'You have already rated this recipe.'
+                })
+                
+            # Check if user is trying to rate their own recipe
+            if recipe and recipe.author == user:
+                raise serializers.ValidationError({
+                    'recipe': 'You cannot rate your own recipe.'
+                })
+        
+        return data
+
+    def create(self, validated_data):
+        """Create a new rating."""
+        request = self.context.get('request')
+        if request and hasattr(request, 'user'):
+            validated_data['user'] = request.user
+        return super().create(validated_data)
+
+
+class RatingUpdateSerializer(serializers.ModelSerializer):
+    """Serializer for updating ratings."""
+    
+    class Meta:
+        model = Rating
+        fields = ['rating', 'review']
+
+
+class RatingListSerializer(serializers.ModelSerializer):
+    """Lightweight serializer for listing ratings."""
+    
+    user_name = serializers.CharField(source='user.get_full_name', read_only=True)
+    star_display = serializers.CharField(read_only=True)
+    
+    class Meta:
+        model = Rating
+        fields = [
+            'id', 'rating', 'review', 'user_name', 'star_display',
+            'helpful_count', 'is_verified_purchase', 'created_at'
+        ]
+        read_only_fields = fields
+
+
+class RecipeRatingStatsSerializer(serializers.Serializer):
+    """Serializer for recipe rating statistics."""
+    
+    average_rating = serializers.FloatField()
+    rating_count = serializers.IntegerField()
+    rating_distribution = serializers.DictField()
+    star_display = serializers.CharField()
+    
+    def to_representation(self, recipe):
+        """Convert recipe instance to rating stats representation."""
+        return {
+            'average_rating': recipe.average_rating,
+            'rating_count': recipe.rating_count,
+            'rating_distribution': recipe.rating_distribution,
+            'star_display': recipe.star_display,
+        }
