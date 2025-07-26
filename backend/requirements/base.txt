@@ -1,17 +1,14 @@
+# Base requirements for all environments
 Django>=4.2,<4.3
 djangorestframework>=3.14,<3.15
 djangorestframework-simplejwt>=5.3,<5.4
 django-cors-headers>=4.3,<4.4
+Pillow>=10.0,<10.1
+python-decouple>=3.8,<3.9
+
+# File handling and storage
+django-storages>=1.14,<1.15
+
+# Development tools (for development environment)
 django-debug-toolbar>=4.2,<4.3
-django-filter>=23.5,<23.6
-pytest>=7.4,<7.5
-pytest-django>=4.7,<4.8
-pytest-cov>=4.1,<4.2
-pytest-mock>=3.12,<3.13
-pytest-xdist>=3.5,<3.6
-Faker>=20.1,<20.2
-factory-boy>=3.3,<3.4
-pytz>=2024.2
-# File handling and image processing
-Pillow>=10.1,<10.2
-django-storages>=1.14,<1.15 
+django-filter>=23.5,<23.6 
