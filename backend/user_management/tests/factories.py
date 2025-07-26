@@ -41,6 +41,23 @@ class UserProfileFactory(factory.django.DjangoModelFactory):
     birth_date = factory.LazyFunction(lambda: fake.date())
     is_public_profile = True
 
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        """Override create to get existing profile from signal and update it."""
+        user = kwargs.pop('user')
+        # Get the profile that was created by the signal
+        try:
+            profile = user.profile
+            # Update it with the factory data
+            for key, value in kwargs.items():
+                setattr(profile, key, value)
+            profile.save()
+            return profile
+        except UserProfile.DoesNotExist:
+            # Fallback: create normally if no profile exists
+            kwargs['user'] = user
+            return super()._create(model_class, *args, **kwargs)
+
 
 class UserPreferencesFactory(factory.django.DjangoModelFactory):
     """Factory for UserPreferences model."""
@@ -55,4 +72,21 @@ class UserPreferencesFactory(factory.django.DjangoModelFactory):
     show_email = False
     timezone = 'UTC'
     language = 'en'
-    theme = 'light' 
+    theme = 'light'
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        """Override create to get existing preferences from signal and update them."""
+        user = kwargs.pop('user')
+        # Get the preferences that were created by the signal
+        try:
+            preferences = user.preferences
+            # Update them with the factory data
+            for key, value in kwargs.items():
+                setattr(preferences, key, value)
+            preferences.save()
+            return preferences
+        except UserPreferences.DoesNotExist:
+            # Fallback: create normally if no preferences exist
+            kwargs['user'] = user
+            return super()._create(model_class, *args, **kwargs) 
