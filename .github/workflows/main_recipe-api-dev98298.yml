@@ -108,5 +108,15 @@ jobs:
           slot-name: 'Production'
           package: 'release.zip'
 
+      - name: Run create_admin script
+        run: |
+          python manage.py create_admin --settings=config.settings.production
+        env:
+          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}          
+
       - name: Done!
         run: echo "🚀 Deployment successful!"
