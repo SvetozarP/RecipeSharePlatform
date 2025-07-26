@@ -22,9 +22,14 @@ from .serializers import (
     RatingCreateSerializer,
     RatingUpdateSerializer,
     RatingListSerializer,
-    RecipeRatingStatsSerializer
+    RecipeRatingStatsSerializer,
+    SearchResultSerializer,
+    SearchSuggestionsSerializer,
+    AdvancedSearchSerializer,
+    SearchResultsSerializer
 )
 from .services.recipe_service import recipe_service
+from .services.search_service import search_service
 from core.services.storage_service import storage_service
 
 
@@ -480,6 +485,155 @@ class RecipeViewSet(viewsets.ViewSet):
             'page_size': page_size,
             'results': serializer.data
         })
+    
+    @action(detail=False, methods=['get'], url_path='search')
+    def search(self, request):
+        """
+        Basic text search endpoint for recipes.
+        
+        Query Parameters:
+        - q: Search query string
+        - page: Page number (default: 1)
+        - page_size: Results per page (default: 20, max: 100)
+        - order_by: Ordering method (default: relevance)
+        """
+        import time
+        start_time = time.time()
+        
+        query = request.query_params.get('q', '').strip()
+        if not query:
+            return Response({
+                'error': 'Search query is required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Basic search parameters
+        order_by = request.query_params.get('order_by', 'relevance')
+        page_number = int(request.query_params.get('page', 1))
+        page_size = min(int(request.query_params.get('page_size', 20)), 100)
+        
+        # Perform search
+        try:
+            results = search_service.full_text_search(query, order_by=order_by)
+            
+            # Pagination
+            from django.core.paginator import Paginator
+            paginator = Paginator(results, page_size)
+            page_obj = paginator.get_page(page_number)
+            
+            # Serialize results
+            serializer = SearchResultSerializer(page_obj, many=True)
+            
+            search_time = time.time() - start_time
+            
+            return Response({
+                'count': paginator.count,
+                'num_pages': paginator.num_pages,
+                'current_page': page_number,
+                'page_size': page_size,
+                'search_time': round(search_time, 3),
+                'results': serializer.data
+            })
+            
+        except Exception as e:
+            return Response({
+                'error': f'Search failed: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    @action(detail=False, methods=['post'], url_path='advanced-search')
+    def advanced_search(self, request):
+        """
+        Advanced search endpoint with multiple filter criteria.
+        
+        Request Body: AdvancedSearchSerializer data
+        """
+        import time
+        start_time = time.time()
+        
+        serializer = AdvancedSearchSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        data = serializer.validated_data
+        
+        # Extract pagination parameters
+        page_number = data.pop('page', 1)
+        page_size = data.pop('page_size', 20)
+        
+        try:
+            # Perform advanced search
+            results = search_service.advanced_search(**data)
+            
+            # Pagination
+            from django.core.paginator import Paginator
+            paginator = Paginator(results, page_size)
+            page_obj = paginator.get_page(page_number)
+            
+            # Serialize results
+            serializer = SearchResultSerializer(page_obj, many=True)
+            
+            search_time = time.time() - start_time
+            
+            return Response({
+                'count': paginator.count,
+                'num_pages': paginator.num_pages,
+                'current_page': page_number,
+                'page_size': page_size,
+                'search_time': round(search_time, 3),
+                'results': serializer.data
+            })
+            
+        except Exception as e:
+            return Response({
+                'error': f'Advanced search failed: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    @action(detail=False, methods=['get'], url_path='search-suggestions')
+    def search_suggestions(self, request):
+        """
+        Get search suggestions for autocomplete functionality.
+        
+        Query Parameters:
+        - q: Partial search query (minimum 2 characters)
+        - limit: Maximum suggestions per category (default: 10)
+        """
+        query = request.query_params.get('q', '').strip()
+        limit = min(int(request.query_params.get('limit', 10)), 50)
+        
+        if len(query) < 2:
+            return Response({
+                'error': 'Query must be at least 2 characters long'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            suggestions = search_service.get_search_suggestions(query, limit)
+            serializer = SearchSuggestionsSerializer(suggestions)
+            return Response(serializer.data)
+            
+        except Exception as e:
+            return Response({
+                'error': f'Failed to get suggestions: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    @action(detail=False, methods=['get'], url_path='popular-searches')
+    def popular_searches(self, request):
+        """
+        Get popular search terms based on recipe content analysis.
+        
+        Query Parameters:
+        - limit: Maximum number of popular searches (default: 10)
+        """
+        limit = min(int(request.query_params.get('limit', 10)), 50)
+        
+        try:
+            popular_searches = search_service.get_popular_searches(limit)
+            return Response({
+                'popular_searches': popular_searches
+            })
+            
+        except Exception as e:
+            return Response({
+                'error': f'Failed to get popular searches: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class RatingViewSet(viewsets.ModelViewSet):

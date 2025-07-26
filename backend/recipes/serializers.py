@@ -526,3 +526,142 @@ class RecipeRatingStatsSerializer(serializers.Serializer):
             'rating_distribution': recipe.rating_distribution,
             'star_display': recipe.star_display,
         }
+
+
+class SearchResultSerializer(serializers.ModelSerializer):
+    """Serializer for search result recipes with additional search metadata."""
+    
+    author_name = serializers.CharField(source='author.get_full_name', read_only=True)
+    author_username = serializers.CharField(source='author.username', read_only=True)
+    total_time = serializers.IntegerField(read_only=True)
+    main_image_url = serializers.CharField(read_only=True)
+    thumbnail_url = serializers.CharField(read_only=True)
+    
+    # Category information
+    categories = CategoryListSerializer(many=True, read_only=True)
+    category_names = serializers.ListField(read_only=True)
+    
+    # Search-specific fields
+    search_rank = serializers.FloatField(source='rank', read_only=True, default=0.0)
+    search_snippet = serializers.SerializerMethodField()
+    
+    # Rating information
+    average_rating = serializers.SerializerMethodField()
+    rating_count = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Recipe
+        fields = [
+            'id', 'title', 'description', 'prep_time', 'cook_time', 'total_time',
+            'servings', 'difficulty', 'cooking_method', 'main_image_url', 
+            'thumbnail_url', 'author', 'author_name', 'author_username', 
+            'categories', 'category_names', 'tags', 'created_at',
+            'search_rank', 'search_snippet', 'average_rating', 'rating_count'
+        ]
+        read_only_fields = [
+            'id', 'author', 'created_at', 'total_time', 'main_image_url', 
+            'thumbnail_url', 'category_names', 'search_rank', 'search_snippet',
+            'average_rating', 'rating_count'
+        ]
+    
+    def get_search_snippet(self, obj):
+        """Generate a search snippet highlighting relevant content."""
+        # For now, return a truncated description
+        # This can be enhanced to highlight search terms
+        description = obj.description
+        if len(description) > 150:
+            return description[:147] + "..."
+        return description
+    
+    def get_average_rating(self, obj):
+        """Get average rating for the recipe."""
+        if hasattr(obj, 'avg_rating') and obj.avg_rating:
+            return round(obj.avg_rating, 1)
+        return None
+    
+    def get_rating_count(self, obj):
+        """Get rating count for the recipe."""
+        if hasattr(obj, 'rating_count'):
+            return obj.rating_count
+        return 0
+
+
+class SearchSuggestionsSerializer(serializers.Serializer):
+    """Serializer for search suggestions response."""
+    
+    recipes = serializers.ListField(child=serializers.CharField(), read_only=True)
+    ingredients = serializers.ListField(child=serializers.CharField(), read_only=True)
+    categories = serializers.ListField(child=serializers.CharField(), read_only=True)
+    tags = serializers.ListField(child=serializers.CharField(), read_only=True)
+    authors = serializers.ListField(child=serializers.CharField(), read_only=True)
+    
+    class Meta:
+        fields = ['recipes', 'ingredients', 'categories', 'tags', 'authors']
+
+
+class AdvancedSearchSerializer(serializers.Serializer):
+    """Serializer for advanced search request parameters."""
+    
+    query = serializers.CharField(required=False, allow_blank=True)
+    ingredients = serializers.ListField(child=serializers.CharField(), required=False)
+    exclude_ingredients = serializers.ListField(child=serializers.CharField(), required=False)
+    categories = serializers.ListField(child=serializers.CharField(), required=False)
+    difficulty = serializers.ChoiceField(
+        choices=['easy', 'medium', 'hard'], 
+        required=False, 
+        allow_blank=True
+    )
+    cooking_method = serializers.ChoiceField(
+        choices=['baking', 'frying', 'boiling', 'grilling', 'steaming', 'other'], 
+        required=False, 
+        allow_blank=True
+    )
+    max_prep_time = serializers.IntegerField(min_value=1, required=False)
+    max_cook_time = serializers.IntegerField(min_value=1, required=False)
+    max_total_time = serializers.IntegerField(min_value=1, required=False)
+    min_servings = serializers.IntegerField(min_value=1, required=False)
+    max_servings = serializers.IntegerField(min_value=1, required=False)
+    dietary_restrictions = serializers.ListField(
+        child=serializers.ChoiceField(choices=[
+            'vegetarian', 'vegan', 'gluten-free', 'dairy-free', 
+            'nut-free', 'low-carb', 'paleo', 'keto'
+        ]), 
+        required=False
+    )
+    author = serializers.CharField(required=False, allow_blank=True)
+    min_rating = serializers.FloatField(min_value=1.0, max_value=5.0, required=False)
+    has_nutrition_info = serializers.BooleanField(required=False)
+    tags = serializers.ListField(child=serializers.CharField(), required=False)
+    order_by = serializers.ChoiceField(
+        choices=[
+            'relevance', 'rating', 'popularity', 'newest', 'oldest', 
+            'title', 'cook_time', 'prep_time', 'total_time'
+        ], 
+        default='relevance', 
+        required=False
+    )
+    page = serializers.IntegerField(min_value=1, default=1, required=False)
+    page_size = serializers.IntegerField(min_value=1, max_value=100, default=20, required=False)
+    
+    class Meta:
+        fields = [
+            'query', 'ingredients', 'exclude_ingredients', 'categories', 
+            'difficulty', 'cooking_method', 'max_prep_time', 'max_cook_time', 
+            'max_total_time', 'min_servings', 'max_servings', 'dietary_restrictions',
+            'author', 'min_rating', 'has_nutrition_info', 'tags', 'order_by',
+            'page', 'page_size'
+        ]
+
+
+class SearchResultsSerializer(serializers.Serializer):
+    """Serializer for paginated search results."""
+    
+    count = serializers.IntegerField(read_only=True)
+    num_pages = serializers.IntegerField(read_only=True)
+    current_page = serializers.IntegerField(read_only=True)
+    page_size = serializers.IntegerField(read_only=True)
+    results = SearchResultSerializer(many=True, read_only=True)
+    search_time = serializers.FloatField(read_only=True, required=False)
+    
+    class Meta:
+        fields = ['count', 'num_pages', 'current_page', 'page_size', 'results', 'search_time']
