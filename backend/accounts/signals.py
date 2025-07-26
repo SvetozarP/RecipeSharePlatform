@@ -8,5 +8,18 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-# Add signal handlers here when needed
-# For now, this file exists to prevent import errors 
+
+@receiver(post_save, sender=User)
+def create_user_profile_and_preferences(sender, instance, created, **kwargs):
+    """
+    Create user profile and preferences when a user is created.
+    """
+    if created:
+        from user_management.models.user_profile import UserProfile
+        from user_management.models.user_preferences import UserPreferences
+        
+        # Create profile
+        UserProfile.objects.create(user=instance)
+        
+        # Create preferences
+        UserPreferences.objects.create(user=instance) 

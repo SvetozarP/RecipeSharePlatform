@@ -17,5 +17,5 @@ urlpatterns = [
     path('profile/', ProfileView.as_view(), name='profile'),
     path('profile/preferences/', PreferencesView.as_view(), name='preferences'),
     path('profile/visibility/', ProfileVisibilityView.as_view(), name='profile-visibility'),
-    path('profile/<int:user_id>/', PublicProfileView.as_view(), name='public-profile'),
+    path('profile/<uuid:user_id>/', PublicProfileView.as_view(), name='public-profile'),
 ] 

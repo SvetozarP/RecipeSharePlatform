@@ -6,12 +6,13 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
-# Import health check view
-from core.views.health import APIHealthCheckView
+# Import health check views
+from core.views.health import APIHealthCheckView, SimpleHealthCheckView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/health/', APIHealthCheckView.as_view(), name='health_check'),
+    path('health/', SimpleHealthCheckView.as_view(), name='simple_health_check'),
+    path('api/health/', APIHealthCheckView.as_view(), name='api_health_check'),
     path('api/v1/auth/', include('accounts.urls')),
     path('api/v1/users/', include('user_management.urls')),
     path('api/v1/recipes/', include('recipes.urls', namespace='recipes')),

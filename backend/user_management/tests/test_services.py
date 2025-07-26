@@ -62,7 +62,8 @@ class TestAuthService:
 
     def test_login_user(self, auth_service, user, user_data):
         """Test user login."""
-        tokens = auth_service.login_user(user_data['email'], user_data['password'])
+        # Use the actual user's email and the known password from factory
+        tokens = auth_service.login_user(user.email, 'testpass123')
         
         assert 'access_token' in tokens
         assert 'refresh_token' in tokens

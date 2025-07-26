@@ -33,20 +33,18 @@ class UserService(BaseService):
         for k in profile_fields:
             kwargs.pop(k, None)
         
-        # Create user without profile and preferences
+        # Create user - profile and preferences will be created automatically by signal
         user = User(**kwargs)
         user.set_password(password)
         user.full_clean()
         user.save()
         
-        # Create associated profile and preferences
-        profile = self.repository.create_profile(user)
+        # Update profile with any additional data after signal creates it
         if profile_data:
+            profile = user.profile  # Profile now exists due to signal
             for key, value in profile_data.items():
                 setattr(profile, key, value)
             profile.save()
-        
-        self.repository.create_preferences(user)
         
         # Publish event
         EventBus.publish('user.registered', {
