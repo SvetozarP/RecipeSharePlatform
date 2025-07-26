@@ -6,6 +6,9 @@ import os
 from datetime import timedelta
 from .base import *  # noqa
 
+# Add WhiteNoise middleware for static file serving in production
+MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-change-this-in-production')
 
@@ -100,9 +103,17 @@ CORS_ALLOWED_ORIGINS = [
     os.environ.get('FRONTEND_URL', 'https://recipe-frontend-prod.azurestaticapps.net'),
 ]
 
-# Static files
+# Static files configuration for production
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# WhiteNoise configuration
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Enable static file compression and caching
+WHITENOISE_USE_FINDERS = True
+WHITENOISE_AUTOREFRESH = True
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 

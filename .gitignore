@@ -121,3 +121,4 @@ terraform/
 backend/docs/api/categories.md
 backend/docs/api/rating_system.md
 backend/docs/api/search_api.md
+backend/DEPLOYMENT_GUIDE.md
