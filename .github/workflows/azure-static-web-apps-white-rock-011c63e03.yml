@@ -67,3 +67,4 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_WHITE_ROCK_011C63E03 }}
           action: "close"
+          app_location: "/frontend"
