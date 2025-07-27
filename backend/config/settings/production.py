@@ -93,6 +93,7 @@ EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', '')
+EMAIL_SUBJECT_PREFIX = '[Recipe Sharing] '
 
 # If email settings are not configured, use console backend
 if not (EMAIL_HOST_USER and EMAIL_HOST_PASSWORD):
