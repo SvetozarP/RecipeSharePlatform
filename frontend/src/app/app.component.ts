@@ -60,7 +60,7 @@ import { Observable } from 'rxjs';
       <!-- Footer -->
       <footer class="bg-white border-t border-gray-200 mt-auto">
         <div class="max-w-7xl mx-auto py-6 px-4 text-center text-gray-600">
-          <p>&copy; 2024 Recipe Sharing Platform. Built with Angular 20 & Django REST Framework.</p>
+          <p>&copy; 2025 Recipe Sharing Platform. Built with Angular 20 & Django REST Framework.</p>
         </div>
       </footer>
     </div>
