@@ -100,7 +100,7 @@ if not (EMAIL_HOST_USER and EMAIL_HOST_PASSWORD):
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Frontend URL
-FRONTEND_URL = os.environ.get('FRONTEND_URL', 'https://recipe-sharing.azurewebsites.net')
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'https://white-rock-011c63e03.2.azurestaticapps.net')
 
 # Security settings
 SECURE_SSL_REDIRECT = True
@@ -113,7 +113,7 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # CORS settings for production
 CORS_ALLOWED_ORIGINS = [
-    os.environ.get('FRONTEND_URL', 'https://recipe-frontend-prod.azurestaticapps.net'),
+    os.environ.get('FRONTEND_URL', 'https://white-rock-011c63e03.2.azurestaticapps.net'),
 ]
 
 # Static files configuration for production
