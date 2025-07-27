@@ -248,7 +248,7 @@ class RecipeSearchService:
         # Category suggestions
         categories = Category.objects.filter(
             name__icontains=query,
-            active=True
+            is_active=True
         ).values_list('name', flat=True)[:limit]
         suggestions['categories'] = list(categories)
         
@@ -290,7 +290,7 @@ class RecipeSearchService:
         popular_categories = Category.objects.annotate(
             recipe_count=Count('recipes', filter=Q(recipes__is_published=True))
         ).filter(
-            active=True,
+            is_active=True,
             recipe_count__gt=0
         ).order_by('-recipe_count').values_list('name', flat=True)[:limit // 2]
         
