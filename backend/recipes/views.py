@@ -158,7 +158,7 @@ class RecipeViewSet(viewsets.ViewSet):
     
     Provides CRUD operations for recipes including image upload and processing.
     """
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     parser_classes = [MultiPartParser, FormParser, JSONParser]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['difficulty', 'cooking_method', 'is_published', 'author', 'categories']
@@ -172,7 +172,11 @@ class RecipeViewSet(viewsets.ViewSet):
         
         # Filter by published status for non-owners
         user = self.request.user
-        if not user.is_staff:
+        if not user.is_authenticated:
+            # Anonymous users can only see published recipes
+            queryset = queryset.filter(is_published=True)
+        elif not user.is_staff:
+            # Authenticated non-staff users can see published recipes and their own
             queryset = queryset.filter(
                 Q(is_published=True) | Q(author=user)
             )
@@ -244,11 +248,20 @@ class RecipeViewSet(viewsets.ViewSet):
             recipe = self.get_queryset().get(pk=pk)
             
             # Check permissions
-            if not recipe.is_published and recipe.author != request.user and not request.user.is_staff:
-                return Response(
-                    {'error': 'Recipe not found'},
-                    status=status.HTTP_404_NOT_FOUND
-                )
+            user = request.user
+            if not recipe.is_published:
+                if not user.is_authenticated:
+                    # Anonymous users cannot see unpublished recipes
+                    return Response(
+                        {'error': 'Recipe not found'},
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+                elif recipe.author != user and not user.is_staff:
+                    # Authenticated users can only see their own unpublished recipes or if they're staff
+                    return Response(
+                        {'error': 'Recipe not found'},
+                        status=status.HTTP_404_NOT_FOUND
+                    )
             
             serializer = RecipeSerializer(recipe)
             return Response(serializer.data)
