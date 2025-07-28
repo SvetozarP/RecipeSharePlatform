@@ -107,7 +107,6 @@ coverage.xml
 *.tmp
 *~
 
-.cursor/
 .env/
 .env.local/
 .env.development.local/
@@ -118,10 +117,5 @@ coverage.xml
 .env.production/
 devel/
 terraform/
-backend/docs/api/categories.md
-backend/docs/api/rating_system.md
-backend/docs/api/search_api.md
-backend/DEPLOYMENT_GUIDE.md
-backend/fix_deployment.md
-backend/azure_deployment_fix.md
-backend/azure_startup_setup.md
+*.md
+*.mdc
