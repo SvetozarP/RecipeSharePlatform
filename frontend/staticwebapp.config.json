@@ -1,0 +1,93 @@
+{
+  "routes": [
+    {
+      "route": "/api/*",
+      "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "/assets/*",
+      "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "*.js",
+      "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "*.css",
+      "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "*.ico",
+      "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "*.png",
+      "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "*.jpg",
+      "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "*.jpeg",
+      "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "*.svg",
+      "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "*.woff",
+      "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "*.woff2",
+      "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "*.ttf",
+      "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "*.eot",
+      "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "/*",
+      "serve": "/index.html",
+      "statusCode": 200
+    }
+  ],
+  "responseOverrides": {
+    "400": {
+      "redirect": "/",
+      "statusCode": 302
+    },
+    "401": {
+      "redirect": "/auth/login",
+      "statusCode": 302
+    },
+    "403": {
+      "redirect": "/",
+      "statusCode": 302
+    },
+    "404": {
+      "redirect": "/",
+      "statusCode": 302
+    }
+  },
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": ["/assets/*", "/*.{js,css,ico,png,jpg,jpeg,svg,woff,woff2,ttf,eot}"]
+  },
+  "mimeTypes": {
+    ".json": "application/json",
+    ".js": "application/javascript",
+    ".css": "text/css"
+  },
+  "globalHeaders": {
+    "Cache-Control": "no-cache, no-store, must-revalidate",
+    "Pragma": "no-cache",
+    "Expires": "0"
+  }
+} 
