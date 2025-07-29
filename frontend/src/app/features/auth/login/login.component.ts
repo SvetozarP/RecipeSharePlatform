@@ -195,6 +195,7 @@ export class LoginComponent implements OnInit, OnDestroy {
       const loginData: LoginRequest = {
         email: this.loginForm.value.email,
         password: this.loginForm.value.password,
+        remember_me: this.loginForm.value.rememberMe
       };
 
       this.authService.login(loginData)
@@ -224,9 +225,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   private handleLoginError(error: any): void {
-    if (error.status === 400) {
-      this.errorMessage = 'Invalid email or password. Please check your credentials.';
-    } else if (error.status === 401) {
+    if (error.status === 401) {
       this.errorMessage = 'Invalid email or password. Please try again.';
     } else if (error.status === 429) {
       this.errorMessage = 'Too many login attempts. Please try again later.';

@@ -16,10 +16,10 @@ urlpatterns = [
     path('logout/', views.LogoutView.as_view(), name='logout'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     
-    # Password management
-    path('change-password/', views.ChangePasswordView.as_view(), name='change_password'),
-    path('password-reset/', views.PasswordResetRequestView.as_view(), name='password_reset'),
-    path('password-reset-confirm/', views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    # Password management (matching test expectations)
+    path('password/change/', views.ChangePasswordView.as_view(), name='password_change'),
+    path('password/reset/', views.PasswordResetRequestView.as_view(), name='password_reset'),
+    path('password/reset/confirm/', views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     
     # Email verification
     path('verify-email/<str:uidb64>/<str:token>/', views.EmailVerificationView.as_view(), name='verify_email'),
