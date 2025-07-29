@@ -1,27 +1,36 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormControl, FormGroup } from '@angular/forms';
+import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { MaterialModule } from '../../../shared/material.module';
-import { RecipeCardComponent, RecipeSkeletonComponent } from '../../../shared/components';
-import { RecipeService } from '../../../core/services';
-import { AuthService } from '../../../core/services';
+import { RecipeCardComponent } from '../../../shared/components/recipe-card/recipe-card.component';
+import { RecipeSkeletonComponent } from '../../../shared/components/recipe-skeleton/recipe-skeleton.component';
+import { RecipeService } from '../../../core/services/recipe.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { Subject, BehaviorSubject, Observable, of } from 'rxjs';
+import { takeUntil, debounceTime, distinctUntilChanged, switchMap, catchError } from 'rxjs/operators';
 import { 
   RecipeListItem, 
   RecipeSearchParams, 
   Category, 
+  SearchSuggestion,
   SORT_OPTIONS, 
   DIFFICULTY_OPTIONS, 
-  DIETARY_RESTRICTION_OPTIONS,
-  FilterOption,
-  SearchSuggestion
+  DIETARY_RESTRICTION_OPTIONS 
 } from '../../../shared/models/recipe.models';
-import { Subject, Observable, BehaviorSubject, combineLatest, of } from 'rxjs';
-import { FormControl } from '@angular/forms';
-import { debounceTime, distinctUntilChanged, takeUntil, switchMap, tap, catchError, startWith } from 'rxjs/operators';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatButtonToggleChange } from '@angular/material/button-toggle';
 import { MatSelectChange } from '@angular/material/select';
+import { MatSlideToggle } from '@angular/material/slide-toggle';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatCard } from '@angular/material/card';
+import { MatFormField } from '@angular/material/form-field';
+import { MatInput } from '@angular/material/input';
+import { MatIcon } from '@angular/material/icon';
+import { MatAutocomplete } from '@angular/material/autocomplete';
+import { MatOption } from '@angular/material/core';
+import { MatSpinner } from '@angular/material/progress-spinner';
+import { MatTooltip } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-recipe-list',
@@ -32,7 +41,8 @@ import { MatSelectChange } from '@angular/material/select';
     ReactiveFormsModule, 
     MaterialModule, 
     RecipeCardComponent, 
-    RecipeSkeletonComponent
+    RecipeSkeletonComponent,
+    MatSlideToggle
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -106,6 +116,15 @@ import { MatSelectChange } from '@angular/material/select';
             </mat-select>
           </mat-form-field>
 
+          <!-- Pagination/Infinite Scroll Toggle -->
+          <mat-slide-toggle 
+            [checked]="!usePagination"
+            (change)="togglePaginationMode()"
+            class="scroll-toggle"
+            matTooltip="Toggle between pagination and infinite scroll">
+            Infinite Scroll
+          </mat-slide-toggle>
+
           <mat-button-toggle-group 
             [value]="viewMode" 
             (change)="onViewModeChange($event)"
@@ -141,6 +160,14 @@ import { MatSelectChange } from '@angular/material/select';
           </app-recipe-card>
         </div>
 
+        <!-- Infinite Scroll Trigger -->
+        <div #scrollTrigger class="scroll-trigger" *ngIf="!usePagination && hasMoreData && !loading">
+          <div class="loading-more" *ngIf="loadingMore">
+            <mat-spinner diameter="40"></mat-spinner>
+            <p>Loading more recipes...</p>
+          </div>
+        </div>
+
         <!-- Empty State -->
         <div class="empty-state" *ngIf="!loading && recipes.length === 0">
           <mat-icon class="empty-icon">restaurant_menu</mat-icon>
@@ -164,8 +191,8 @@ import { MatSelectChange } from '@angular/material/select';
         </div>
       </div>
 
-      <!-- Pagination -->
-      <div class="pagination-section" *ngIf="!loading && totalRecipes && totalRecipes > 0">
+      <!-- Pagination (only in pagination mode) -->
+      <div class="pagination-section" *ngIf="usePagination && !loading && totalRecipes && totalRecipes > 0">
         <mat-paginator
           [length]="totalRecipes || 0"
           [pageSize]="pageSize"
@@ -376,6 +403,31 @@ import { MatSelectChange } from '@angular/material/select';
       margin-top: 32px;
     }
 
+    .scroll-toggle {
+      margin-left: 16px;
+    }
+
+    .scroll-trigger {
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 20px 0;
+    }
+
+    .loading-more {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      color: #666;
+    }
+
+    .loading-more p {
+      margin-top: 10px;
+      font-size: 0.9rem;
+    }
+
     @media (max-width: 768px) {
       .recipe-list-container {
         padding: 16px;
@@ -418,7 +470,10 @@ import { MatSelectChange } from '@angular/material/select';
   `]
 })
 export class RecipeListComponent implements OnInit, OnDestroy {
+  @ViewChild('scrollTrigger') scrollTrigger!: ElementRef;
+  
   private destroy$ = new Subject<void>();
+  private intersectionObserver?: IntersectionObserver;
   
   // Form controls
   searchControl!: FormControl;
@@ -427,7 +482,12 @@ export class RecipeListComponent implements OnInit, OnDestroy {
   // State
   recipes: RecipeListItem[] = [];
   loading = false;
+  loadingMore = false;
   error: string | null = null;
+  hasMoreData = true;
+  
+  // Pagination vs Infinite Scroll
+  usePagination = true; // Toggle between pagination and infinite scroll
   
   // Pagination
   currentPage = 1;
@@ -473,12 +533,100 @@ export class RecipeListComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    this.cleanupInfiniteScroll();
   }
 
   private initializeComponent(): void {
     this.setupSearchSuggestions();
     this.setupSearchTrigger();
     this.loadRecipes();
+    
+    // Setup infinite scroll after view init
+    setTimeout(() => {
+      if (!this.usePagination) {
+        this.setupInfiniteScroll();
+      }
+    }, 100);
+  }
+
+  private setupInfiniteScroll(): void {
+    if (!this.scrollTrigger?.nativeElement || this.intersectionObserver) {
+      return;
+    }
+
+    this.intersectionObserver = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry.isIntersecting && !this.loading && !this.loadingMore && this.hasMoreData) {
+          this.loadMoreRecipes();
+        }
+      },
+      {
+        threshold: 0.1,
+        rootMargin: '100px'
+      }
+    );
+
+    this.intersectionObserver.observe(this.scrollTrigger.nativeElement);
+  }
+
+  private cleanupInfiniteScroll(): void {
+    if (this.intersectionObserver) {
+      this.intersectionObserver.disconnect();
+      this.intersectionObserver = undefined;
+    }
+  }
+
+  private loadMoreRecipes(): void {
+    if (this.loadingMore || !this.hasMoreData || this.usePagination) {
+      return;
+    }
+
+    this.loadingMore = true;
+    const nextPage = Math.floor(this.recipes.length / this.pageSize) + 1;
+    
+    const searchParams = {
+      ...this.buildSearchParams(),
+      page: nextPage
+    };
+
+    const hasSearchQuery = searchParams.q && searchParams.q.length > 0;
+    const recipeObservable = hasSearchQuery
+      ? this.recipeService.searchRecipes(searchParams)
+      : this.recipeService.getRecipes(searchParams);
+
+    recipeObservable.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (response) => {
+        const newRecipes = response.results || [];
+        this.recipes = [...this.recipes, ...newRecipes];
+        this.hasMoreData = newRecipes.length === this.pageSize;
+        this.loadingMore = false;
+        this.cdr.markForCheck();
+      },
+      error: (error) => {
+        this.loadingMore = false;
+        this.snackBar.open('Failed to load more recipes', 'Close', { duration: 3000 });
+        this.cdr.markForCheck();
+        console.error('Error loading more recipes:', error);
+      }
+    });
+  }
+
+  togglePaginationMode(): void {
+    this.usePagination = !this.usePagination;
+    
+    if (this.usePagination) {
+      this.cleanupInfiniteScroll();
+      this.currentPage = 1;
+      this.loadRecipes();
+    } else {
+      this.currentPage = 1;
+      this.hasMoreData = true;
+      this.loadRecipes();
+      setTimeout(() => this.setupInfiniteScroll(), 100);
+    }
   }
 
   private setupSearchTrigger(): void {
@@ -525,6 +673,12 @@ export class RecipeListComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.error = null;
     
+    // Reset recipes for new search/filter/sort unless we're in infinite scroll mode and loading more
+    if (this.usePagination || this.currentPage === 1) {
+      this.recipes = [];
+      this.hasMoreData = true;
+    }
+    
     const searchParams = this.buildSearchParams();
     
     // Use searchRecipes for text search, getRecipes for basic listing
@@ -538,8 +692,16 @@ export class RecipeListComponent implements OnInit, OnDestroy {
       takeUntil(this.destroy$)
     ).subscribe({
       next: (response) => {
-        this.recipes = response.results;
+        const newRecipes = response.results || [];
+        
+        if (this.usePagination || this.currentPage === 1) {
+          this.recipes = newRecipes;
+        } else {
+          this.recipes = [...this.recipes, ...newRecipes];
+        }
+        
         this.totalRecipes = response.count || 0;
+        this.hasMoreData = newRecipes.length === this.pageSize;
         this.loading = false;
         this.cdr.markForCheck();
       },
@@ -571,22 +733,26 @@ export class RecipeListComponent implements OnInit, OnDestroy {
   // Event handlers
   onSearch(): void {
     this.currentPage = 1;
+    this.hasMoreData = true;
     this.loadRecipes();
   }
 
   onSuggestionSelected(event: any): void {
-    this.searchControl.setValue(event.option.value);
-    this.onSearch();
+    this.currentPage = 1;
+    this.hasMoreData = true;
+    this.loadRecipes();
   }
 
   onSortChange(event: MatSelectChange): void {
     this.currentSort = event.value;
     this.currentPage = 1;
+    this.hasMoreData = true;
     this.loadRecipes();
   }
 
   onViewModeChange(event: MatButtonToggleChange): void {
     this.viewMode = event.value;
+    this.cdr.markForCheck();
   }
 
   onPageChange(event: any): void {
@@ -601,87 +767,80 @@ export class RecipeListComponent implements OnInit, OnDestroy {
     this.filterForm.reset();
     this.currentSort = '-created_at';
     this.currentPage = 1;
+    this.hasMoreData = true;
+    this.recipes = [];
     this.loadRecipes();
   }
 
   clearSearch(): void {
     this.searchControl.setValue('');
     this.currentPage = 1;
+    this.hasMoreData = true;
+    this.loadRecipes();
   }
 
   onFavoriteToggle(recipeId: string): void {
-    if (!this.authService.isAuthenticated()) {
-      this.snackBar.open('Please log in to save favorites', 'Login', {
-        duration: 3000
-      });
+    if (!this.authService.isAuthenticated) {
+      this.router.navigate(['/auth/login']);
       return;
     }
 
     this.favoriteLoadingIds.add(recipeId);
-    
     this.recipeService.toggleFavorite(recipeId).pipe(
       takeUntil(this.destroy$)
     ).subscribe({
       next: (result) => {
+        // Update the recipe in the list
         const recipe = this.recipes.find(r => r.id === recipeId);
         if (recipe) {
           recipe.is_favorited = result.is_favorited;
         }
         this.favoriteLoadingIds.delete(recipeId);
         this.cdr.markForCheck();
-        
-        this.snackBar.open(
-          result.is_favorited ? 'Added to favorites' : 'Removed from favorites',
-          'Close',
-          { duration: 2000 }
-        );
       },
-      error: (error) => {
+      error: () => {
         this.favoriteLoadingIds.delete(recipeId);
-        this.snackBar.open('Failed to update favorite', 'Close', { duration: 3000 });
-        console.error('Error toggling favorite:', error);
+        this.snackBar.open('Failed to update favorite status', 'Close', { duration: 3000 });
+        this.cdr.markForCheck();
       }
     });
   }
 
   onShareRecipe(recipe: RecipeListItem): void {
-    const shareData = {
-      title: recipe.title,
-      text: recipe.description,
-      url: `${window.location.origin}/recipes/${recipe.id}`
-    };
-
+    const url = `${window.location.origin}/recipes/${recipe.id}`;
+    
     if (navigator.share) {
-      navigator.share(shareData).catch(console.error);
+      navigator.share({
+        title: recipe.title,
+        text: recipe.description,
+        url: url
+      }).catch(err => console.log('Error sharing:', err));
     } else {
-      navigator.clipboard.writeText(shareData.url).then(() => {
-        this.snackBar.open('Recipe link copied to clipboard', 'Close', { duration: 2000 });
-      }).catch(() => {
-        this.snackBar.open('Failed to copy link', 'Close', { duration: 2000 });
+      // Fallback to clipboard
+      navigator.clipboard.writeText(url).then(() => {
+        this.snackBar.open('Recipe link copied to clipboard!', 'Close', { duration: 3000 });
       });
     }
   }
 
   // Helper methods
-  getSuggestionIcon(type: string): string {
-    const icons: { [key: string]: string } = {
-      'recipe': 'restaurant',
-      'ingredient': 'eco',
-      'category': 'category',
-      'tag': 'label',
-      'author': 'person'
-    };
-    return icons[type] || 'search';
-  }
-
   getEmptyStateMessage(): string {
-    const hasFilters = this.searchControl.value;
-    
-    if (hasFilters) {
-      return 'Try adjusting your search criteria.';
+    if (this.searchControl.value) {
+      return `No recipes match your search for "${this.searchControl.value}". Try different keywords or clear your search.`;
     }
     
     return 'Be the first to share a recipe with our community!';
+  }
+
+  getSuggestionIcon(type: string): string {
+    switch (type) {
+      case 'recipe': return 'restaurant_menu';
+      case 'ingredient': return 'eco';
+      case 'category': return 'local_offer';
+      case 'tag': return 'label';
+      case 'author': return 'person';
+      default: return 'search';
+    }
   }
 
   trackByRecipeId(index: number, recipe: RecipeListItem): string {

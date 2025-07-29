@@ -170,6 +170,10 @@ export interface SortOption {
 export const SORT_OPTIONS: SortOption[] = [
   { value: '-created_at', label: 'Newest First', direction: 'desc' },
   { value: 'created_at', label: 'Oldest First', direction: 'asc' },
+  { value: '-rating_stats__average_rating', label: 'Highest Rated', direction: 'desc' },
+  { value: 'rating_stats__average_rating', label: 'Lowest Rated', direction: 'asc' },
+  { value: '-rating_stats__total_ratings', label: 'Most Reviews', direction: 'desc' },
+  { value: '-view_count', label: 'Most Popular', direction: 'desc' },
   { value: 'prep_time', label: 'Quickest Prep', direction: 'asc' },
   { value: '-prep_time', label: 'Longest Prep', direction: 'desc' },
   { value: 'cook_time', label: 'Quickest Cook', direction: 'asc' },
