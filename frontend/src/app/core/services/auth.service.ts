@@ -6,17 +6,21 @@ import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 
 export interface User {
-  id: number;
+  id: string;
   email: string;
   username: string;
-  firstName: string;
-  lastName: string;
+  first_name: string;
+  last_name: string;
+  firstName?: string;  // For backward compatibility
+  lastName?: string;   // For backward compatibility
+  is_email_verified?: boolean;
   isAdmin?: boolean;
 }
 
 export interface LoginRequest {
   email: string;
   password: string;
+  remember_me?: boolean;
 }
 
 export interface RegisterRequest {
@@ -28,7 +32,18 @@ export interface RegisterRequest {
   last_name: string;
 }
 
+// Updated to match backend response structure
 export interface AuthResponse {
+  tokens: {
+    access: string;
+    refresh: string;
+  };
+  user: User;
+  message?: string;
+}
+
+// Login response uses different structure
+export interface LoginResponse {
   access: string;
   refresh: string;
   user: User;
@@ -53,10 +68,10 @@ export class AuthService {
     private router: Router
   ) {}
 
-  login(credentials: LoginRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/login/`, credentials)
+  login(credentials: LoginRequest): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${environment.apiUrl}/auth/login/`, credentials)
       .pipe(
-        tap(response => this.handleAuthSuccess(response)),
+        tap(response => this.handleLoginSuccess(response)),
         catchError(error => {
           console.error('Login error:', error);
           throw error;
@@ -67,7 +82,7 @@ export class AuthService {
   register(userData: RegisterRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/register/`, userData)
       .pipe(
-        tap(response => this.handleAuthSuccess(response)),
+        tap(response => this.handleRegisterSuccess(response)),
         catchError(error => {
           console.error('Registration error:', error);
           throw error;
@@ -76,6 +91,22 @@ export class AuthService {
   }
 
   logout(): void {
+    const refreshToken = this.getRefreshToken();
+    
+    // Try to blacklist the token on the server
+    if (refreshToken) {
+      this.http.post(`${environment.apiUrl}/auth/logout/`, { refresh: refreshToken })
+        .subscribe({
+          next: () => console.log('Token blacklisted successfully'),
+          error: (error) => console.warn('Failed to blacklist token:', error)
+        });
+    }
+
+    // Clear local storage regardless of server response
+    this.clearTokens();
+  }
+
+  private clearTokens(): void {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.REFRESH_TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
@@ -105,7 +136,7 @@ export class AuthService {
   refreshToken(): Observable<{ access: string }> {
     const refreshToken = this.getRefreshToken();
     if (!refreshToken) {
-      this.logout();
+      this.clearTokens();
       return of();
     }
 
@@ -117,19 +148,52 @@ export class AuthService {
       }),
       catchError(error => {
         console.error('Token refresh error:', error);
-        this.logout();
+        this.clearTokens();
         throw error;
       })
     );
   }
 
-  private handleAuthSuccess(response: AuthResponse): void {
+  // Handle login response (flat structure)
+  private handleLoginSuccess(response: LoginResponse): void {
+    const user = this.normalizeUser(response.user);
+    
     localStorage.setItem(this.TOKEN_KEY, response.access);
     localStorage.setItem(this.REFRESH_TOKEN_KEY, response.refresh);
-    localStorage.setItem(this.USER_KEY, JSON.stringify(response.user));
+    localStorage.setItem(this.USER_KEY, JSON.stringify(user));
     
-    this.currentUserSubject.next(response.user);
+    this.currentUserSubject.next(user);
     this.isAuthenticatedSubject.next(true);
+    
+    console.log('Login successful:', user);
+  }
+
+  // Handle registration response (nested tokens structure)
+  private handleRegisterSuccess(response: AuthResponse): void {
+    const user = this.normalizeUser(response.user);
+    
+    localStorage.setItem(this.TOKEN_KEY, response.tokens.access);
+    localStorage.setItem(this.REFRESH_TOKEN_KEY, response.tokens.refresh);
+    localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+    
+    this.currentUserSubject.next(user);
+    this.isAuthenticatedSubject.next(true);
+    
+    console.log('Registration successful:', user);
+    if (response.message) {
+      console.log('Message:', response.message);
+    }
+  }
+
+  // Normalize user object to handle different field naming conventions
+  private normalizeUser(user: any): User {
+    return {
+      ...user,
+      firstName: user.first_name || user.firstName,
+      lastName: user.last_name || user.lastName,
+      first_name: user.first_name || user.firstName,
+      last_name: user.last_name || user.lastName
+    };
   }
 
   private hasToken(): boolean {
@@ -140,7 +204,8 @@ export class AuthService {
     const userStr = localStorage.getItem(this.USER_KEY);
     if (userStr) {
       try {
-        return JSON.parse(userStr);
+        const user = JSON.parse(userStr);
+        return this.normalizeUser(user);
       } catch (error) {
         console.error('Error parsing user from storage:', error);
         localStorage.removeItem(this.USER_KEY);

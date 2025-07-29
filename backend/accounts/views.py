@@ -32,6 +32,7 @@ class RegisterView(generics.CreateAPIView):
     """
     Register a new user.
     Returns user data and authentication tokens.
+    Sends verification email if email backend is configured.
     """
     queryset = User.objects.all()
     permission_classes = (AllowAny,)
@@ -46,13 +47,49 @@ class RegisterView(generics.CreateAPIView):
         # Generate tokens
         refresh = RefreshToken.for_user(user)
         
+        # Send verification email (if email backend is configured)
+        self._send_verification_email(user)
+        
         return Response({
             'user': UserSerializer(user).data,
             'tokens': {
                 'refresh': str(refresh),
                 'access': str(refresh.access_token),
-            }
+            },
+            'message': 'Registration successful! Please check your email for verification link.' if not user.is_email_verified else 'Registration successful!'
         }, status=status.HTTP_201_CREATED)
+    
+    def _send_verification_email(self, user):
+        """Send email verification link to the user."""
+        try:
+            # Only send if not using console backend
+            if settings.EMAIL_BACKEND == 'django.core.mail.backends.console.EmailBackend':
+                print(f"📧 Email verification would be sent to {user.email}")
+                return
+            
+            # Generate verification token
+            token = default_token_generator.make_token(user)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            
+            # Build verification link
+            verification_link = f"{settings.FRONTEND_URL}/verify-email/{uid}/{token}"
+            
+            # Send email
+            send_mail(
+                f'{settings.EMAIL_SUBJECT_PREFIX}Please verify your email',
+                f'Click the following link to verify your email: {verification_link}',
+                settings.DEFAULT_FROM_EMAIL,
+                [user.email],
+                fail_silently=True,  # Don't break registration if email fails
+                html_message=f'''
+                <h2>Welcome to Recipe Sharing Platform!</h2>
+                <p>Thank you for registering. Please click the link below to verify your email address:</p>
+                <p><a href="{verification_link}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Verify Email</a></p>
+                <p>If you didn't create this account, you can safely ignore this email.</p>
+                '''
+            )
+        except Exception as e:
+            print(f"Failed to send verification email: {e}")
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
@@ -168,4 +205,39 @@ class PasswordResetConfirmView(generics.GenericAPIView):
         return Response(
             {"detail": "Password has been reset successfully."},
             status=status.HTTP_200_OK
-        ) 
+        )
+
+
+class EmailVerificationView(generics.GenericAPIView):
+    """
+    Verify user email address
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request, uidb64, token):
+        """Verify email using token and uid."""
+        try:
+            from django.utils.http import urlsafe_base64_decode
+            from django.utils.encoding import force_str
+            
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+            
+            if default_token_generator.check_token(user, token):
+                user.is_email_verified = True
+                user.save()
+                return Response(
+                    {"detail": "Email verified successfully."},
+                    status=status.HTTP_200_OK
+                )
+            else:
+                return Response(
+                    {"detail": "Invalid or expired verification link."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+                
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            return Response(
+                {"detail": "Invalid verification link."},
+                status=status.HTTP_400_BAD_REQUEST
+            ) 
