@@ -195,8 +195,8 @@ class RecipeSearchService:
         # Rating filtering
         if min_rating:
             queryset = queryset.annotate(
-                avg_rating=Avg('ratings__rating')
-            ).filter(avg_rating__gte=min_rating)
+                _min_rating_filter=Avg('ratings__rating')
+            ).filter(_min_rating_filter__gte=min_rating)
         
         # Tags filtering
         if tags:
@@ -399,13 +399,13 @@ class RecipeSearchService:
                 return queryset.order_by('-created_at')
         elif order_by == 'rating':
             return queryset.annotate(
-                            avg_rating=Avg('ratings__rating'),
-            rating_count=Count('ratings')
-            ).order_by('-avg_rating', '-rating_count', '-created_at')
+                _avg_rating_sort=Avg('ratings__rating'),
+                _rating_count_sort=Count('ratings')
+            ).order_by('-_avg_rating_sort', '-_rating_count_sort', '-created_at')
         elif order_by == 'popularity':
             return queryset.annotate(
-                rating_count=Count('ratings')
-            ).order_by('-rating_count', '-created_at')
+                _rating_count_sort=Count('ratings')
+            ).order_by('-_rating_count_sort', '-created_at')
         elif order_by == 'newest':
             return queryset.order_by('-created_at')
         elif order_by == 'oldest':
