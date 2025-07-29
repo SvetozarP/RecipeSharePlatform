@@ -1,4 +1,4 @@
-name: Deploy Angular frontend to Azure Static Web Apps
+name: Deploy Angular frontend to Azure Static Web Apps (Production)
 
 on:
   push:
@@ -38,6 +38,14 @@ jobs:
           cd frontend
           npm ci
 
+      - name: Verify production environment
+        run: |
+          cd frontend
+          echo "🔍 Verifying production build configuration..."
+          echo "📝 Build command: npm run build:prod"
+          echo "🌐 Target environment: PRODUCTION"
+          echo "🔗 API URL: https://recipe-api-dev98298.azurewebsites.net/api/v1"
+
       # - name: Run tests - no tests now
       #   run: |
       #     cd frontend
@@ -53,7 +61,7 @@ jobs:
           app_location: "/frontend"
           output_location: "dist/frontend/browser"
           skip_app_build: false
-          app_build_command: "npm run build"
+          app_build_command: "npm run build:prod"
           api_location: ""
 
   close_pull_request_job:
