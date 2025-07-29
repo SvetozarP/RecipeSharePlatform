@@ -2,6 +2,7 @@
 Views for user registration and authentication.
 """
 
+import logging
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
@@ -26,6 +27,7 @@ from .serializers import (
 )
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 
 class RegisterView(generics.CreateAPIView):
@@ -154,36 +156,81 @@ class PasswordResetRequestView(generics.GenericAPIView):
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        email = serializer.validated_data['email']
-        
         try:
-            user = User.objects.get(email=email)
-            # Generate reset token
-            token = default_token_generator.make_token(user)
-            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            logger.info("Password reset request received")
             
-            # Build reset link - frontend URL
-            reset_link = f"{settings.FRONTEND_URL}/reset-password/{uid}/{token}"
+            # Validate serializer
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            email = serializer.validated_data['email']
             
-            # Render email template
-            html_message = render_to_string('accounts/password_reset_email.html', {
-                'reset_link': reset_link,
-            })
+            logger.info(f"Password reset request for email: {email}")
             
-            # Send email
-            send_mail(
-                f'{settings.EMAIL_SUBJECT_PREFIX}Password Reset Request',
-                'Click the following link to reset your password: ' + reset_link,  # Plain text version
-                settings.DEFAULT_FROM_EMAIL,
-                [email],
-                fail_silently=False,
-                html_message=html_message,
+            try:
+                user = User.objects.get(email=email)
+                logger.info(f"User found for email: {email}, user_id: {user.id}")
+                
+                # Generate reset token
+                token = default_token_generator.make_token(user)
+                uid = urlsafe_base64_encode(force_bytes(user.pk))
+                
+                logger.info(f"Generated token and uid for user: {user.id}")
+                
+                # Build reset link - frontend URL
+                reset_link = f"{settings.FRONTEND_URL}/auth/reset-password/{uid}/{token}"
+                logger.info(f"Reset link generated: {reset_link}")
+                
+                # Try to send email with comprehensive error handling
+                try:
+                    # Check if template exists, otherwise use simple HTML
+                    try:
+                        html_message = render_to_string('accounts/password_reset_email.html', {
+                            'reset_link': reset_link,
+                        })
+                        logger.info("Email template rendered successfully")
+                    except Exception as template_error:
+                        logger.warning(f"Template rendering failed: {template_error}, using fallback HTML")
+                        html_message = f'''
+                        <!DOCTYPE html>
+                        <html>
+                        <head><title>Password Reset</title></head>
+                        <body>
+                            <h2>Password Reset Request</h2>
+                            <p>Click the following link to reset your password:</p>
+                            <a href="{reset_link}">Reset Password</a>
+                            <p>If you didn't request this reset, you can ignore this email.</p>
+                        </body>
+                        </html>
+                        '''
+                    
+                    # Send email
+                    logger.info("Attempting to send password reset email")
+                    send_mail(
+                        f'{settings.EMAIL_SUBJECT_PREFIX}Password Reset Request',
+                        f'Click the following link to reset your password: {reset_link}',  # Plain text version
+                        settings.DEFAULT_FROM_EMAIL,
+                        [email],
+                        fail_silently=False,
+                        html_message=html_message,
+                    )
+                    logger.info(f"Password reset email sent successfully to: {email}")
+                    
+                except Exception as email_error:
+                    logger.error(f"Email sending failed: {email_error}")
+                    # Don't return error to avoid user enumeration, but log it
+                    
+            except User.DoesNotExist:
+                logger.info(f"Password reset requested for non-existent email: {email}")
+                # Don't reveal whether a user exists
+                pass
+                
+        except Exception as e:
+            logger.error(f"Unexpected error in password reset request: {e}", exc_info=True)
+            # Return a generic error in production
+            return Response(
+                {"detail": "An error occurred processing your request."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-        except User.DoesNotExist:
-            # Don't reveal whether a user exists
-            pass
         
         return Response(
             {"detail": "Password reset link sent if account exists."},
