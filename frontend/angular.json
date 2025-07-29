@@ -51,11 +51,6 @@
               "optimization": true,
               "sourceMap": false,
               "extractLicenses": true,
-              "namedChunks": false,
-              "aot": true,
-              "extractCss": true,
-              "vendorChunk": false,
-              "buildOptimizer": true,
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
