@@ -496,7 +496,7 @@ export class RecipeListComponent implements OnInit, OnDestroy {
   
   // View state
   viewMode: 'grid' | 'list' = 'grid';
-  currentSort = '-created_at';
+  currentSort = 'newest';
   
   // Filter options
   categories$!: Observable<Category[]>;
@@ -765,7 +765,7 @@ export class RecipeListComponent implements OnInit, OnDestroy {
   clearFilters(): void {
     this.searchControl.setValue('');
     this.filterForm.reset();
-    this.currentSort = '-created_at';
+    this.currentSort = 'newest';
     this.currentPage = 1;
     this.hasMoreData = true;
     this.recipes = [];

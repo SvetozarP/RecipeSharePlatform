@@ -33,13 +33,39 @@ export class RecipeService extends ApiService {
       Object.entries(params).filter(([_, value]) => value !== undefined && value !== null && value !== '')
     );
 
-    return this.get<RecipeListResponse>('/recipes/', cleanParams).pipe(
-      tap(() => this.loadingSubject.next(false)),
-      catchError(error => {
-        this.loadingSubject.next(false);
-        throw error;
-      })
-    );
+    // Check if we need to use advanced search endpoint for complex sorting
+    const complexSortOptions = ['rating', 'popularity'];
+    const needsAdvancedSearch = cleanParams['ordering'] && complexSortOptions.includes(cleanParams['ordering'] as string);
+
+    if (needsAdvancedSearch) {
+      // Use advanced search endpoint for complex sorting
+      const searchBody: any = {
+        ...cleanParams,
+        order_by: cleanParams['ordering'], // Advanced search uses order_by instead of ordering
+        page: cleanParams['page'] || 1,
+        page_size: cleanParams['page_size'] || 24
+      };
+      
+      // Remove ordering from searchBody since we're using order_by
+      delete searchBody['ordering'];
+
+      return this.post<RecipeListResponse>('/recipes/advanced-search/', searchBody).pipe(
+        tap(() => this.loadingSubject.next(false)),
+        catchError(error => {
+          this.loadingSubject.next(false);
+          throw error;
+        })
+      );
+    } else {
+      // Use regular list endpoint for simple sorting
+      return this.get<RecipeListResponse>('/recipes/', cleanParams).pipe(
+        tap(() => this.loadingSubject.next(false)),
+        catchError(error => {
+          this.loadingSubject.next(false);
+          throw error;
+        })
+      );
+    }
   }
 
   /**
@@ -50,15 +76,20 @@ export class RecipeService extends ApiService {
   }
 
   /**
-   * Search recipes with advanced filtering
+   * Search recipes with text query
    */
   searchRecipes(params: RecipeSearchParams): Observable<RecipeListResponse> {
-    this.loadingSubject.next(true);
-    
-    return this.post<RecipeListResponse>('/recipes/advanced-search/', params).pipe(
-      tap(() => this.loadingSubject.next(false)),
+    // Use the search endpoint for text queries
+    const searchParams: any = {
+      q: params.q,
+      order_by: params.ordering || 'relevance',
+      page: params.page || 1,
+      page_size: params.page_size || 24
+    };
+
+    return this.get<RecipeListResponse>('/recipes/search/', searchParams).pipe(
       catchError(error => {
-        this.loadingSubject.next(false);
+        console.error('Search error:', error);
         throw error;
       })
     );

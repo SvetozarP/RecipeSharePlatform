@@ -191,18 +191,35 @@ class RecipeViewSet(viewsets.ViewSet):
         # Handle ordering - use simple field-based ordering only
         ordering = request.query_params.get('ordering', '-created_at')
         
-        # Validate ordering field - only allow simple database fields
+        # Validate ordering field - support both simple fields and semantic ordering
         valid_ordering_fields = ['created_at', 'updated_at', 'title', 'prep_time', 'cook_time']
+        semantic_ordering = ['newest', 'oldest', 'title']
         
-        # Extract field name (remove - if present)
-        field_name = ordering.lstrip('-')
-        
-        # Check if it's a valid field
-        if field_name in valid_ordering_fields:
-            queryset = queryset.order_by(ordering)
-        else:
-            # Default to newest first for invalid fields (including complex ones)
+        # Handle semantic ordering
+        if ordering == 'newest':
             queryset = queryset.order_by('-created_at')
+        elif ordering == 'oldest':
+            queryset = queryset.order_by('created_at')
+        elif ordering == 'title':
+            queryset = queryset.order_by('title')
+        elif ordering == 'prep_time':
+            queryset = queryset.order_by('prep_time')
+        elif ordering == 'cook_time':
+            queryset = queryset.order_by('cook_time')
+        elif ordering == 'total_time':
+            # Use annotation for total time
+            from django.db.models import F
+            queryset = queryset.annotate(total_time=F('prep_time') + F('cook_time')).order_by('total_time')
+        else:
+            # Extract field name (remove - if present) for legacy support
+            field_name = ordering.lstrip('-')
+            
+            # Check if it's a valid field
+            if field_name in valid_ordering_fields:
+                queryset = queryset.order_by(ordering)
+            else:
+                # Default to newest first for invalid fields
+                queryset = queryset.order_by('-created_at')
         
         # Apply filters
         difficulty = request.query_params.get('difficulty')
@@ -235,11 +252,6 @@ class RecipeViewSet(viewsets.ViewSet):
                 Q(tags__icontains=search) |
                 Q(categories__name__icontains=search)
             ).distinct()
-        
-        # Ordering
-        ordering = request.query_params.get('ordering', '-created_at')
-        if ordering:
-            queryset = queryset.order_by(ordering)
         
         # Pagination
         from django.core.paginator import Paginator
