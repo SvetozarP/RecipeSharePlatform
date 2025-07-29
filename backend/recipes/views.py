@@ -170,8 +170,10 @@ class RecipeViewSet(viewsets.ViewSet):
         queryset = Recipe.objects.select_related('author').prefetch_related('categories', 'ratings')
         
         # Filter by published status for non-owners
-        user = self.request.user
-        if not user.is_authenticated:
+        # Safely get user, defaulting to anonymous if not available
+        user = getattr(self.request, 'user', None)
+        
+        if not user or not user.is_authenticated:
             # Anonymous users can only see published recipes
             queryset = queryset.filter(is_published=True)
         elif not user.is_staff:
@@ -189,7 +191,9 @@ class RecipeViewSet(viewsets.ViewSet):
         queryset = self.get_queryset()
         
         # Handle ordering - use simple field-based ordering only
-        ordering = request.query_params.get('ordering', '-created_at')
+        # Safely access query parameters (DRF uses query_params, Django uses GET)
+        query_params = getattr(request, 'query_params', request.GET)
+        ordering = query_params.get('ordering', '-created_at')
         
         # Validate ordering field - support both simple fields and semantic ordering
         valid_ordering_fields = ['created_at', 'updated_at', 'title', 'prep_time', 'cook_time']
@@ -207,9 +211,9 @@ class RecipeViewSet(viewsets.ViewSet):
         elif ordering == 'cook_time':
             queryset = queryset.order_by('cook_time')
         elif ordering == 'total_time':
-            # Use annotation for total time
+            # Use annotation for total time with different name to avoid property conflict
             from django.db.models import F
-            queryset = queryset.annotate(total_time=F('prep_time') + F('cook_time')).order_by('total_time')
+            queryset = queryset.annotate(_total_time_sort=F('prep_time') + F('cook_time')).order_by('_total_time_sort')
         else:
             # Extract field name (remove - if present) for legacy support
             field_name = ordering.lstrip('-')
@@ -222,29 +226,29 @@ class RecipeViewSet(viewsets.ViewSet):
                 queryset = queryset.order_by('-created_at')
         
         # Apply filters
-        difficulty = request.query_params.get('difficulty')
+        difficulty = query_params.get('difficulty')
         if difficulty:
             queryset = queryset.filter(difficulty=difficulty)
         
-        cooking_method = request.query_params.get('cooking_method')
+        cooking_method = query_params.get('cooking_method')
         if cooking_method:
             queryset = queryset.filter(cooking_method=cooking_method)
         
-        author_id = request.query_params.get('author')
+        author_id = query_params.get('author')
         if author_id:
             queryset = queryset.filter(author__id=author_id)
         
         # Category filtering - support multiple categories and hierarchy
-        categories = request.query_params.getlist('categories')
+        categories = query_params.getlist('categories')
         if categories:
             queryset = queryset.filter(categories__id__in=categories).distinct()
         
-        category_slugs = request.query_params.getlist('category_slugs')
+        category_slugs = query_params.getlist('category_slugs')
         if category_slugs:
             queryset = queryset.filter(categories__slug__in=category_slugs).distinct()
         
         # Search functionality
-        search = request.query_params.get('search')
+        search = query_params.get('search')
         if search:
             queryset = queryset.filter(
                 Q(title__icontains=search) |
@@ -255,8 +259,8 @@ class RecipeViewSet(viewsets.ViewSet):
         
         # Pagination
         from django.core.paginator import Paginator
-        page_size = min(int(request.query_params.get('page_size', 20)), 100)
-        page_number = int(request.query_params.get('page', 1))
+        page_size = min(int(query_params.get('page_size', 20)), 100)
+        page_number = int(query_params.get('page', 1))
         
         paginator = Paginator(queryset, page_size)
         page_obj = paginator.get_page(page_number)
