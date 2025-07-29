@@ -418,8 +418,8 @@ class RecipeSearchService:
             return queryset.order_by('prep_time')
         elif order_by == 'total_time':
             return queryset.annotate(
-                total_time=F('prep_time') + F('cook_time')
-            ).order_by('total_time')
+                _total_time_sort=F('prep_time') + F('cook_time')
+            ).order_by('_total_time_sort')
         else:
             return queryset.order_by('-created_at')
     

@@ -546,16 +546,19 @@ class RecipeViewSet(viewsets.ViewSet):
         import time
         start_time = time.time()
         
-        query = request.query_params.get('q', '').strip()
+        # Safely access query parameters (DRF uses query_params, Django uses GET)
+        query_params = getattr(request, 'query_params', request.GET)
+        
+        query = query_params.get('q', '').strip()
         if not query:
             return Response({
                 'error': 'Search query is required'
             }, status=status.HTTP_400_BAD_REQUEST)
         
         # Basic search parameters
-        order_by = request.query_params.get('order_by', 'relevance')
-        page_number = int(request.query_params.get('page', 1))
-        page_size = min(int(request.query_params.get('page_size', 20)), 100)
+        order_by = query_params.get('order_by', 'relevance')
+        page_number = int(query_params.get('page', 1))
+        page_size = min(int(query_params.get('page_size', 20)), 100)
         
         # Perform search
         try:
@@ -595,7 +598,10 @@ class RecipeViewSet(viewsets.ViewSet):
         import time
         start_time = time.time()
         
-        serializer = AdvancedSearchSerializer(data=request.data)
+        # Safely access request data (DRF uses data, Django uses POST)
+        request_data = getattr(request, 'data', request.POST)
+        
+        serializer = AdvancedSearchSerializer(data=request_data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
@@ -642,8 +648,11 @@ class RecipeViewSet(viewsets.ViewSet):
         - q: Partial search query (minimum 2 characters)
         - limit: Maximum suggestions per category (default: 10)
         """
-        query = request.query_params.get('q', '').strip()
-        limit = min(int(request.query_params.get('limit', 10)), 50)
+        # Safely access query parameters (DRF uses query_params, Django uses GET)
+        query_params = getattr(request, 'query_params', request.GET)
+        
+        query = query_params.get('q', '').strip()
+        limit = min(int(query_params.get('limit', 10)), 50)
         
         if len(query) < 2:
             return Response({
@@ -668,7 +677,10 @@ class RecipeViewSet(viewsets.ViewSet):
         Query Parameters:
         - limit: Maximum number of popular searches (default: 10)
         """
-        limit = min(int(request.query_params.get('limit', 10)), 50)
+        # Safely access query parameters (DRF uses query_params, Django uses GET)
+        query_params = getattr(request, 'query_params', request.GET)
+        
+        limit = min(int(query_params.get('limit', 10)), 50)
         
         try:
             popular_searches = search_service.get_popular_searches(limit)
