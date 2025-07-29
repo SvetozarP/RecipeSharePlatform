@@ -2,11 +2,12 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Subject, interval, Subscription } from 'rxjs';
+import { takeUntil, take } from 'rxjs/operators';
 
 import { MaterialModule } from '../../../shared/material.module';
 import { LoadingComponent } from '../../../shared/components/loading/loading.component';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-forgot-password',
@@ -56,15 +57,28 @@ import { LoadingComponent } from '../../../shared/components/loading/loading.com
                   {{ errorMessage }}
                 </mat-error>
 
+                <!-- Cooldown Message -->
+                <div *ngIf="isOnCooldown" class="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+                  <div class="flex items-center">
+                    <mat-icon class="text-yellow-400 mr-2">schedule</mat-icon>
+                    <div>
+                      <p class="text-sm text-yellow-800">
+                        Please wait <strong>{{ cooldownTimeLeft }}</strong> seconds before requesting another reset link.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
                 <!-- Submit Button -->
                 <button 
                   type="submit" 
                   mat-raised-button 
                   color="primary" 
                   class="w-full"
-                  [disabled]="forgotPasswordForm.invalid || isLoading"
+                  [disabled]="forgotPasswordForm.invalid || isLoading || isOnCooldown"
                 >
-                  <span *ngIf="!isLoading">Send Reset Link</span>
+                  <span *ngIf="!isLoading && !isOnCooldown">Send Reset Link</span>
+                  <span *ngIf="isOnCooldown">Wait {{ cooldownTimeLeft }}s</span>
                   <app-loading *ngIf="isLoading" [size]="20"></app-loading>
                 </button>
               </form>
@@ -81,13 +95,24 @@ import { LoadingComponent } from '../../../shared/components/loading/loading.com
               <p class="text-gray-600">
                 We've sent a password reset link to <strong>{{ submittedEmail }}</strong>
               </p>
-              <p class="text-sm text-gray-500">
+              
+              <!-- Cooldown Message for Resend -->
+              <div *ngIf="isOnCooldown" class="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+                <div class="flex items-center justify-center">
+                  <mat-icon class="text-yellow-400 mr-2">schedule</mat-icon>
+                  <p class="text-sm text-yellow-800">
+                    You can request another reset link in <strong>{{ cooldownTimeLeft }}</strong> seconds
+                  </p>
+                </div>
+              </div>
+
+              <p class="text-sm text-gray-500" *ngIf="!isOnCooldown">
                 Didn't receive the email? Check your spam folder or 
                 <button 
                   type="button" 
                   class="text-indigo-600 hover:text-indigo-500 underline"
                   (click)="resendEmail()"
-                  [disabled]="isLoading"
+                  [disabled]="isLoading || isOnCooldown"
                 >
                   try again
                 </button>
@@ -153,6 +178,20 @@ import { LoadingComponent } from '../../../shared/components/loading/loading.com
       border-radius: 12px;
       box-shadow: 0 4px 16px rgba(0,0,0,0.1);
     }
+
+    /* Cooldown styling */
+    .bg-yellow-50 {
+      background-color: #fefce8;
+    }
+    .border-yellow-200 {
+      border-color: #fde047;
+    }
+    .text-yellow-400 {
+      color: #facc15;
+    }
+    .text-yellow-800 {
+      color: #854d0e;
+    }
   `]
 })
 export class ForgotPasswordComponent implements OnInit, OnDestroy {
@@ -161,23 +200,35 @@ export class ForgotPasswordComponent implements OnInit, OnDestroy {
   errorMessage = '';
   emailSent = false;
   submittedEmail = '';
+  
+  // Cooldown functionality
+  isOnCooldown = false;
+  cooldownTimeLeft = 0;
+  private cooldownDuration = 60; // 60 seconds
+  private cooldownSubscription?: Subscription;
 
   private destroy$ = new Subject<void>();
 
   constructor(
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {
     this.forgotPasswordForm = this.createForgotPasswordForm();
   }
 
   ngOnInit(): void {
     this.errorMessage = '';
+    // Check if there's an active cooldown from previous session
+    this.checkExistingCooldown();
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    if (this.cooldownSubscription) {
+      this.cooldownSubscription.unsubscribe();
+    }
   }
 
   private createForgotPasswordForm(): FormGroup {
@@ -187,14 +238,28 @@ export class ForgotPasswordComponent implements OnInit, OnDestroy {
   }
 
   onSubmit(): void {
-    if (this.forgotPasswordForm.valid && !this.isLoading) {
+    if (this.forgotPasswordForm.valid && !this.isLoading && !this.isOnCooldown) {
       this.isLoading = true;
       this.errorMessage = '';
       this.submittedEmail = this.forgotPasswordForm.value.email;
 
-      // TODO: Implement actual password reset API call
-      // For now, simulate API call
-      this.simulatePasswordResetRequest();
+      this.authService.requestPasswordReset(this.submittedEmail)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (response) => {
+            this.isLoading = false;
+            this.emailSent = true;
+            this.startCooldown();
+          },
+          error: (error) => {
+            this.isLoading = false;
+            this.handlePasswordResetError(error);
+            // Start cooldown even on error to prevent spam
+            if (error.status !== 404) {
+              this.startCooldown();
+            }
+          }
+        });
     } else {
       // Mark all fields as touched to show validation errors
       this.markFormGroupTouched();
@@ -202,39 +267,84 @@ export class ForgotPasswordComponent implements OnInit, OnDestroy {
   }
 
   resendEmail(): void {
-    if (!this.isLoading) {
+    if (!this.isLoading && !this.isOnCooldown) {
       this.onSubmit();
     }
   }
 
-  private simulatePasswordResetRequest(): void {
-    // TODO: Replace with actual HTTP service call to backend
-    // Example implementation:
-    /*
-    this.authService.requestPasswordReset(this.submittedEmail)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (response) => {
-          this.isLoading = false;
-          this.emailSent = true;
-        },
-        error: (error) => {
-          this.isLoading = false;
-          this.handlePasswordResetError(error);
-        }
-      });
-    */
+  private startCooldown(): void {
+    this.isOnCooldown = true;
+    this.cooldownTimeLeft = this.cooldownDuration;
+    
+    // Save cooldown end time to localStorage for persistence
+    const cooldownEndTime = Date.now() + (this.cooldownDuration * 1000);
+    localStorage.setItem('password_reset_cooldown', cooldownEndTime.toString());
 
-    // Simulate network delay
-    setTimeout(() => {
-      this.isLoading = false;
-      this.emailSent = true;
-    }, 2000);
+    // Start countdown timer
+    this.cooldownSubscription = interval(1000).pipe(
+      take(this.cooldownDuration),
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: () => {
+        this.cooldownTimeLeft--;
+        if (this.cooldownTimeLeft <= 0) {
+          this.endCooldown();
+        }
+      },
+      complete: () => {
+        this.endCooldown();
+      }
+    });
+  }
+
+  private endCooldown(): void {
+    this.isOnCooldown = false;
+    this.cooldownTimeLeft = 0;
+    localStorage.removeItem('password_reset_cooldown');
+    if (this.cooldownSubscription) {
+      this.cooldownSubscription.unsubscribe();
+    }
+  }
+
+  private checkExistingCooldown(): void {
+    const cooldownEndTime = localStorage.getItem('password_reset_cooldown');
+    if (cooldownEndTime) {
+      const endTime = parseInt(cooldownEndTime, 10);
+      const currentTime = Date.now();
+      
+      if (currentTime < endTime) {
+        // Cooldown still active
+        const remainingTime = Math.ceil((endTime - currentTime) / 1000);
+        this.cooldownTimeLeft = remainingTime;
+        this.isOnCooldown = true;
+        
+        // Start countdown from remaining time
+        this.cooldownSubscription = interval(1000).pipe(
+          take(remainingTime),
+          takeUntil(this.destroy$)
+        ).subscribe({
+          next: () => {
+            this.cooldownTimeLeft--;
+            if (this.cooldownTimeLeft <= 0) {
+              this.endCooldown();
+            }
+          },
+          complete: () => {
+            this.endCooldown();
+          }
+        });
+      } else {
+        // Cooldown expired, clean up
+        localStorage.removeItem('password_reset_cooldown');
+      }
+    }
   }
 
   private handlePasswordResetError(error: any): void {
     if (error.status === 404) {
       this.errorMessage = 'No account found with this email address.';
+    } else if (error.status === 400) {
+      this.errorMessage = 'Invalid email address format.';
     } else if (error.status === 429) {
       this.errorMessage = 'Too many reset requests. Please wait before trying again.';
     } else if (error.status === 0) {

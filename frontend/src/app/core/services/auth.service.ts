@@ -154,6 +154,30 @@ export class AuthService {
     );
   }
 
+  requestPasswordReset(email: string): Observable<{ detail: string }> {
+    return this.http.post<{ detail: string }>(`${environment.apiUrl}/auth/password/reset/`, {
+      email: email
+    }).pipe(
+      catchError(error => {
+        console.error('Password reset request error:', error);
+        throw error;
+      })
+    );
+  }
+
+  confirmPasswordReset(uidb64: string, token: string, newPassword: string): Observable<{ detail: string }> {
+    return this.http.post<{ detail: string }>(`${environment.apiUrl}/auth/password/reset/confirm/`, {
+      uidb64: uidb64,
+      token: token,
+      password: newPassword
+    }).pipe(
+      catchError(error => {
+        console.error('Password reset confirm error:', error);
+        throw error;
+      })
+    );
+  }
+
   // Handle login response (flat structure)
   private handleLoginSuccess(response: LoginResponse): void {
     const user = this.normalizeUser(response.user);
