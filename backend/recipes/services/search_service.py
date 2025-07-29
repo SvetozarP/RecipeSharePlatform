@@ -50,7 +50,7 @@ class RecipeSearchService:
         
         # Base queryset with published recipes
         queryset = Recipe.objects.select_related('author').prefetch_related(
-            'categories', 'rating_set'
+            'categories', 'ratings'
         ).filter(is_published=True)
         
         # Use PostgreSQL full-text search if available, otherwise fallback to basic search
@@ -142,7 +142,7 @@ class RecipeSearchService:
         """
         # Start with published recipes
         queryset = Recipe.objects.select_related('author').prefetch_related(
-            'categories', 'rating_set'
+            'categories', 'ratings'
         ).filter(is_published=True)
         
         # Text search
@@ -195,7 +195,7 @@ class RecipeSearchService:
         # Rating filtering
         if min_rating:
             queryset = queryset.annotate(
-                avg_rating=Avg('rating_set__rating')
+                avg_rating=Avg('ratings__rating')
             ).filter(avg_rating__gte=min_rating)
         
         # Tags filtering
@@ -399,12 +399,12 @@ class RecipeSearchService:
                 return queryset.order_by('-created_at')
         elif order_by == 'rating':
             return queryset.annotate(
-                avg_rating=Avg('rating_set__rating'),
-                rating_count=Count('rating_set')
+                            avg_rating=Avg('ratings__rating'),
+            rating_count=Count('ratings')
             ).order_by('-avg_rating', '-rating_count', '-created_at')
         elif order_by == 'popularity':
             return queryset.annotate(
-                rating_count=Count('rating_set')
+                rating_count=Count('ratings')
             ).order_by('-rating_count', '-created_at')
         elif order_by == 'newest':
             return queryset.order_by('-created_at')

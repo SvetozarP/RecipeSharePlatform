@@ -603,6 +603,7 @@ class AdvancedSearchSerializer(serializers.Serializer):
     """Serializer for advanced search request parameters."""
     
     query = serializers.CharField(required=False, allow_blank=True)
+    q = serializers.CharField(required=False, allow_blank=True)  # Alias for query
     ingredients = serializers.ListField(child=serializers.CharField(), required=False)
     exclude_ingredients = serializers.ListField(child=serializers.CharField(), required=False)
     categories = serializers.ListField(child=serializers.CharField(), required=False)
@@ -643,9 +644,17 @@ class AdvancedSearchSerializer(serializers.Serializer):
     page = serializers.IntegerField(min_value=1, default=1, required=False)
     page_size = serializers.IntegerField(min_value=1, max_value=100, default=20, required=False)
     
+    def validate(self, data):
+        """Map 'q' to 'query' for compatibility."""
+        if 'q' in data and not data.get('query'):
+            data['query'] = data.pop('q')
+        elif 'q' in data:
+            data.pop('q')  # Remove q if query is already present
+        return data
+
     class Meta:
         fields = [
-            'query', 'ingredients', 'exclude_ingredients', 'categories', 
+            'query', 'q', 'ingredients', 'exclude_ingredients', 'categories', 
             'difficulty', 'cooking_method', 'max_prep_time', 'max_cook_time', 
             'max_total_time', 'min_servings', 'max_servings', 'dietary_restrictions',
             'author', 'min_rating', 'has_nutrition_info', 'tags', 'order_by',

@@ -157,18 +157,17 @@ class RecipeViewSet(viewsets.ViewSet):
     ViewSet for managing recipes with file upload support.
     
     Provides CRUD operations for recipes including image upload and processing.
+    Search endpoints allow anonymous access to enable recipe discovery without authentication.
     """
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     parser_classes = [MultiPartParser, FormParser, JSONParser]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['difficulty', 'cooking_method', 'is_published', 'author', 'categories']
     search_fields = ['title', 'description', 'tags', 'categories__name']
-    ordering_fields = ['created_at', 'updated_at', 'title', 'prep_time', 'cook_time']
-    ordering = ['-created_at']
 
     def get_queryset(self):
         """Get queryset for recipes."""
-        queryset = Recipe.objects.select_related('author').prefetch_related('categories').all()
+        queryset = Recipe.objects.select_related('author').prefetch_related('categories', 'ratings')
         
         # Filter by published status for non-owners
         user = self.request.user
@@ -185,7 +184,25 @@ class RecipeViewSet(viewsets.ViewSet):
 
     def list(self, request):
         """List recipes with filtering and pagination."""
+        from django.db.models import Avg, Count, F
+        
         queryset = self.get_queryset()
+        
+        # Handle ordering - use simple field-based ordering only
+        ordering = request.query_params.get('ordering', '-created_at')
+        
+        # Validate ordering field - only allow simple database fields
+        valid_ordering_fields = ['created_at', 'updated_at', 'title', 'prep_time', 'cook_time']
+        
+        # Extract field name (remove - if present)
+        field_name = ordering.lstrip('-')
+        
+        # Check if it's a valid field
+        if field_name in valid_ordering_fields:
+            queryset = queryset.order_by(ordering)
+        else:
+            # Default to newest first for invalid fields (including complex ones)
+            queryset = queryset.order_by('-created_at')
         
         # Apply filters
         difficulty = request.query_params.get('difficulty')
@@ -499,7 +516,7 @@ class RecipeViewSet(viewsets.ViewSet):
             'results': serializer.data
         })
     
-    @action(detail=False, methods=['get'], url_path='search')
+    @action(detail=False, methods=['get'], url_path='search', permission_classes=[permissions.AllowAny])
     def search(self, request):
         """
         Basic text search endpoint for recipes.
@@ -552,7 +569,7 @@ class RecipeViewSet(viewsets.ViewSet):
                 'error': f'Search failed: {str(e)}'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
-    @action(detail=False, methods=['post'], url_path='advanced-search')
+    @action(detail=False, methods=['post'], url_path='advanced-search', permission_classes=[permissions.AllowAny])
     def advanced_search(self, request):
         """
         Advanced search endpoint with multiple filter criteria.
@@ -600,7 +617,7 @@ class RecipeViewSet(viewsets.ViewSet):
                 'error': f'Advanced search failed: {str(e)}'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
-    @action(detail=False, methods=['get'], url_path='search-suggestions')
+    @action(detail=False, methods=['get'], url_path='search-suggestions', permission_classes=[permissions.AllowAny])
     def search_suggestions(self, request):
         """
         Get search suggestions for autocomplete functionality.
@@ -627,7 +644,7 @@ class RecipeViewSet(viewsets.ViewSet):
                 'error': f'Failed to get suggestions: {str(e)}'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
-    @action(detail=False, methods=['get'], url_path='popular-searches')
+    @action(detail=False, methods=['get'], url_path='popular-searches', permission_classes=[permissions.AllowAny])
     def popular_searches(self, request):
         """
         Get popular search terms based on recipe content analysis.

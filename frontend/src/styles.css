@@ -1,3 +1,288 @@
+/* Import Angular Material Prebuilt Theme */
+@import '@angular/material/prebuilt-themes/indigo-pink.css';
+
+/* Import Tailwind */
 @tailwind base;
 @tailwind components;
-@tailwind utilities; 
+@tailwind utilities;
+
+/* Global Typography and Base Styles */
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: 'Roboto', 'Helvetica Neue', sans-serif;
+  line-height: 1.5;
+  color: #333;
+  background-color: #fafafa;
+}
+
+/* Fix Material Design component spacing */
+.mat-card {
+  margin: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border-radius: 8px;
+}
+
+.mat-card-header {
+  padding: 16px;
+}
+
+.mat-card-content {
+  padding: 0 16px 16px;
+}
+
+.mat-card-actions {
+  padding: 8px 16px;
+  margin: 0;
+}
+
+/* Fix button styling */
+.mat-button, .mat-raised-button {
+  min-width: auto;
+  line-height: 36px;
+  padding: 0 16px;
+}
+
+/* Fix form field styling */
+.mat-form-field {
+  width: 100%;
+  font-family: 'Roboto', sans-serif;
+}
+
+.mat-form-field + .mat-form-field {
+  margin-left: 8px;
+}
+
+/* Fix Material Design input field appearance */
+.mat-mdc-form-field {
+  width: 100%;
+}
+
+.mat-mdc-text-field-wrapper {
+  background-color: transparent;
+}
+
+.mat-mdc-form-field-input-control {
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.mat-mdc-form-field-label {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+/* Global fix for outline borders appearing where they shouldn't */
+.mat-mdc-form-field[appearance="fill"] .mat-mdc-form-field-outline,
+.mat-mdc-form-field[appearance="fill"] .mat-mdc-notched-outline {
+  display: none !important;
+}
+
+.mat-mdc-form-field[appearance="fill"] .mat-mdc-form-field-outline-start,
+.mat-mdc-form-field[appearance="fill"] .mat-mdc-form-field-outline-notch,
+.mat-mdc-form-field[appearance="fill"] .mat-mdc-form-field-outline-end {
+  display: none !important;
+}
+
+/* Comprehensive form field styling for clean appearance */
+.mat-mdc-form-field .mat-mdc-text-field-wrapper {
+  background-color: #f8f9fa !important;
+  border: 1px solid #e9ecef !important;
+  border-radius: 8px !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.mat-mdc-form-field:not(.mat-form-field-disabled) .mat-mdc-text-field-wrapper:hover {
+  border-color: #6c757d !important;
+}
+
+.mat-mdc-form-field.mat-focused .mat-mdc-text-field-wrapper {
+  border-color: #2196F3 !important;
+  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1) !important;
+}
+
+/* Clean label styling for all form fields */
+.mat-mdc-form-field .mat-mdc-form-field-label {
+  color: #6c757d !important;
+}
+
+.mat-mdc-form-field.mat-focused .mat-mdc-form-field-label {
+  color: #2196F3 !important;
+}
+
+/* Input text styling */
+.mat-mdc-form-field .mat-mdc-form-field-input-control {
+  color: #333 !important;
+  font-size: 14px !important;
+}
+
+/* Error state styling */
+.mat-mdc-form-field.mat-form-field-invalid .mat-mdc-text-field-wrapper {
+  border-color: #dc3545 !important;
+}
+
+.mat-mdc-form-field.mat-form-field-invalid.mat-focused .mat-mdc-text-field-wrapper {
+  box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.1) !important;
+}
+
+/* Select dropdown styling */
+.mat-mdc-form-field .mat-mdc-select {
+  color: #333 !important;
+}
+
+.mat-mdc-form-field .mat-mdc-select-arrow {
+  color: #6c757d !important;
+}
+
+/* Hint text styling */
+.mat-mdc-form-field .mat-mdc-form-field-hint {
+  color: #6c757d !important;
+  font-size: 12px !important;
+}
+
+/* Remove unwanted Material density overrides */
+.mat-mdc-form-field .mat-mdc-text-field-wrapper .mat-mdc-form-field-focus-overlay {
+  background-color: transparent !important;
+}
+
+/* Comprehensive fix - override outline appearance globally */
+.mat-mdc-form-field[appearance="outline"] .mat-mdc-form-field-outline,
+.mat-mdc-form-field[appearance="outline"] .mat-mdc-notched-outline,
+.mat-mdc-form-field[appearance="outline"] .mat-mdc-form-field-outline-start,
+.mat-mdc-form-field[appearance="outline"] .mat-mdc-form-field-outline-notch,
+.mat-mdc-form-field[appearance="outline"] .mat-mdc-form-field-outline-end {
+  display: none !important;
+}
+
+/* Force all outline appearances to use clean styling */
+.mat-mdc-form-field[appearance="outline"] .mat-mdc-text-field-wrapper {
+  background-color: #f8f9fa !important;
+  border: 1px solid #e9ecef !important;
+  border-radius: 8px !important;
+}
+
+.mat-mdc-form-field[appearance="outline"]:not(.mat-form-field-disabled) .mat-mdc-text-field-wrapper:hover {
+  border-color: #6c757d !important;
+}
+
+.mat-mdc-form-field[appearance="outline"].mat-focused .mat-mdc-text-field-wrapper {
+  border-color: #2196F3 !important;
+  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1) !important;
+}
+
+/* Prevent placeholder text borders from appearing */
+.mat-mdc-form-field-label-wrapper {
+  border: none !important;
+  outline: none !important;
+}
+
+/* Ensure clean input field appearance */
+.mat-mdc-form-field-input-control::placeholder {
+  color: #9ca3af !important;
+  border: none !important;
+}
+
+/* Fix autocomplete panel */
+.mat-mdc-autocomplete-panel {
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Fix search input specific styling */
+.search-card .mat-mdc-form-field {
+  width: 100%;
+}
+
+.search-card .mat-mdc-text-field-wrapper {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.search-card .mat-mdc-form-field:not(.mat-form-field-disabled) .mat-mdc-text-field-wrapper:hover {
+  border-color: #6c757d;
+}
+
+.search-card .mat-mdc-form-field.mat-focused .mat-mdc-text-field-wrapper {
+  border-color: #2196F3;
+  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+}
+
+/* Remove outline appearance borders */
+.search-card .mat-mdc-form-field-outline {
+  display: none;
+}
+
+.search-card .mat-mdc-form-field-outline-start,
+.search-card .mat-mdc-form-field-outline-notch,
+.search-card .mat-mdc-form-field-outline-end {
+  display: none;
+}
+
+/* Clean label styling */
+.search-card .mat-mdc-form-field-label {
+  color: #6c757d;
+}
+
+.search-card .mat-mdc-form-field.mat-focused .mat-mdc-form-field-label {
+  color: #2196F3;
+}
+
+/* Fix typography */
+h1, h2, h3, h4, h5, h6 {
+  margin: 0 0 16px 0;
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+/* Container utilities */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* Prevent layout shifts and flashing */
+* {
+  box-sizing: border-box;
+}
+
+/* Prevent content jumping */
+.mat-card-header, .mat-card-content, .mat-card-actions {
+  position: relative;
+}
+
+/* Prevent input field jumping */
+.mat-mdc-form-field-subscript-wrapper {
+  min-height: 16px;
+}
+
+/* Smooth transitions for all interactive elements */
+button, .mat-button, .mat-raised-button, .mat-icon-button {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Prevent text selection on buttons and interactive elements */
+button, .mat-button, .mat-raised-button, .mat-icon-button,
+.mat-chip, .difficulty-badge {
+  user-select: none;
+}
+
+/* Ensure consistent text rendering */
+body, input, textarea, select, button {
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Responsive utilities */
+@media (max-width: 768px) {
+  .container {
+    padding: 0 8px;
+  }
+  
+  .mat-card {
+    margin: 4px;
+  }
+} 

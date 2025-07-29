@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -12,7 +12,7 @@ import { AuthService, RegisterRequest } from '../../../core/services/auth.servic
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MaterialModule, LoadingComponent],
+  imports: [CommonModule, ReactiveFormsModule, MaterialModule, LoadingComponent, RouterLink],
   template: `
     <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div class="max-w-md w-full space-y-8">
@@ -37,7 +37,7 @@ import { AuthService, RegisterRequest } from '../../../core/services/auth.servic
               <!-- Name Fields Row -->
               <div class="flex gap-4">
                 <!-- First Name -->
-                <mat-form-field appearance="outline" class="flex-1">
+                <mat-form-field appearance="fill" class="flex-1">
                   <mat-label>First Name</mat-label>
                   <input 
                     matInput 
@@ -55,7 +55,7 @@ import { AuthService, RegisterRequest } from '../../../core/services/auth.servic
                 </mat-form-field>
 
                 <!-- Last Name -->
-                <mat-form-field appearance="outline" class="flex-1">
+                <mat-form-field appearance="fill" class="flex-1">
                   <mat-label>Last Name</mat-label>
                   <input 
                     matInput 
@@ -74,7 +74,7 @@ import { AuthService, RegisterRequest } from '../../../core/services/auth.servic
               </div>
 
               <!-- Email Field -->
-              <mat-form-field appearance="outline" class="w-full">
+              <mat-form-field appearance="fill" class="w-full">
                 <mat-label>Email address</mat-label>
                 <input 
                   matInput 
@@ -92,7 +92,7 @@ import { AuthService, RegisterRequest } from '../../../core/services/auth.servic
               </mat-form-field>
 
               <!-- Username Field -->
-              <mat-form-field appearance="outline" class="w-full">
+              <mat-form-field appearance="fill" class="w-full">
                 <mat-label>Username</mat-label>
                 <input 
                   matInput 
@@ -117,7 +117,7 @@ import { AuthService, RegisterRequest } from '../../../core/services/auth.servic
               </mat-form-field>
 
               <!-- Password Field -->
-              <mat-form-field appearance="outline" class="w-full">
+              <mat-form-field appearance="fill" class="w-full">
                 <mat-label>Password</mat-label>
                 <input 
                   matInput 
@@ -149,7 +149,7 @@ import { AuthService, RegisterRequest } from '../../../core/services/auth.servic
               </mat-form-field>
 
               <!-- Confirm Password Field -->
-              <mat-form-field appearance="outline" class="w-full">
+              <mat-form-field appearance="fill" class="w-full">
                 <mat-label>Confirm Password</mat-label>
                 <input 
                   matInput 
@@ -181,14 +181,11 @@ import { AuthService, RegisterRequest } from '../../../core/services/auth.servic
                 <mat-checkbox formControlName="acceptTerms" color="primary" class="mt-1">
                 </mat-checkbox>
                 <label class="ml-2 text-sm text-gray-600">
-                  I agree to the 
-                  <a href="/terms" target="_blank" class="text-indigo-600 hover:text-indigo-500">Terms of Service</a>
-                  and 
-                  <a href="/privacy" target="_blank" class="text-indigo-600 hover:text-indigo-500">Privacy Policy</a>
+                  I agree to lend my data to be held by Recipe Sharing Platform. My data will be used for purely educational purpose.
                 </label>
               </div>
               <mat-error *ngIf="registerForm.get('acceptTerms')?.hasError('required') && registerForm.get('acceptTerms')?.touched">
-                You must accept the terms and conditions
+                You must agree to the data usage terms
               </mat-error>
 
               <!-- Error Message Display -->
@@ -215,7 +212,7 @@ import { AuthService, RegisterRequest } from '../../../core/services/auth.servic
         <!-- Additional Info -->
         <div class="text-center">
           <p class="text-xs text-gray-500">
-            By creating an account, you agree to our community guidelines and terms of service.
+            By creating an account, you confirm your understanding that this platform is for educational purposes only.
           </p>
         </div>
       </div>
@@ -228,6 +225,22 @@ import { AuthService, RegisterRequest } from '../../../core/services/auth.servic
     
     .flex-1 {
       flex: 1;
+    }
+    
+    /* Auth form specific enhancements */
+    .mat-mdc-form-field {
+      width: 100%;
+      margin-bottom: 8px;
+    }
+    
+    .mat-card {
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    }
+    
+    /* Name fields row styling */
+    .flex.gap-4 .mat-mdc-form-field {
+      margin-bottom: 8px;
     }
   `]
 })

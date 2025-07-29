@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -11,7 +11,7 @@ import { LoadingComponent } from '../../../shared/components/loading/loading.com
 @Component({
   selector: 'app-forgot-password',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MaterialModule, LoadingComponent],
+  imports: [CommonModule, ReactiveFormsModule, MaterialModule, LoadingComponent, RouterLink],
   template: `
     <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div class="max-w-md w-full space-y-8">
@@ -32,7 +32,7 @@ import { LoadingComponent } from '../../../shared/components/loading/loading.com
               <form [formGroup]="forgotPasswordForm" (ngSubmit)="onSubmit()" class="space-y-6">
                 
                 <!-- Email Field -->
-                <mat-form-field appearance="outline" class="w-full">
+                <mat-form-field appearance="fill" class="w-full">
                   <mat-label>Email address</mat-label>
                   <input 
                     matInput 
@@ -141,6 +141,17 @@ import { LoadingComponent } from '../../../shared/components/loading/loading.com
     
     .text-6xl {
       font-size: 4rem;
+    }
+    
+    /* Auth form specific enhancements */
+    .mat-mdc-form-field {
+      width: 100%;
+      margin-bottom: 8px;
+    }
+    
+    .mat-card {
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
     }
   `]
 })

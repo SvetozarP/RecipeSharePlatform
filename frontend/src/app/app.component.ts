@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet, Router } from '@angular/router';
+import { RouterOutlet, Router, RouterLink } from '@angular/router';
 import { MaterialModule } from './shared/material.module';
 import { AuthService, User } from './core/services/auth.service';
 import { Observable } from 'rxjs';
@@ -8,9 +8,9 @@ import { Observable } from 'rxjs';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, MaterialModule],
+  imports: [CommonModule, RouterOutlet, RouterLink, MaterialModule],
   template: `
-    <div class="min-h-screen bg-gray-50">
+    <div class="app-container">
       <!-- Navigation Header -->
       <mat-toolbar color="primary" class="mat-elevation-1">
         <button mat-icon-button (click)="toggleSidenav()" *ngIf="isMobile">
@@ -24,7 +24,7 @@ import { Observable } from 'rxjs';
         <span class="flex-1"></span>
         
         <!-- Desktop Navigation -->
-        <div class="hidden md:flex items-center space-x-4" *ngIf="!isMobile">
+        <div class="hidden md:flex items-center space-x-4">
           <button mat-button routerLink="/recipes">
             <mat-icon>restaurant</mat-icon>
             Recipes
@@ -53,21 +53,54 @@ import { Observable } from 'rxjs';
       </mat-toolbar>
 
       <!-- Main Content -->
-      <main class="min-h-screen">
+      <main class="main-content">
         <router-outlet></router-outlet>
       </main>
 
       <!-- Footer -->
-      <footer class="bg-white border-t border-gray-200 mt-auto">
-        <div class="max-w-7xl mx-auto py-6 px-4 text-center text-gray-600">
+      <footer class="app-footer">
+        <div class="footer-content">
           <p>&copy; 2025 Recipe Sharing Platform. Built with Angular 20 & Django REST Framework.</p>
         </div>
       </footer>
     </div>
   `,
   styles: [`
+    .app-container {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-color: #fafafa;
+    }
+    
     .mat-toolbar {
       background: linear-gradient(45deg, #2196F3 30%, #21CBF3 90%);
+      color: white;
+    }
+    
+    .main-content {
+      flex: 1;
+      min-height: calc(100vh - 128px);
+    }
+    
+    .app-footer {
+      background: white;
+      border-top: 1px solid #e0e0e0;
+      margin-top: auto;
+    }
+    
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 16px;
+      text-align: center;
+      color: #666;
+    }
+    
+    @media (max-width: 768px) {
+      .footer-content {
+        padding: 16px 8px;
+      }
     }
   `]
 })
