@@ -23,8 +23,9 @@ export interface RegisterRequest {
   email: string;
   username: string;
   password: string;
-  firstName: string;
-  lastName: string;
+  password_confirm: string;
+  first_name: string;
+  last_name: string;
 }
 
 export interface AuthResponse {

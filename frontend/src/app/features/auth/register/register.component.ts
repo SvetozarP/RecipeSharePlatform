@@ -330,8 +330,9 @@ export class RegisterComponent implements OnInit, OnDestroy {
         email: this.registerForm.value.email,
         username: this.registerForm.value.username,
         password: this.registerForm.value.password,
-        firstName: this.registerForm.value.firstName,
-        lastName: this.registerForm.value.lastName
+        password_confirm: this.registerForm.value.confirmPassword,
+        first_name: this.registerForm.value.firstName,
+        last_name: this.registerForm.value.lastName
       };
 
       this.authService.register(registerData)
@@ -355,14 +356,36 @@ export class RegisterComponent implements OnInit, OnDestroy {
   }
 
   private handleRegistrationError(error: any): void {
+    console.error('Registration error details:', error);
+    
     if (error.status === 400) {
       // Handle specific validation errors from backend
-      if (error.error?.email) {
-        this.errorMessage = 'This email is already registered. Please use a different email.';
-      } else if (error.error?.username) {
-        this.errorMessage = 'This username is already taken. Please choose a different username.';
+      const errorDetails = error.error;
+      
+      if (errorDetails?.email) {
+        this.errorMessage = Array.isArray(errorDetails.email) 
+          ? errorDetails.email[0] 
+          : 'This email is already registered. Please use a different email.';
+      } else if (errorDetails?.username) {
+        this.errorMessage = Array.isArray(errorDetails.username)
+          ? errorDetails.username[0]
+          : 'This username is already taken. Please choose a different username.';
+      } else if (errorDetails?.password) {
+        this.errorMessage = Array.isArray(errorDetails.password)
+          ? errorDetails.password[0]
+          : 'Password validation failed. Please check the requirements.';
+      } else if (errorDetails?.password_confirm) {
+        this.errorMessage = Array.isArray(errorDetails.password_confirm)
+          ? errorDetails.password_confirm[0]
+          : 'Password confirmation failed.';
+      } else if (errorDetails?.non_field_errors) {
+        this.errorMessage = Array.isArray(errorDetails.non_field_errors)
+          ? errorDetails.non_field_errors[0]
+          : 'Please check your information and try again.';
       } else {
-        this.errorMessage = 'Please check your information and try again.';
+        // Show the first available error message
+        const firstError = Object.values(errorDetails)[0];
+        this.errorMessage = Array.isArray(firstError) ? firstError[0] : 'Please check your information and try again.';
       }
     } else if (error.status === 409) {
       this.errorMessage = 'An account with this email or username already exists.';
