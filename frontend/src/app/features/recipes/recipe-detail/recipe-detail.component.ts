@@ -131,13 +131,13 @@ import { MatSnackBar } from '@angular/material/snack-bar';
                  class="w-full h-96 object-cover">
             
             <!-- Image Navigation -->
-            <button *ngIf="(recipe()?.images?.length || 0) > 1" 
+            <button *ngIf="recipeImages().length > 1" 
                     mat-fab class="absolute left-4 top-1/2 -translate-y-1/2" 
                     color="primary" size="mini"
                     (click)="previousImage()">
               <mat-icon>chevron_left</mat-icon>
             </button>
-            <button *ngIf="(recipe()?.images?.length || 0) > 1" 
+            <button *ngIf="recipeImages().length > 1" 
                     mat-fab class="absolute right-4 top-1/2 -translate-y-1/2" 
                     color="primary" size="mini"
                     (click)="nextImage()">
@@ -145,16 +145,16 @@ import { MatSnackBar } from '@angular/material/snack-bar';
             </button>
             
             <!-- Image Counter -->
-            <div *ngIf="(recipe()?.images?.length || 0) > 1" 
+            <div *ngIf="recipeImages().length > 1" 
                  class="absolute bottom-4 right-4 bg-black bg-opacity-50 text-white px-3 py-1 rounded">
-              {{ currentImageIndex() + 1 }} / {{ recipe()?.images?.length }}
+              {{ currentImageIndex() + 1 }} / {{ recipeImages().length }}
             </div>
           </div>
           
           <!-- Thumbnail Gallery -->
-          <div *ngIf="(recipe()?.images?.length || 0) > 1" class="p-4">
+          <div *ngIf="recipeImages().length > 1" class="p-4">
             <div class="flex gap-2 overflow-x-auto">
-              <img *ngFor="let image of recipe()?.images; let i = index" 
+              <img *ngFor="let image of recipeImages(); let i = index" 
                    [src]="image.image"
                    [alt]="image.alt_text || recipe()?.title"
                    class="w-16 h-16 object-cover rounded cursor-pointer border-2"
@@ -414,8 +414,14 @@ export class RecipeDetailComponent implements OnInit {
   currentImageIndex = signal(0);
 
   // Computed values
+  recipeImages = computed(() => {
+    const recipe = this.recipe();
+    // Handle backend returning images as dict instead of array
+    return Array.isArray(recipe?.images) ? recipe.images : [];
+  });
+
   currentImage = computed(() => {
-    const images = this.recipe()?.images || [];
+    const images = this.recipeImages();
     return images[this.currentImageIndex()] || { image: '', alt_text: '', is_primary: true, ordering: 0, id: 0 };
   });
 
@@ -448,7 +454,7 @@ export class RecipeDetailComponent implements OnInit {
         this.checkedIngredients = new Array(ingredients.length).fill(false);
         
         // Set primary image as current or first image
-        const images = recipe.images || [];
+        const images = this.recipeImages();
         const primaryIndex = images.findIndex(img => img.is_primary);
         this.currentImageIndex.set(primaryIndex >= 0 ? primaryIndex : 0);
       }
@@ -457,14 +463,14 @@ export class RecipeDetailComponent implements OnInit {
 
   // Image gallery methods
   nextImage(): void {
-    const images = this.recipe()?.images || [];
+    const images = this.recipeImages();
     if (images.length > 1) {
       this.currentImageIndex.set((this.currentImageIndex() + 1) % images.length);
     }
   }
 
   previousImage(): void {
-    const images = this.recipe()?.images || [];
+    const images = this.recipeImages();
     if (images.length > 1) {
       const newIndex = this.currentImageIndex() - 1;
       this.currentImageIndex.set(newIndex < 0 ? images.length - 1 : newIndex);
