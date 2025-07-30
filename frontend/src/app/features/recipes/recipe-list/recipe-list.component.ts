@@ -297,9 +297,9 @@ import { MatTooltip } from '@angular/material/tooltip';
     }
 
     .search-indicator button {
-      margin-left: 4px;
-      width: 20px;
-      height: 20px;
+      margin-left: 8px;
+      width: 48px;
+      height: 48px;
       line-height: 20px;
     }
 
