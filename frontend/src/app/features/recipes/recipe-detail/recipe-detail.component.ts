@@ -75,23 +75,36 @@ import { MatSnackBar } from '@angular/material/snack-bar';
             </div>
             
             <!-- Action Buttons -->
-            <div class="flex gap-2 ml-4">
-              <button *ngIf="isAuthenticated()" mat-icon-button (click)="toggleFavorite()" [class.text-red-500]="recipe()?.is_favorited">
-                <mat-icon>{{ recipe()?.is_favorited ? 'favorite' : 'favorite_border' }}</mat-icon>
-              </button>
-              <button mat-icon-button (click)="shareRecipe()">
-                <mat-icon>share</mat-icon>
-              </button>
-              <button mat-icon-button (click)="printRecipe()">
-                <mat-icon>print</mat-icon>
-              </button>
-              <button *ngIf="canEditRecipe()" mat-button color="primary" (click)="editRecipe()">
-                <mat-icon>edit</mat-icon>
-                Edit
-              </button>
-              <button *ngIf="canDeleteRecipe()" mat-icon-button color="warn" (click)="deleteRecipe()">
-                <mat-icon>delete</mat-icon>
-              </button>
+            <div class="flex flex-col gap-3 ml-4">
+              <!-- General Actions -->
+              <div class="flex gap-2">
+                <button *ngIf="isAuthenticated()" mat-icon-button (click)="toggleFavorite()" 
+                        [class.text-red-500]="recipe()?.is_favorited"
+                        matTooltip="{{ recipe()?.is_favorited ? 'Remove from favorites' : 'Add to favorites' }}">
+                  <mat-icon>{{ recipe()?.is_favorited ? 'favorite' : 'favorite_border' }}</mat-icon>
+                </button>
+                <button mat-icon-button (click)="shareRecipe()" matTooltip="Share recipe">
+                  <mat-icon>share</mat-icon>
+                </button>
+                <button mat-icon-button (click)="printRecipe()" matTooltip="Print recipe">
+                  <mat-icon>print</mat-icon>
+                </button>
+              </div>
+              
+              <!-- Owner Actions -->
+              <div *ngIf="canEditRecipe() || canDeleteRecipe()" class="flex gap-2 border-t pt-3">
+                <button *ngIf="canEditRecipe()" mat-raised-button color="primary" (click)="editRecipe()" 
+                        class="flex items-center gap-2 px-4 py-2">
+                  <mat-icon>edit</mat-icon>
+                  <span>Edit Recipe</span>
+                </button>
+                <button *ngIf="canDeleteRecipe()" mat-raised-button color="warn" (click)="deleteRecipe()" 
+                        class="flex items-center gap-2 px-4 py-2"
+                        matTooltip="Delete this recipe permanently">
+                  <mat-icon>delete</mat-icon>
+                  <span>Delete</span>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -595,21 +608,8 @@ export class RecipeDetailComponent implements OnInit {
     const recipe = this.recipe();
     const currentUser = this.authService.getCurrentUser();
     
-    // Temporary debug logging to check backend fix
-    console.log('After backend fix - Permission check:', {
-      hasRecipe: !!recipe,
-      hasCurrentUser: !!currentUser,
-      hasAuthor: !!recipe?.author,
-      hasAuthorId: !!recipe?.author?.id,
-      authorObject: recipe?.author,
-      currentUserObject: currentUser,
-      recipeAuthorId: recipe?.author?.id,
-      currentUserId: currentUser?.id
-    });
-    
     // Check if we have valid recipe, user, and author data
     if (!recipe || !currentUser || !recipe.author || !recipe.author.id) {
-      console.log('Permission denied: Missing required data');
       return false;
     }
     
@@ -620,17 +620,7 @@ export class RecipeDetailComponent implements OnInit {
     // Check isStaff with both possible field names (isStaff and is_staff)
     const isStaff = !!(currentUser.isStaff || (currentUser as any).is_staff);
     
-    const canEdit = recipeAuthorId === currentUserId || isStaff;
-    
-    console.log('Permission check result:', {
-      recipeAuthorId,
-      currentUserId,
-      idsMatch: recipeAuthorId === currentUserId,
-      isStaff,
-      canEdit
-    });
-    
-    return canEdit;
+    return recipeAuthorId === currentUserId || isStaff;
   }
 
   canDeleteRecipe(): boolean {
