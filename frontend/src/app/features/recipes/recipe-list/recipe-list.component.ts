@@ -39,6 +39,7 @@ import { MatTooltip } from '@angular/material/tooltip';
     CommonModule, 
     FormsModule, 
     ReactiveFormsModule, 
+    RouterModule,
     MaterialModule, 
     RecipeCardComponent, 
     RecipeSkeletonComponent,
@@ -588,6 +589,8 @@ export class RecipeListComponent implements OnInit, OnDestroy {
   private initializeComponent(): void {
     this.setupSearchSuggestions();
     this.setupSearchTrigger();
+    this.setupFilterWatcher();
+    this.readUrlParameters();
     this.loadRecipes();
     
     // Setup infinite scroll after view init
@@ -686,7 +689,18 @@ export class RecipeListComponent implements OnInit, OnDestroy {
       takeUntil(this.destroy$)
     ).subscribe((value) => {
       this.currentPage = 1; // Reset to first page on new search
-      this.loadRecipes();
+      this.updateUrlAndLoadRecipes();
+    });
+  }
+
+  private setupFilterWatcher(): void {
+    this.filterForm.valueChanges.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      this.currentPage = 1;
+      this.updateUrlAndLoadRecipes();
     });
   }
 
@@ -696,6 +710,82 @@ export class RecipeListComponent implements OnInit, OnDestroy {
       difficulty: [[]],
       dietary_restrictions: [[]]
     });
+  }
+
+  private readUrlParameters(): void {
+    const queryParams = this.route.snapshot.queryParams;
+    
+    // Read categories from URL
+    if (queryParams['categories']) {
+      const categories = Array.isArray(queryParams['categories']) 
+        ? queryParams['categories'] 
+        : [queryParams['categories']];
+      this.filterForm.patchValue({ categories });
+    }
+    
+    // Read search query from URL
+    if (queryParams['q']) {
+      this.searchControl.setValue(queryParams['q']);
+    }
+    
+    // Read sort from URL
+    if (queryParams['sort']) {
+      this.currentSort = queryParams['sort'];
+    }
+    
+    // Read difficulty from URL
+    if (queryParams['difficulty']) {
+      const difficulty = Array.isArray(queryParams['difficulty']) 
+        ? queryParams['difficulty'] 
+        : [queryParams['difficulty']];
+      this.filterForm.patchValue({ difficulty });
+    }
+    
+    // Read dietary restrictions from URL
+    if (queryParams['dietary_restrictions']) {
+      const dietaryRestrictions = Array.isArray(queryParams['dietary_restrictions']) 
+        ? queryParams['dietary_restrictions'] 
+        : [queryParams['dietary_restrictions']];
+      this.filterForm.patchValue({ dietary_restrictions: dietaryRestrictions });
+    }
+  }
+
+  private updateUrlAndLoadRecipes(): void {
+    const searchQuery = this.searchControl.value?.trim();
+    const filterValues = this.filterForm.value;
+    
+    // Build query parameters for URL
+    const queryParams: any = {};
+    
+    if (searchQuery && searchQuery.length > 0) {
+      queryParams.q = searchQuery;
+    }
+    
+    if (this.currentSort !== 'newest') {
+      queryParams.sort = this.currentSort;
+    }
+    
+    if (filterValues.categories && filterValues.categories.length > 0) {
+      queryParams.categories = filterValues.categories;
+    }
+    
+    if (filterValues.difficulty && filterValues.difficulty.length > 0) {
+      queryParams.difficulty = filterValues.difficulty;
+    }
+    
+    if (filterValues.dietary_restrictions && filterValues.dietary_restrictions.length > 0) {
+      queryParams.dietary_restrictions = filterValues.dietary_restrictions;
+    }
+    
+    // Update URL without reloading the page
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams,
+      queryParamsHandling: 'replace'
+    });
+    
+    // Load recipes with new parameters
+    this.loadRecipes();
   }
 
   private setupSearchSuggestions(): void {
@@ -765,6 +855,7 @@ export class RecipeListComponent implements OnInit, OnDestroy {
 
   private buildSearchParams(): RecipeSearchParams {
     const searchQuery = this.searchControl.value?.trim();
+    const filterValues = this.filterForm.value;
     
     const params: RecipeSearchParams = {
       page: this.currentPage,
@@ -776,6 +867,20 @@ export class RecipeListComponent implements OnInit, OnDestroy {
     if (searchQuery && searchQuery.length > 0) {
       params.q = searchQuery;
     }
+    
+    // Add filter parameters
+    if (filterValues.categories && filterValues.categories.length > 0) {
+      params.categories = filterValues.categories;
+    }
+    
+    if (filterValues.difficulty && filterValues.difficulty.length > 0) {
+      params.difficulty = filterValues.difficulty;
+    }
+    
+    if (filterValues.dietary_restrictions && filterValues.dietary_restrictions.length > 0) {
+      params.dietary_restrictions = filterValues.dietary_restrictions;
+    }
+    
     return params;
   }
 
@@ -783,20 +888,20 @@ export class RecipeListComponent implements OnInit, OnDestroy {
   onSearch(): void {
     this.currentPage = 1;
     this.hasMoreData = true;
-    this.loadRecipes();
+    this.updateUrlAndLoadRecipes();
   }
 
   onSuggestionSelected(event: any): void {
     this.currentPage = 1;
     this.hasMoreData = true;
-    this.loadRecipes();
+    this.updateUrlAndLoadRecipes();
   }
 
   onSortChange(event: MatSelectChange): void {
     this.currentSort = event.value;
     this.currentPage = 1;
     this.hasMoreData = true;
-    this.loadRecipes();
+    this.updateUrlAndLoadRecipes();
   }
 
   onViewModeChange(event: MatButtonToggleChange): void {
@@ -818,14 +923,14 @@ export class RecipeListComponent implements OnInit, OnDestroy {
     this.currentPage = 1;
     this.hasMoreData = true;
     this.recipes = [];
-    this.loadRecipes();
+    this.updateUrlAndLoadRecipes();
   }
 
   clearSearch(): void {
     this.searchControl.setValue('');
     this.currentPage = 1;
     this.hasMoreData = true;
-    this.loadRecipes();
+    this.updateUrlAndLoadRecipes();
   }
 
   onFavoriteToggle(recipeId: string): void {
