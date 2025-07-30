@@ -119,6 +119,12 @@ import { MatTooltip } from '@angular/material/tooltip';
                 <mat-icon>close</mat-icon>
               </button>
             </span>
+            <span *ngIf="getAppliedCategoryFilter()" class="search-indicator">
+              in category "{{ getAppliedCategoryFilter() }}"
+              <button mat-icon-button (click)="clearCategoryFilter()" matTooltip="Clear category filter">
+                <mat-icon>close</mat-icon>
+              </button>
+            </span>
           </span>
         </div>
 
@@ -933,7 +939,11 @@ export class RecipeListComponent implements OnInit, OnDestroy {
 
   clearFilters(): void {
     this.searchControl.setValue('');
-    this.filterForm.reset();
+    this.filterForm.reset({
+      categories: [],
+      difficulty: [],
+      dietary_restrictions: []
+    });
     this.currentSort = 'newest';
     this.currentPage = 1;
     this.hasMoreData = true;
@@ -943,6 +953,13 @@ export class RecipeListComponent implements OnInit, OnDestroy {
 
   clearSearch(): void {
     this.searchControl.setValue('');
+    this.currentPage = 1;
+    this.hasMoreData = true;
+    this.updateUrlAndLoadRecipes();
+  }
+
+  clearCategoryFilter(): void {
+    this.filterForm.patchValue({ categories: [] });
     this.currentPage = 1;
     this.hasMoreData = true;
     this.updateUrlAndLoadRecipes();
@@ -1014,5 +1031,25 @@ export class RecipeListComponent implements OnInit, OnDestroy {
 
   trackByRecipeId(index: number, recipe: RecipeListItem): string {
     return recipe.id;
+  }
+
+  getAppliedCategoryFilter(): string | null {
+    const categories = this.filterForm.get('categories')?.value;
+    if (!categories || categories.length === 0) {
+      return null;
+    }
+    
+    // For now, show the first category if multiple are selected
+    // In a more advanced implementation, you could show all categories
+    const firstCategory = categories[0];
+    
+    // If it's a slug (string), return it formatted
+    if (typeof firstCategory === 'string') {
+      return firstCategory.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    }
+    
+    // If it's an ID (number), find the category name from the categories observable
+    // This would require additional logic to map ID to name
+    return firstCategory.toString();
   }
 } 
