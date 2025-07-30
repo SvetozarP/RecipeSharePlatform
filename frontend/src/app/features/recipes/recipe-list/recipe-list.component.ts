@@ -578,6 +578,7 @@ export class RecipeListComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.initializeComponent();
+    this.setupRouteSubscription();
   }
 
   ngOnDestroy(): void {
@@ -590,8 +591,6 @@ export class RecipeListComponent implements OnInit, OnDestroy {
     this.setupSearchSuggestions();
     this.setupSearchTrigger();
     this.setupFilterWatcher();
-    this.readUrlParameters();
-    this.loadRecipes();
     
     // Setup infinite scroll after view init
     setTimeout(() => {
@@ -712,8 +711,18 @@ export class RecipeListComponent implements OnInit, OnDestroy {
     });
   }
 
-  private readUrlParameters(): void {
-    const queryParams = this.route.snapshot.queryParams;
+  private setupRouteSubscription(): void {
+    // Listen for route parameter changes and reload recipes
+    this.route.queryParams.pipe(
+      takeUntil(this.destroy$),
+      distinctUntilChanged()
+    ).subscribe(queryParams => {
+      this.processUrlParameters(queryParams);
+      this.loadRecipes();
+    });
+  }
+
+  private processUrlParameters(queryParams: any): void {
     
     // Read categories from URL
     if (queryParams['categories']) {
@@ -870,7 +879,13 @@ export class RecipeListComponent implements OnInit, OnDestroy {
     
     // Add filter parameters
     if (filterValues.categories && filterValues.categories.length > 0) {
-      params.categories = filterValues.categories;
+      // If categories contain non-numeric values (slugs), use category_slugs parameter
+      const hasNonNumeric = filterValues.categories.some((cat: any) => isNaN(Number(cat)));
+      if (hasNonNumeric) {
+        params.category_slugs = filterValues.categories;
+      } else {
+        params.categories = filterValues.categories.map((cat: any) => Number(cat));
+      }
     }
     
     if (filterValues.difficulty && filterValues.difficulty.length > 0) {

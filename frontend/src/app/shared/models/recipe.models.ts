@@ -126,7 +126,8 @@ export interface RecipeListItem {
 
 export interface RecipeSearchParams {
   q?: string; // Search query
-  categories?: string[]; // Category slugs
+  categories?: number[]; // Category IDs
+  category_slugs?: string[]; // Category slugs  
   difficulty?: string[];
   dietary_restrictions?: string[];
   cooking_method?: string[];

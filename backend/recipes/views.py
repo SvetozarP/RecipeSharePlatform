@@ -241,7 +241,14 @@ class RecipeViewSet(viewsets.ViewSet):
         # Category filtering - support multiple categories and hierarchy
         categories = query_params.getlist('categories')
         if categories:
-            queryset = queryset.filter(categories__id__in=categories).distinct()
+            # Check if categories are numeric IDs or slugs
+            try:
+                # Try to convert to integers - if all succeed, they're IDs
+                category_ids = [int(cat) for cat in categories]
+                queryset = queryset.filter(categories__id__in=category_ids).distinct()
+            except (ValueError, TypeError):
+                # If conversion fails, treat as slugs
+                queryset = queryset.filter(categories__slug__in=categories).distinct()
         
         category_slugs = query_params.getlist('category_slugs')
         if category_slugs:

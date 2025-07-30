@@ -257,7 +257,7 @@ export class RecipeService extends ApiService {
     });
     
     // Array parameters
-    const arrayParams = ['categories', 'difficulty', 'dietary_restrictions', 'tags', 'ingredients_include', 'ingredients_exclude'];
+    const arrayParams = ['categories', 'category_slugs', 'difficulty', 'dietary_restrictions', 'tags', 'ingredients_include', 'ingredients_exclude'];
     arrayParams.forEach(param => {
       const values = urlParams.getAll(param);
       if (values.length > 0) {
