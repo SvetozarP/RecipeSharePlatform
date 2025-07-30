@@ -19,7 +19,7 @@ interface RecipeFormData {
   difficulty: 'easy' | 'medium' | 'hard';
   cooking_method: string;
   cuisine_type?: string;
-  ingredients: string[];
+  ingredients: { name: string; amount: string; }[];
   instructions: string[];
   tags: string[];
   dietary_restrictions: string[];
@@ -262,13 +262,22 @@ interface RecipeFormData {
               <div formArrayName="ingredients" class="space-y-3">
                 <div *ngFor="let ingredient of ingredientsArray.controls; let i = index" 
                      class="flex gap-2 items-start">
-                  <mat-form-field appearance="fill" class="flex-1">
-                    <mat-label>Ingredient {{ i + 1 }}</mat-label>
-                    <input matInput [formControlName]="i" placeholder="e.g., 2 cups flour">
-                    <mat-error *ngIf="ingredient.hasError('required')">
-                      Ingredient is required
-                    </mat-error>
-                  </mat-form-field>
+                  <div [formGroupName]="i" class="flex gap-2 flex-1">
+                    <mat-form-field appearance="fill" class="w-1/3">
+                      <mat-label>Amount</mat-label>
+                      <input matInput formControlName="amount" placeholder="e.g., 2 cups">
+                      <mat-error *ngIf="ingredient.get('amount')?.hasError('required')">
+                        Amount is required
+                      </mat-error>
+                    </mat-form-field>
+                    <mat-form-field appearance="fill" class="flex-1">
+                      <mat-label>Ingredient</mat-label>
+                      <input matInput formControlName="name" placeholder="e.g., flour">
+                      <mat-error *ngIf="ingredient.get('name')?.hasError('required')">
+                        Ingredient name is required
+                      </mat-error>
+                    </mat-form-field>
+                  </div>
                   <button type="button" mat-icon-button color="warn" 
                           (click)="removeIngredient(i)" [disabled]="ingredientsArray.length <= 1">
                     <mat-icon>delete</mat-icon>
@@ -455,7 +464,7 @@ export class RecipeFormComponent implements OnInit {
     cuisine_type: [''],
     categories: [[]],
     dietary_restrictions: [[]],
-    ingredients: this.fb.array([this.fb.control('', Validators.required)]),
+    ingredients: this.fb.array([this.createIngredientGroup()]),
     instructions: this.fb.array([this.fb.control('', Validators.required)]),
     nutrition_info: this.fb.group({
       calories: [null],
@@ -516,9 +525,24 @@ export class RecipeFormComponent implements OnInit {
     this.ingredientsArray.clear();
     this.instructionsArray.clear();
 
-    // Populate ingredients
+    // Populate ingredients - handle both string and object formats for backward compatibility
     recipe.ingredients.forEach(ingredient => {
-      this.ingredientsArray.push(this.fb.control(ingredient, Validators.required));
+      if (typeof ingredient === 'string') {
+        // Legacy format - try to parse "amount name" format
+        const parts = ingredient.split(' ');
+        const amount = parts.slice(0, 2).join(' '); // First 1-2 words as amount
+        const name = parts.slice(2).join(' '); // Rest as name
+        this.ingredientsArray.push(this.fb.group({
+          name: [name || ingredient, Validators.required],
+          amount: [amount || '1', Validators.required]
+        }));
+      } else {
+        // New structured format
+        this.ingredientsArray.push(this.fb.group({
+          name: [ingredient.name || '', Validators.required],
+          amount: [ingredient.amount || '', Validators.required]
+        }));
+      }
     });
 
     // Populate instructions
@@ -573,9 +597,17 @@ export class RecipeFormComponent implements OnInit {
     this.tags.update(tags => tags.filter((_, i) => i !== index));
   }
 
+  // Helper method to create ingredient form group
+  private createIngredientGroup(): FormGroup {
+    return this.fb.group({
+      name: ['', Validators.required],
+      amount: ['', Validators.required]
+    });
+  }
+
   // Dynamic form array management
   addIngredient(): void {
-    this.ingredientsArray.push(this.fb.control('', Validators.required));
+    this.ingredientsArray.push(this.createIngredientGroup());
   }
 
   removeIngredient(index: number): void {
@@ -636,15 +668,17 @@ export class RecipeFormComponent implements OnInit {
 
     // Add basic fields
     Object.keys(formValue).forEach(key => {
-      if (key === 'ingredients' || key === 'instructions' || key === 'tags' || key === 'categories' || key === 'dietary_restrictions') {
-        // Handle arrays
-        let arrayValue;
-        if (key === 'tags') {
-          arrayValue = this.tags();
-        } else {
-          arrayValue = formValue[key];
-        }
+      if (key === 'ingredients') {
+        // Handle ingredients as structured objects
+        const ingredients = formValue[key] || [];
+        formData.append(key, JSON.stringify(ingredients));
+      } else if (key === 'instructions' || key === 'categories' || key === 'dietary_restrictions') {
+        // Handle other arrays
+        const arrayValue = formValue[key];
         formData.append(key, JSON.stringify(arrayValue));
+      } else if (key === 'tags') {
+        // Handle tags from signal
+        formData.append(key, JSON.stringify(this.tags()));
       } else if (key === 'nutrition_info') {
         // Handle nested object
         const nutritionInfo = formValue[key];

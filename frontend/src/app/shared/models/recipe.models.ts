@@ -45,12 +45,17 @@ export interface Nutrition {
   sugar?: number;
 }
 
+export interface Ingredient {
+  name: string;
+  amount: string;
+}
+
 export interface Recipe {
-  id: number;
+  id: string; // Backend returns string UUID
   title: string;
   slug: string;
   description: string;
-  ingredients: string[];
+  ingredients: Ingredient[] | string[]; // Support both formats for backward compatibility
   instructions: string[];
   prep_time: number;
   cook_time: number;
@@ -65,7 +70,7 @@ export interface Recipe {
   images: RecipeImage[];
   categories: Category[];
   author: {
-    id: number;
+    id: string; // Backend returns string UUID for user ID
     username: string;
     firstName: string;
     lastName: string;

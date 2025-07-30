@@ -179,7 +179,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
               </mat-card-header>
               <mat-card-content>
                 <div class="space-y-2">
-                  <div *ngFor="let ingredient of recipe()?.ingredients; let i = index" 
+                  <div *ngFor="let ingredient of recipeIngredients(); let i = index" 
                        class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded">
                     <mat-checkbox [(ngModel)]="checkedIngredients[i]"></mat-checkbox>
                     <span [class.line-through]="checkedIngredients[i]" 
@@ -353,7 +353,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
           <div>
             <h2 class="text-lg font-semibold mb-3">Ingredients</h2>
             <ul class="space-y-1">
-              <li *ngFor="let ingredient of recipe()?.ingredients">• {{ ingredient }}</li>
+              <li *ngFor="let ingredient of recipeIngredients()">• {{ ingredient }}</li>
             </ul>
           </div>
           
@@ -425,6 +425,20 @@ export class RecipeDetailComponent implements OnInit {
     return images[this.currentImageIndex()] || { image: '', alt_text: '', is_primary: true, ordering: 0, id: 0 };
   });
 
+  recipeIngredients = computed(() => {
+    const recipe = this.recipe();
+    if (!recipe?.ingredients) return [];
+    
+    // Handle both string and structured ingredient formats
+    return recipe.ingredients.map(ingredient => {
+      if (typeof ingredient === 'string') {
+        return ingredient;
+      } else {
+        return `${ingredient.amount} ${ingredient.name}`;
+      }
+    });
+  });
+
   // Component state
   checkedIngredients: boolean[] = [];
   
@@ -484,7 +498,7 @@ export class RecipeDetailComponent implements OnInit {
   // Action methods
   toggleFavorite(): void {
     const recipe = this.recipe();
-    if (!recipe) return;
+    if (!recipe || !recipe.id) return;
 
     // Check if user is authenticated
     if (!this.isAuthenticated()) {
@@ -564,7 +578,7 @@ export class RecipeDetailComponent implements OnInit {
     });
   }
 
-  private performDelete(recipeId: number): void {
+  private performDelete(recipeId: string): void {
     this.recipeService.deleteRecipe(recipeId).subscribe({
       next: () => {
         this.snackBar.open('Recipe deleted successfully', 'Close', { duration: 3000 });
@@ -580,7 +594,17 @@ export class RecipeDetailComponent implements OnInit {
   canEditRecipe(): boolean {
     const recipe = this.recipe();
     const currentUser = this.authService.getCurrentUser();
-    return !!(recipe && currentUser && (recipe.author.id.toString() === currentUser.id || currentUser.isStaff));
+    
+    // Check if we have valid recipe, user, and author data
+    if (!recipe || !currentUser || !recipe.author || !recipe.author.id) {
+      return false;
+    }
+    
+    // Convert both IDs to strings for comparison (handle UUID vs string inconsistencies)
+    const recipeAuthorId = recipe.author.id.toString();
+    const currentUserId = currentUser.id.toString();
+    
+    return recipeAuthorId === currentUserId || !!currentUser.isStaff;
   }
 
   canDeleteRecipe(): boolean {
