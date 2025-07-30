@@ -196,7 +196,11 @@ interface RecipeFormData {
               <div class="grid md:grid-cols-2 gap-4">
                 <mat-form-field appearance="fill">
                   <mat-label>Cooking Method</mat-label>
-                  <input matInput formControlName="cooking_method" placeholder="e.g., Baking, Grilling">
+                  <mat-select formControlName="cooking_method">
+                    <mat-option *ngFor="let method of cookingMethodOptions" [value]="method.value">
+                      {{ method.label }}
+                    </mat-option>
+                  </mat-select>
                 </mat-form-field>
 
                 <mat-form-field appearance="fill">
@@ -451,6 +455,14 @@ export class RecipeFormComponent implements OnInit {
   recipeId: string | null = null;
   difficultyOptions = DIFFICULTY_OPTIONS;
   dietaryOptions = DIETARY_RESTRICTION_OPTIONS;
+  cookingMethodOptions = [
+    { value: 'baking', label: 'Baking' },
+    { value: 'frying', label: 'Frying' },
+    { value: 'boiling', label: 'Boiling' },
+    { value: 'grilling', label: 'Grilling' },
+    { value: 'steaming', label: 'Steaming' },
+    { value: 'other', label: 'Other' }
+  ];
 
   // Form definition
   recipeForm: FormGroup = this.fb.group({
@@ -460,7 +472,7 @@ export class RecipeFormComponent implements OnInit {
     cook_time: [null, [Validators.required, Validators.min(1)]],
     servings: [null, [Validators.required, Validators.min(1)]],
     difficulty: ['', Validators.required],
-    cooking_method: [''],
+    cooking_method: ['other'],
     cuisine_type: [''],
     categories: [[]],
     dietary_restrictions: [[]],
@@ -561,7 +573,7 @@ export class RecipeFormComponent implements OnInit {
       cook_time: recipe.cook_time,
       servings: recipe.servings,
       difficulty: recipe.difficulty,
-      cooking_method: recipe.cooking_method,
+      cooking_method: recipe.cooking_method || 'other',
       cuisine_type: recipe.cuisine_type,
       categories: recipe.categories.map(cat => cat.id),
       dietary_restrictions: recipe.dietary_restrictions,
@@ -628,15 +640,10 @@ export class RecipeFormComponent implements OnInit {
 
   // Form submission
   onSubmit(): void {
-    console.log('Form submission attempted');
-    console.log('Form valid:', this.recipeForm.valid);
-    console.log('Form errors:', this.getFormValidationErrors());
-    
     if (this.recipeForm.valid) {
       this.recipeForm.patchValue({ is_published: true });
       this.submitForm();
     } else {
-      console.log('Form is invalid, cannot submit');
       this.markFormGroupTouched(this.recipeForm);
       this.snackBar.open('Please fix the form errors before submitting', 'Close', { duration: 3000 });
     }
@@ -676,15 +683,6 @@ export class RecipeFormComponent implements OnInit {
 
     const formData = this.buildFormData();
     
-    // Debug: Log the form data being sent
-    console.log('=== RECIPE FORM DEBUG ===');
-    console.log('Form values:', this.recipeForm.value);
-    console.log('FormData entries:');
-    for (let [key, value] of formData.entries()) {
-      console.log(`${key}:`, value);
-    }
-    console.log('=== END DEBUG ===');
-    
     const operation = this.isEditing() 
       ? this.recipeService.updateRecipe(this.recipeId!, formData)
       : this.recipeService.createRecipe(formData);
@@ -699,8 +697,6 @@ export class RecipeFormComponent implements OnInit {
       },
       error: (error) => {
         console.error('Recipe submission error:', error);
-        console.error('Error status:', error.status);
-        console.error('Error response:', error.error);
         
         // Try to show specific error messages from backend
         let errorMessage = 'Failed to save recipe. Please try again.';
@@ -762,19 +758,25 @@ export class RecipeFormComponent implements OnInit {
       formData.append('instructions', JSON.stringify(instructions));
     }
 
-    // Handle optional arrays
+    // Handle optional arrays (don't JSON.stringify - send as individual form fields)
     if (formValue.categories && formValue.categories.length > 0) {
-      formData.append('categories', JSON.stringify(formValue.categories));
+      formValue.categories.forEach((categoryId: string) => {
+        formData.append('categories', categoryId);
+      });
     }
 
     if (formValue.dietary_restrictions && formValue.dietary_restrictions.length > 0) {
-      formData.append('dietary_restrictions', JSON.stringify(formValue.dietary_restrictions));
+      formValue.dietary_restrictions.forEach((restriction: string) => {
+        formData.append('dietary_restrictions', restriction);
+      });
     }
 
-    // Handle tags from signal
+    // Handle tags from signal (don't JSON.stringify - send as individual form fields)
     const tags = this.tags();
     if (tags.length > 0) {
-      formData.append('tags', JSON.stringify(tags));
+      tags.forEach((tag: string) => {
+        formData.append('tags', tag);
+      });
     }
 
     // Handle optional fields
