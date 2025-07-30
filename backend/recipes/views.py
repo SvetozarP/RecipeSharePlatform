@@ -1,7 +1,7 @@
 """
 Recipe views for API endpoints.
 """
-from rest_framework import viewsets, status, permissions, filters
+from rest_framework import viewsets, status, permissions, filters, renderers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
@@ -86,7 +86,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
         else:
             serializer.save()
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], renderer_classes=[renderers.JSONRenderer])
     def tree(self, request):
         """
         Get category tree structure.

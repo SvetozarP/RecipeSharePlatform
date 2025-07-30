@@ -126,10 +126,10 @@ export class RecipeService extends ApiService {
     }
 
     // Try tree endpoint first, fallback to regular categories if it fails
-    return this.get<Category[]>('/categories/tree/').pipe(
+    return this.get<Category[]>('/recipes/categories/tree/').pipe(
       catchError(() => {
         console.warn('Categories tree endpoint not available, falling back to regular categories list');
-        return this.get<Category[]>('/categories/').pipe(
+        return this.get<Category[]>('/recipes/categories/').pipe(
           catchError(() => {
             console.error('Both categories endpoints failed, returning default categories');
             // Return some default categories so the form still works
