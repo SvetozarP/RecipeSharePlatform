@@ -75,7 +75,7 @@ interface RecipeFormData {
             </mat-card-header>
             <mat-card-content class="space-y-4">
               <!-- Title -->
-              <mat-form-field appearance="outline" class="w-full">
+              <mat-form-field appearance="fill" class="w-full">
                 <mat-label>Recipe Title</mat-label>
                 <input matInput formControlName="title" placeholder="Enter a catchy recipe title">
                 <mat-error *ngIf="recipeForm.get('title')?.hasError('required')">
@@ -87,7 +87,7 @@ interface RecipeFormData {
               </mat-form-field>
 
               <!-- Description -->
-              <mat-form-field appearance="outline" class="w-full">
+              <mat-form-field appearance="fill" class="w-full">
                 <mat-label>Description</mat-label>
                 <textarea matInput formControlName="description" rows="3" 
                          placeholder="Describe your recipe..."></textarea>
@@ -129,7 +129,7 @@ interface RecipeFormData {
             </mat-card-header>
             <mat-card-content>
               <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <mat-form-field appearance="outline">
+                <mat-form-field appearance="fill">
                   <mat-label>Prep Time (minutes)</mat-label>
                   <input matInput type="number" formControlName="prep_time" min="1">
                   <mat-error *ngIf="recipeForm.get('prep_time')?.hasError('required')">
@@ -140,7 +140,7 @@ interface RecipeFormData {
                   </mat-error>
                 </mat-form-field>
 
-                <mat-form-field appearance="outline">
+                <mat-form-field appearance="fill">
                   <mat-label>Cook Time (minutes)</mat-label>
                   <input matInput type="number" formControlName="cook_time" min="1">
                   <mat-error *ngIf="recipeForm.get('cook_time')?.hasError('required')">
@@ -151,7 +151,7 @@ interface RecipeFormData {
                   </mat-error>
                 </mat-form-field>
 
-                <mat-form-field appearance="outline">
+                <mat-form-field appearance="fill">
                   <mat-label>Servings</mat-label>
                   <input matInput type="number" formControlName="servings" min="1">
                   <mat-error *ngIf="recipeForm.get('servings')?.hasError('required')">
@@ -162,7 +162,7 @@ interface RecipeFormData {
                   </mat-error>
                 </mat-form-field>
 
-                <mat-form-field appearance="outline">
+                <mat-form-field appearance="fill">
                   <mat-label>Difficulty</mat-label>
                   <mat-select formControlName="difficulty">
                     <mat-option *ngFor="let difficulty of difficultyOptions" [value]="difficulty.value">
@@ -194,19 +194,19 @@ interface RecipeFormData {
             </mat-card-header>
             <mat-card-content class="space-y-4">
               <div class="grid md:grid-cols-2 gap-4">
-                <mat-form-field appearance="outline">
+                <mat-form-field appearance="fill">
                   <mat-label>Cooking Method</mat-label>
                   <input matInput formControlName="cooking_method" placeholder="e.g., Baking, Grilling">
                 </mat-form-field>
 
-                <mat-form-field appearance="outline">
+                <mat-form-field appearance="fill">
                   <mat-label>Cuisine Type</mat-label>
                   <input matInput formControlName="cuisine_type" placeholder="e.g., Italian, Mexican">
                 </mat-form-field>
               </div>
 
               <!-- Categories -->
-              <mat-form-field appearance="outline" class="w-full">
+              <mat-form-field appearance="fill" class="w-full">
                 <mat-label>Categories</mat-label>
                 <mat-select formControlName="categories" multiple>
                   <mat-option *ngFor="let category of categories()" [value]="category.id">
@@ -216,7 +216,7 @@ interface RecipeFormData {
               </mat-form-field>
 
               <!-- Dietary Restrictions -->
-              <mat-form-field appearance="outline" class="w-full">
+              <mat-form-field appearance="fill" class="w-full">
                 <mat-label>Dietary Restrictions</mat-label>
                 <mat-select formControlName="dietary_restrictions" multiple>
                   <mat-option *ngFor="let restriction of dietaryOptions" [value]="restriction.value">
@@ -236,7 +236,7 @@ interface RecipeFormData {
                   </mat-chip>
                 </div>
                 <div class="flex gap-2">
-                  <mat-form-field appearance="outline" class="flex-1">
+                  <mat-form-field appearance="fill" class="flex-1">
                     <mat-label>Add Tag</mat-label>
                     <input matInput #tagInput (keyup.enter)="addTag(tagInput.value); tagInput.value = ''" 
                            placeholder="Enter a tag and press Enter">
@@ -262,7 +262,7 @@ interface RecipeFormData {
               <div formArrayName="ingredients" class="space-y-3">
                 <div *ngFor="let ingredient of ingredientsArray.controls; let i = index" 
                      class="flex gap-2 items-start">
-                  <mat-form-field appearance="outline" class="flex-1">
+                  <mat-form-field appearance="fill" class="flex-1">
                     <mat-label>Ingredient {{ i + 1 }}</mat-label>
                     <input matInput [formControlName]="i" placeholder="e.g., 2 cups flour">
                     <mat-error *ngIf="ingredient.hasError('required')">
@@ -297,7 +297,7 @@ interface RecipeFormData {
                   <div class="flex-shrink-0 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center text-sm font-semibold mt-2">
                     {{ i + 1 }}
                   </div>
-                  <mat-form-field appearance="outline" class="flex-1">
+                  <mat-form-field appearance="fill" class="flex-1">
                     <mat-label>Step {{ i + 1 }}</mat-label>
                     <textarea matInput [formControlName]="i" rows="2" 
                              placeholder="Describe this step in detail"></textarea>
@@ -329,32 +329,32 @@ interface RecipeFormData {
             </mat-card-header>
             <mat-card-content>
               <div formGroupName="nutrition_info" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <mat-form-field appearance="outline">
+                <mat-form-field appearance="fill">
                   <mat-label>Calories</mat-label>
                   <input matInput type="number" formControlName="calories" min="0">
                 </mat-form-field>
 
-                <mat-form-field appearance="outline">
+                <mat-form-field appearance="fill">
                   <mat-label>Protein (g)</mat-label>
                   <input matInput type="number" formControlName="protein" min="0" step="0.1">
                 </mat-form-field>
 
-                <mat-form-field appearance="outline">
+                <mat-form-field appearance="fill">
                   <mat-label>Carbs (g)</mat-label>
                   <input matInput type="number" formControlName="carbs" min="0" step="0.1">
                 </mat-form-field>
 
-                <mat-form-field appearance="outline">
+                <mat-form-field appearance="fill">
                   <mat-label>Fat (g)</mat-label>
                   <input matInput type="number" formControlName="fat" min="0" step="0.1">
                 </mat-form-field>
 
-                <mat-form-field appearance="outline">
+                <mat-form-field appearance="fill">
                   <mat-label>Fiber (g)</mat-label>
                   <input matInput type="number" formControlName="fiber" min="0" step="0.1">
                 </mat-form-field>
 
-                <mat-form-field appearance="outline">
+                <mat-form-field appearance="fill">
                   <mat-label>Sugar (g)</mat-label>
                   <input matInput type="number" formControlName="sugar" min="0" step="0.1">
                 </mat-form-field>

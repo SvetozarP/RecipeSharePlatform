@@ -125,12 +125,24 @@ export class RecipeService extends ApiService {
       return this.categories$;
     }
 
+    // Try tree endpoint first, fallback to regular categories if it fails
     return this.get<Category[]>('/categories/tree/').pipe(
-      tap(categories => this.categoriesSubject.next(categories)),
       catchError(() => {
-        // Return cached categories if API fails
-        return this.categories$;
-      })
+        console.warn('Categories tree endpoint not available, falling back to regular categories list');
+        return this.get<Category[]>('/categories/').pipe(
+          catchError(() => {
+            console.error('Both categories endpoints failed, returning default categories');
+            // Return some default categories so the form still works
+            return of([
+              { id: 1, name: 'Main Dishes', slug: 'main-dishes', is_active: true, ordering: 1 },
+              { id: 2, name: 'Appetizers', slug: 'appetizers', is_active: true, ordering: 2 },
+              { id: 3, name: 'Desserts', slug: 'desserts', is_active: true, ordering: 3 },
+              { id: 4, name: 'Beverages', slug: 'beverages', is_active: true, ordering: 4 }
+            ] as Category[]);
+          })
+        );
+      }),
+      tap(categories => this.categoriesSubject.next(categories))
     );
   }
 
