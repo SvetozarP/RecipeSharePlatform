@@ -595,8 +595,21 @@ export class RecipeDetailComponent implements OnInit {
     const recipe = this.recipe();
     const currentUser = this.authService.getCurrentUser();
     
+    // Temporary debug logging to check backend fix
+    console.log('After backend fix - Permission check:', {
+      hasRecipe: !!recipe,
+      hasCurrentUser: !!currentUser,
+      hasAuthor: !!recipe?.author,
+      hasAuthorId: !!recipe?.author?.id,
+      authorObject: recipe?.author,
+      currentUserObject: currentUser,
+      recipeAuthorId: recipe?.author?.id,
+      currentUserId: currentUser?.id
+    });
+    
     // Check if we have valid recipe, user, and author data
     if (!recipe || !currentUser || !recipe.author || !recipe.author.id) {
+      console.log('Permission denied: Missing required data');
       return false;
     }
     
@@ -607,7 +620,17 @@ export class RecipeDetailComponent implements OnInit {
     // Check isStaff with both possible field names (isStaff and is_staff)
     const isStaff = !!(currentUser.isStaff || (currentUser as any).is_staff);
     
-    return recipeAuthorId === currentUserId || isStaff;
+    const canEdit = recipeAuthorId === currentUserId || isStaff;
+    
+    console.log('Permission check result:', {
+      recipeAuthorId,
+      currentUserId,
+      idsMatch: recipeAuthorId === currentUserId,
+      isStaff,
+      canEdit
+    });
+    
+    return canEdit;
   }
 
   canDeleteRecipe(): boolean {
