@@ -76,7 +76,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
             
             <!-- Action Buttons -->
             <div class="flex gap-2 ml-4">
-              <button mat-icon-button (click)="toggleFavorite()" [class.text-red-500]="recipe()?.is_favorited">
+              <button *ngIf="isAuthenticated()" mat-icon-button (click)="toggleFavorite()" [class.text-red-500]="recipe()?.is_favorited">
                 <mat-icon>{{ recipe()?.is_favorited ? 'favorite' : 'favorite_border' }}</mat-icon>
               </button>
               <button mat-icon-button (click)="shareRecipe()">
@@ -444,10 +444,12 @@ export class RecipeDetailComponent implements OnInit {
     ).subscribe(recipe => {
       if (recipe) {
         this.recipe.set(recipe);
-        this.checkedIngredients = new Array(recipe.ingredients.length).fill(false);
+        const ingredients = recipe.ingredients || [];
+        this.checkedIngredients = new Array(ingredients.length).fill(false);
         
         // Set primary image as current or first image
-        const primaryIndex = recipe.images.findIndex(img => img.is_primary);
+        const images = recipe.images || [];
+        const primaryIndex = images.findIndex(img => img.is_primary);
         this.currentImageIndex.set(primaryIndex >= 0 ? primaryIndex : 0);
       }
     });
@@ -478,6 +480,12 @@ export class RecipeDetailComponent implements OnInit {
     const recipe = this.recipe();
     if (!recipe) return;
 
+    // Check if user is authenticated
+    if (!this.isAuthenticated()) {
+      this.snackBar.open('Please log in to add favorites', 'Close', { duration: 3000 });
+      return;
+    }
+
     this.recipeService.toggleFavorite(recipe.id.toString()).subscribe({
       next: (result) => {
         this.recipe.update(current => 
@@ -489,8 +497,13 @@ export class RecipeDetailComponent implements OnInit {
           { duration: 3000 }
         );
       },
-      error: () => {
-        this.snackBar.open('Failed to update favorite status', 'Close', { duration: 3000 });
+      error: (error) => {
+        console.error('Favorite toggle error:', error);
+        if (error.status === 404) {
+          this.snackBar.open('Favorites feature is coming soon!', 'Close', { duration: 3000 });
+        } else {
+          this.snackBar.open('Failed to update favorite status', 'Close', { duration: 3000 });
+        }
       }
     });
   }
@@ -566,6 +579,10 @@ export class RecipeDetailComponent implements OnInit {
 
   canDeleteRecipe(): boolean {
     return this.canEditRecipe();
+  }
+
+  isAuthenticated(): boolean {
+    return this.authService.isAuthenticated();
   }
 
   // Navigation methods
