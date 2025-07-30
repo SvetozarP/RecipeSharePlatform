@@ -263,14 +263,14 @@ interface RecipeFormData {
                 <div *ngFor="let ingredient of ingredientsArray.controls; let i = index" 
                      class="flex gap-2 items-start">
                   <div [formGroupName]="i" class="flex gap-2 flex-1">
-                    <mat-form-field appearance="fill" class="w-1/3">
+                    <mat-form-field appearance="fill" style="width: 120px; min-width: 120px; max-width: 150px;">
                       <mat-label>Amount</mat-label>
                       <input matInput formControlName="amount" placeholder="e.g., 2 cups">
                       <mat-error *ngIf="ingredient.get('amount')?.hasError('required')">
                         Amount is required
                       </mat-error>
                     </mat-form-field>
-                    <mat-form-field appearance="fill" class="flex-1">
+                    <mat-form-field appearance="fill" style="flex: 1; min-width: 0;">
                       <mat-label>Ingredient</mat-label>
                       <input matInput formControlName="name" placeholder="e.g., flour">
                       <mat-error *ngIf="ingredient.get('name')?.hasError('required')">
@@ -628,10 +628,42 @@ export class RecipeFormComponent implements OnInit {
 
   // Form submission
   onSubmit(): void {
+    console.log('Form submission attempted');
+    console.log('Form valid:', this.recipeForm.valid);
+    console.log('Form errors:', this.getFormValidationErrors());
+    
     if (this.recipeForm.valid) {
       this.recipeForm.patchValue({ is_published: true });
       this.submitForm();
+    } else {
+      console.log('Form is invalid, cannot submit');
+      this.markFormGroupTouched(this.recipeForm);
+      this.snackBar.open('Please fix the form errors before submitting', 'Close', { duration: 3000 });
     }
+  }
+
+  private getFormValidationErrors(): any {
+    const formErrors: any = {};
+    
+    Object.keys(this.recipeForm.controls).forEach(key => {
+      const controlErrors = this.recipeForm.get(key)?.errors;
+      if (controlErrors) {
+        formErrors[key] = controlErrors;
+      }
+    });
+    
+    return formErrors;
+  }
+
+  private markFormGroupTouched(formGroup: FormGroup): void {
+    Object.keys(formGroup.controls).forEach(key => {
+      const control = formGroup.get(key);
+      control?.markAsTouched();
+      
+      if (control instanceof FormGroup) {
+        this.markFormGroupTouched(control);
+      }
+    });
   }
 
   saveDraft(): void {
@@ -643,6 +675,16 @@ export class RecipeFormComponent implements OnInit {
     this.submitting.set(true);
 
     const formData = this.buildFormData();
+    
+    // Debug: Log the form data being sent
+    console.log('=== RECIPE FORM DEBUG ===');
+    console.log('Form values:', this.recipeForm.value);
+    console.log('FormData entries:');
+    for (let [key, value] of formData.entries()) {
+      console.log(`${key}:`, value);
+    }
+    console.log('=== END DEBUG ===');
+    
     const operation = this.isEditing() 
       ? this.recipeService.updateRecipe(this.recipeId!, formData)
       : this.recipeService.createRecipe(formData);
@@ -657,7 +699,26 @@ export class RecipeFormComponent implements OnInit {
       },
       error: (error) => {
         console.error('Recipe submission error:', error);
-        this.snackBar.open('Failed to save recipe. Please try again.', 'Close', { duration: 3000 });
+        console.error('Error status:', error.status);
+        console.error('Error response:', error.error);
+        
+        // Try to show specific error messages from backend
+        let errorMessage = 'Failed to save recipe. Please try again.';
+        if (error.error && typeof error.error === 'object') {
+          const errors = [];
+          for (const [field, messages] of Object.entries(error.error)) {
+            if (Array.isArray(messages)) {
+              errors.push(`${field}: ${messages.join(', ')}`);
+            } else {
+              errors.push(`${field}: ${messages}`);
+            }
+          }
+          if (errors.length > 0) {
+            errorMessage = errors.join('\n');
+          }
+        }
+        
+        this.snackBar.open(errorMessage, 'Close', { duration: 5000 });
       }
     });
   }
@@ -666,29 +727,66 @@ export class RecipeFormComponent implements OnInit {
     const formData = new FormData();
     const formValue = this.recipeForm.value;
 
-    // Add basic fields
-    Object.keys(formValue).forEach(key => {
-      if (key === 'ingredients') {
-        // Handle ingredients as structured objects
-        const ingredients = formValue[key] || [];
-        formData.append(key, JSON.stringify(ingredients));
-      } else if (key === 'instructions' || key === 'categories' || key === 'dietary_restrictions') {
-        // Handle other arrays
-        const arrayValue = formValue[key];
-        formData.append(key, JSON.stringify(arrayValue));
-      } else if (key === 'tags') {
-        // Handle tags from signal
-        formData.append(key, JSON.stringify(this.tags()));
-      } else if (key === 'nutrition_info') {
-        // Handle nested object
-        const nutritionInfo = formValue[key];
-        if (nutritionInfo && Object.values(nutritionInfo).some(val => val !== null && val !== '')) {
-          formData.append(key, JSON.stringify(nutritionInfo));
-        }
-      } else if (formValue[key] !== null && formValue[key] !== '') {
-        formData.append(key, formValue[key]);
-      }
+    // Ensure all required fields are present with proper defaults
+    const requiredFields = {
+      title: formValue.title || '',
+      description: formValue.description || '',
+      prep_time: formValue.prep_time || 1,
+      cook_time: formValue.cook_time || 1,
+      servings: formValue.servings || 1,
+      difficulty: formValue.difficulty || 'easy',
+      cooking_method: formValue.cooking_method || 'other',
+      is_published: formValue.is_published !== undefined ? formValue.is_published : true
+    };
+
+    // Add required fields
+    Object.keys(requiredFields).forEach(key => {
+      formData.append(key, (requiredFields as any)[key]);
     });
+
+    // Handle ingredients (required)
+    const ingredients = formValue.ingredients || [];
+    if (ingredients.length === 0) {
+      // Add a default ingredient if none provided to prevent validation error
+      formData.append('ingredients', JSON.stringify([{ name: 'Please add ingredients', amount: '1' }]));
+    } else {
+      formData.append('ingredients', JSON.stringify(ingredients));
+    }
+
+    // Handle instructions (required)
+    const instructions = formValue.instructions || [];
+    if (instructions.length === 0) {
+      // Add a default instruction if none provided
+      formData.append('instructions', JSON.stringify(['Please add cooking instructions']));
+    } else {
+      formData.append('instructions', JSON.stringify(instructions));
+    }
+
+    // Handle optional arrays
+    if (formValue.categories && formValue.categories.length > 0) {
+      formData.append('categories', JSON.stringify(formValue.categories));
+    }
+
+    if (formValue.dietary_restrictions && formValue.dietary_restrictions.length > 0) {
+      formData.append('dietary_restrictions', JSON.stringify(formValue.dietary_restrictions));
+    }
+
+    // Handle tags from signal
+    const tags = this.tags();
+    if (tags.length > 0) {
+      formData.append('tags', JSON.stringify(tags));
+    }
+
+    // Handle optional fields
+    if (formValue.cuisine_type && formValue.cuisine_type.trim()) {
+      formData.append('cuisine_type', formValue.cuisine_type.trim());
+    }
+
+    // Handle nutrition info (optional nested object)
+    const nutritionInfo = formValue.nutrition_info;
+    if (nutritionInfo && Object.values(nutritionInfo).some(val => val !== null && val !== '' && val !== undefined)) {
+      formData.append('nutrition_info', JSON.stringify(nutritionInfo));
+    }
 
     // Add image if selected
     if (this.selectedImage()) {
