@@ -68,6 +68,9 @@ export interface Recipe {
   tags: string[];
   nutrition_info?: Nutrition;
   images: RecipeImage[];
+  main_image_url?: string; // Main image URL from backend
+  thumbnail_url?: string; // Thumbnail URL from backend
+  has_images?: boolean; // Whether recipe has images
   categories: Category[];
   author: {
     id: string; // Backend returns string UUID for user ID

@@ -355,6 +355,9 @@ class RecipeSerializer(serializers.ModelSerializer):
     thumbnail_url = serializers.CharField(read_only=True)
     has_images = serializers.SerializerMethodField()
     
+    # Image information for frontend
+    images = serializers.SerializerMethodField()
+    
     # Category information
     categories = CategoryListSerializer(many=True, read_only=True)
     category_names = serializers.ListField(read_only=True)
@@ -387,6 +390,38 @@ class RecipeSerializer(serializers.ModelSerializer):
             }
         return None
 
+    def get_images(self, obj):
+        """Serialize images in the format expected by frontend."""
+        if obj.images and isinstance(obj.images, dict):
+            # Convert stored image URLs to frontend-expected format
+            images = []
+            if 'original' in obj.images:
+                images.append({
+                    'id': 1,
+                    'image': obj.images['original'],
+                    'alt_text': obj.title,
+                    'is_primary': True,
+                    'ordering': 0
+                })
+            elif 'large' in obj.images:
+                images.append({
+                    'id': 1,
+                    'image': obj.images['large'],
+                    'alt_text': obj.title,
+                    'is_primary': True,
+                    'ordering': 0
+                })
+            elif 'medium' in obj.images:
+                images.append({
+                    'id': 1,
+                    'image': obj.images['medium'],
+                    'alt_text': obj.title,
+                    'is_primary': True,
+                    'ordering': 0
+                })
+            return images
+        return []
+
     def get_has_images(self, obj):
         """Check if recipe has images."""
         return obj.has_images()
@@ -401,6 +436,9 @@ class RecipeListSerializer(serializers.ModelSerializer):
     total_time = serializers.IntegerField(read_only=True)
     thumbnail_url = serializers.CharField(read_only=True)
     
+    # Image information for listing
+    images = serializers.SerializerMethodField()
+    
     # Category information for listing
     categories = CategoryListSerializer(many=True, read_only=True)
     category_names = serializers.ListField(read_only=True)
@@ -410,7 +448,7 @@ class RecipeListSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'title', 'description', 'prep_time', 'cook_time', 'total_time',
             'servings', 'difficulty', 'cooking_method', 'thumbnail_url',
-            'author', 'author_name', 'categories', 'category_names', 'is_published', 
+            'author', 'author_name', 'images', 'categories', 'category_names', 'is_published', 
             'tags', 'created_at'
         ]
 
@@ -423,7 +461,32 @@ class RecipeListSerializer(serializers.ModelSerializer):
                 'firstName': obj.author.first_name,
                 'lastName': obj.author.last_name,
             }
-        return None 
+        return None
+
+    def get_images(self, obj):
+        """Serialize images in the format expected by frontend."""
+        if obj.images and isinstance(obj.images, dict):
+            # Convert stored image URLs to frontend-expected format
+            images = []
+            # Use thumbnail for list view for better performance
+            if 'thumbnail' in obj.images:
+                images.append({
+                    'id': 1,
+                    'image': obj.images['thumbnail'],
+                    'alt_text': obj.title,
+                    'is_primary': True,
+                    'ordering': 0
+                })
+            elif 'medium' in obj.images:
+                images.append({
+                    'id': 1,
+                    'image': obj.images['medium'],
+                    'alt_text': obj.title,
+                    'is_primary': True,
+                    'ordering': 0
+                })
+            return images
+        return [] 
 
 
 class RatingSerializer(serializers.ModelSerializer):

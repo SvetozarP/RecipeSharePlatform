@@ -429,8 +429,23 @@ export class RecipeDetailComponent implements OnInit {
   // Computed values
   recipeImages = computed(() => {
     const recipe = this.recipe();
-    // Handle backend returning images as dict instead of array
-    return Array.isArray(recipe?.images) ? recipe.images : [];
+    // Handle different image formats from backend
+    if (Array.isArray(recipe?.images) && recipe.images.length > 0) {
+      return recipe.images;
+    }
+    
+    // Fallback to thumbnail_url if images array is empty but thumbnail exists
+    if (recipe?.thumbnail_url) {
+      return [{
+        id: 1,
+        image: recipe.thumbnail_url,
+        alt_text: recipe.title || 'Recipe image',
+        is_primary: true,
+        ordering: 0
+      }];
+    }
+    
+    return [];
   });
 
   currentImage = computed(() => {
