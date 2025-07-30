@@ -25,9 +25,9 @@ class TestRecipeViewSet:
         url = reverse('recipes:recipe-list')
         response = api_client.get(url)
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) == 3
-        assert all(r['id'] in [str(p.id) for p in published] for r in response.data)
-        assert all(r['id'] not in [str(p.id) for p in unpublished] for r in response.data)
+        assert len(response.data['results']) == 3
+        assert all(r['id'] in [str(p.id) for p in published] for r in response.data['results'])
+        assert all(r['id'] not in [str(p.id) for p in unpublished] for r in response.data['results'])
 
     def test_list_recipes_authenticated(self, api_client):
         """Test listing recipes as authenticated user."""
@@ -39,20 +39,20 @@ class TestRecipeViewSet:
         other_published = [RecipeFactory(is_published=True) for _ in range(2)]
         other_unpublished = [RecipeFactory(is_published=False) for _ in range(2)]
 
-        # Test my recipes filter
-        url = reverse('recipes:recipe-list') + '?my_recipes=true'
+        # Test my recipes filter (using author filter)
+        url = reverse('recipes:recipe-list') + f'?author={user.id}'
         response = api_client.get(url)
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) == 2
-        assert all(r['id'] in [str(p.id) for p in own_recipes] for r in response.data)
+        assert len(response.data['results']) == 2
+        assert all(r['id'] in [str(p.id) for p in own_recipes] for r in response.data['results'])
 
         # Test all recipes (should see published only)
         url = reverse('recipes:recipe-list')
         response = api_client.get(url)
         assert response.status_code == status.HTTP_200_OK
         visible_recipes = own_recipes + other_published
-        assert len(response.data) == len(visible_recipes)
-        assert all(r['id'] not in [str(p.id) for p in other_unpublished] for r in response.data)
+        assert len(response.data['results']) == len(visible_recipes)
+        assert all(r['id'] not in [str(p.id) for p in other_unpublished] for r in response.data['results'])
 
     def test_create_recipe(self, api_client):
         """Test creating a recipe."""
@@ -75,7 +75,7 @@ class TestRecipeViewSet:
         response = api_client.post(url, data, format='json')
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data['title'] == data['title']
-        assert response.data['author'] == str(user.id)
+        assert response.data['author'] == user.id
 
     def test_retrieve_recipe(self, api_client):
         """Test retrieving a recipe."""

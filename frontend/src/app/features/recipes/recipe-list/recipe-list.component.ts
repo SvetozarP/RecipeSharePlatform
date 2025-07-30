@@ -49,8 +49,23 @@ import { MatTooltip } from '@angular/material/tooltip';
     <div class="recipe-list-container">
       <!-- Header Section -->
       <div class="header-section">
-        <h1 class="page-title">Discover Recipes</h1>
-        <p class="page-subtitle">Find your next favorite recipe from our collection</p>
+        <div class="header-content">
+          <div>
+            <h1 class="page-title">Discover Recipes</h1>
+            <p class="page-subtitle">Find your next favorite recipe from our collection</p>
+          </div>
+          <div class="header-actions">
+            <button 
+              *ngIf="authService.isAuthenticated()" 
+              mat-raised-button 
+              color="primary"
+              routerLink="/recipes/create"
+              class="create-button">
+              <mat-icon>add</mat-icon>
+              Create Recipe
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- Search Section -->
@@ -212,8 +227,26 @@ import { MatTooltip } from '@angular/material/tooltip';
     }
 
     .header-section {
-      text-align: center;
       margin-bottom: 32px;
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .header-content > div:first-child {
+      text-align: center;
+      flex: 1;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
     }
 
     .page-title {
@@ -227,6 +260,22 @@ import { MatTooltip } from '@angular/material/tooltip';
       font-size: 1.2rem;
       color: #666;
       margin: 0;
+    }
+
+    .create-button {
+      min-width: 140px;
+    }
+
+    @media (max-width: 768px) {
+      .header-content {
+        flex-direction: column;
+        text-align: center;
+      }
+      
+      .header-actions {
+        width: 100%;
+        justify-content: center;
+      }
     }
 
     .search-section {
@@ -514,7 +563,7 @@ export class RecipeListComponent implements OnInit, OnDestroy {
   constructor(
     private fb: FormBuilder,
     private recipeService: RecipeService,
-    private authService: AuthService,
+    public authService: AuthService,
     private router: Router,
     private route: ActivatedRoute,
     private snackBar: MatSnackBar,
@@ -780,7 +829,7 @@ export class RecipeListComponent implements OnInit, OnDestroy {
   }
 
   onFavoriteToggle(recipeId: string): void {
-    if (!this.authService.isAuthenticated) {
+    if (!this.authService.isAuthenticated()) {
       this.router.navigate(['/auth/login']);
       return;
     }

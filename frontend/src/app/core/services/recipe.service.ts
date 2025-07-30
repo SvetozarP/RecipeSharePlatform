@@ -257,6 +257,36 @@ export class RecipeService extends ApiService {
   }
 
   /**
+   * Create a new recipe
+   */
+  createRecipe(recipeData: FormData): Observable<Recipe> {
+    return this.post<Recipe>('/recipes/', recipeData);
+  }
+
+  /**
+   * Update an existing recipe
+   */
+  updateRecipe(id: string | number, recipeData: FormData): Observable<Recipe> {
+    return this.put<Recipe>(`/recipes/${id}/`, recipeData);
+  }
+
+  /**
+   * Delete a recipe
+   */
+  deleteRecipe(id: string | number): Observable<void> {
+    return this.delete<void>(`/recipes/${id}/`);
+  }
+
+  /**
+   * Upload image for a recipe
+   */
+  uploadRecipeImage(id: string | number, imageFile: File): Observable<{ image_url: string }> {
+    const formData = new FormData();
+    formData.append('image', imageFile);
+    return this.post<{ image_url: string }>(`/recipes/${id}/upload_image/`, formData);
+  }
+
+  /**
    * Clear all cached data
    */
   clearCache(): void {

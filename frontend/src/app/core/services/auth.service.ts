@@ -15,6 +15,7 @@ export interface User {
   lastName?: string;   // For backward compatibility
   is_email_verified?: boolean;
   isAdmin?: boolean;
+  isStaff?: boolean;   // For staff access control
 }
 
 export interface LoginRequest {
