@@ -346,6 +346,8 @@ class RecipeUpdateSerializer(serializers.ModelSerializer):
 class RecipeSerializer(serializers.ModelSerializer):
     """Serializer for reading recipe data."""
     
+    # Author information - serialize as full object for permissions
+    author = serializers.SerializerMethodField()
     author_name = serializers.CharField(source='author.get_full_name', read_only=True)
     author_username = serializers.CharField(source='author.username', read_only=True)
     total_time = serializers.IntegerField(read_only=True)
@@ -369,10 +371,21 @@ class RecipeSerializer(serializers.ModelSerializer):
             'is_published', 'tags', 'version', 'created_at', 'updated_at'
         ]
         read_only_fields = [
-            'id', 'author', 'version', 'created_at', 'updated_at',
+            'id', 'version', 'created_at', 'updated_at',
             'total_time', 'main_image_url', 'thumbnail_url', 'has_images',
             'category_names', 'category_paths'
         ]
+
+    def get_author(self, obj):
+        """Serialize author information for frontend permissions."""
+        if obj.author:
+            return {
+                'id': str(obj.author.id),  # Ensure ID is string for UUID consistency
+                'username': obj.author.username,
+                'firstName': obj.author.first_name,
+                'lastName': obj.author.last_name,
+            }
+        return None
 
     def get_has_images(self, obj):
         """Check if recipe has images."""
@@ -382,6 +395,8 @@ class RecipeSerializer(serializers.ModelSerializer):
 class RecipeListSerializer(serializers.ModelSerializer):
     """Lightweight serializer for recipe listing."""
     
+    # Author information for listing
+    author = serializers.SerializerMethodField()
     author_name = serializers.CharField(source='author.get_full_name', read_only=True)
     total_time = serializers.IntegerField(read_only=True)
     thumbnail_url = serializers.CharField(read_only=True)
@@ -395,10 +410,20 @@ class RecipeListSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'title', 'description', 'prep_time', 'cook_time', 'total_time',
             'servings', 'difficulty', 'cooking_method', 'thumbnail_url',
-            'author_name', 'categories', 'category_names', 'is_published', 
+            'author', 'author_name', 'categories', 'category_names', 'is_published', 
             'tags', 'created_at'
         ]
-        read_only_fields = fields 
+
+    def get_author(self, obj):
+        """Serialize author information for frontend permissions."""
+        if obj.author:
+            return {
+                'id': str(obj.author.id),  # Ensure ID is string for UUID consistency
+                'username': obj.author.username,
+                'firstName': obj.author.first_name,
+                'lastName': obj.author.last_name,
+            }
+        return None 
 
 
 class RatingSerializer(serializers.ModelSerializer):
