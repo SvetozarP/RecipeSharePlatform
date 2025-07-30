@@ -150,7 +150,9 @@ class StorageService:
             original_content = ContentFile(original_buffer.getvalue())
             
             saved_path = default_storage.save(original_path, original_content)
-            results['original'] = default_storage.url(saved_path)
+            original_url = default_storage.url(saved_path)
+            # Ensure we return full URLs for Azure blob storage
+            results['original'] = self._ensure_absolute_url(original_url)
             
             # Create and save thumbnails
             for size_name, dimensions in self.thumbnail_sizes.items():
@@ -165,7 +167,9 @@ class StorageService:
                 thumb_content = ContentFile(thumb_buffer.getvalue())
                 
                 saved_thumb_path = default_storage.save(thumb_path, thumb_content)
-                results[size_name] = default_storage.url(saved_thumb_path)
+                thumb_url = default_storage.url(saved_thumb_path)
+                # Ensure we return full URLs for Azure blob storage
+                results[size_name] = self._ensure_absolute_url(thumb_url)
                 
         return results
 
@@ -183,6 +187,32 @@ class StorageService:
                 except Exception:
                     # Log error but don't fail the operation
                     pass
+
+    def _ensure_absolute_url(self, url: str) -> str:
+        """
+        Ensure URL is absolute for Azure blob storage.
+        
+        Args:
+            url: URL that might be relative
+            
+        Returns:
+            Absolute URL
+        """
+        from django.conf import settings
+        
+        # If URL is already absolute, return as-is
+        if url.startswith(('http://', 'https://')):
+            return url
+            
+        # If using Azure storage, construct full URL
+        azure_account = getattr(settings, 'AZURE_STORAGE_ACCOUNT_NAME', None)
+        azure_container = getattr(settings, 'AZURE_STORAGE_CONTAINER_NAME', 'media')
+        
+        if azure_account and url.startswith('/'):
+            # Remove leading slash and construct Azure URL
+            return f"https://{azure_account}.blob.core.windows.net/{azure_container}{url}"
+        
+        return url
 
     def get_supported_formats(self) -> List[str]:
         """

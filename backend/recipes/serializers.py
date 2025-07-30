@@ -393,12 +393,13 @@ class RecipeSerializer(serializers.ModelSerializer):
     def get_images(self, obj):
         """Serialize images in the format expected by frontend."""
         if obj.images and isinstance(obj.images, dict):
+            from core.services.storage_service import storage_service
             # Convert stored image URLs to frontend-expected format
             images = []
             if 'original' in obj.images:
                 images.append({
                     'id': 1,
-                    'image': obj.images['original'],
+                    'image': storage_service._ensure_absolute_url(obj.images['original']),
                     'alt_text': obj.title,
                     'is_primary': True,
                     'ordering': 0
@@ -406,7 +407,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             elif 'large' in obj.images:
                 images.append({
                     'id': 1,
-                    'image': obj.images['large'],
+                    'image': storage_service._ensure_absolute_url(obj.images['large']),
                     'alt_text': obj.title,
                     'is_primary': True,
                     'ordering': 0
@@ -414,7 +415,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             elif 'medium' in obj.images:
                 images.append({
                     'id': 1,
-                    'image': obj.images['medium'],
+                    'image': storage_service._ensure_absolute_url(obj.images['medium']),
                     'alt_text': obj.title,
                     'is_primary': True,
                     'ordering': 0
@@ -466,13 +467,14 @@ class RecipeListSerializer(serializers.ModelSerializer):
     def get_images(self, obj):
         """Serialize images in the format expected by frontend."""
         if obj.images and isinstance(obj.images, dict):
+            from core.services.storage_service import storage_service
             # Convert stored image URLs to frontend-expected format
             images = []
             # Use thumbnail for list view for better performance
             if 'thumbnail' in obj.images:
                 images.append({
                     'id': 1,
-                    'image': obj.images['thumbnail'],
+                    'image': storage_service._ensure_absolute_url(obj.images['thumbnail']),
                     'alt_text': obj.title,
                     'is_primary': True,
                     'ordering': 0
@@ -480,7 +482,7 @@ class RecipeListSerializer(serializers.ModelSerializer):
             elif 'medium' in obj.images:
                 images.append({
                     'id': 1,
-                    'image': obj.images['medium'],
+                    'image': storage_service._ensure_absolute_url(obj.images['medium']),
                     'alt_text': obj.title,
                     'is_primary': True,
                     'ordering': 0

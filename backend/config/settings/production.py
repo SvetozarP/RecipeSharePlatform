@@ -131,8 +131,23 @@ except ImportError:
     # Fallback to default storage if whitenoise is not installed
     STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+# Azure Blob Storage configuration for media files
+AZURE_ACCOUNT_NAME = os.environ.get('AZURE_STORAGE_ACCOUNT_NAME', '')
+AZURE_ACCOUNT_KEY = os.environ.get('AZURE_STORAGE_ACCOUNT_KEY', '')
+AZURE_CONTAINER = os.environ.get('AZURE_STORAGE_CONTAINER_NAME', 'media')
+
+if AZURE_ACCOUNT_NAME and AZURE_ACCOUNT_KEY:
+    # Use Azure Blob Storage for media files
+    DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
+    AZURE_STORAGE_ACCOUNT_NAME = AZURE_ACCOUNT_NAME
+    AZURE_STORAGE_ACCOUNT_KEY = AZURE_ACCOUNT_KEY  
+    AZURE_STORAGE_CONTAINER_NAME = AZURE_CONTAINER
+    AZURE_URL_EXPIRATION_SECS = None  # Never expire URLs
+    MEDIA_URL = f'https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER}/'
+else:
+    # Fallback to local media storage
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = BASE_DIR / 'media'
 
 # Logging
 LOGGING = {
