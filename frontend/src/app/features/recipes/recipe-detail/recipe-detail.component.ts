@@ -649,6 +649,8 @@ export class RecipeDetailComponent implements OnInit {
 
   // Navigation methods
   goBack(): void {
+    // Use normal back navigation with fallback to recipes list
+    // The form now uses replaceUrl to prevent navigation issues
     window.history.length > 1 ? window.history.back() : this.router.navigate(['/recipes']);
   }
 
