@@ -284,23 +284,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
               </mat-card-content>
             </mat-card>
 
-            <!-- Dietary Restrictions -->
-            <mat-card *ngIf="recipe()?.dietary_restrictions?.length">
-              <mat-card-header>
-                <mat-card-title class="flex items-center gap-2">
-                  <mat-icon>local_dining</mat-icon>
-                  Dietary Info
-                </mat-card-title>
-              </mat-card-header>
-              <mat-card-content>
-                <div class="flex flex-wrap gap-2">
-                  <mat-chip *ngFor="let restriction of recipe()?.dietary_restrictions" 
-                           class="bg-green-100 text-green-800">
-                    {{ restriction }}
-                  </mat-chip>
-                </div>
-              </mat-card-content>
-            </mat-card>
+
 
             <!-- Nutrition Information -->
             <mat-card *ngIf="recipe()?.nutrition_info">

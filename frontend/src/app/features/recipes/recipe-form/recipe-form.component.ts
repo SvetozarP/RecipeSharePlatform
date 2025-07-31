@@ -5,7 +5,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MaterialModule } from '../../../shared/material.module';
 import { RecipeService } from '../../../core/services/recipe.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { Recipe, Category, DIFFICULTY_OPTIONS, DIETARY_RESTRICTION_OPTIONS } from '../../../shared/models/recipe.models';
+import { Recipe, Category, DIFFICULTY_OPTIONS } from '../../../shared/models/recipe.models';
 import { catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -22,7 +22,7 @@ interface RecipeFormData {
   ingredients: { name: string; amount: string; }[];
   instructions: string[];
   tags: string[];
-  dietary_restrictions: string[];
+
   categories: number[];
   nutrition_info?: {
     calories?: number;
@@ -219,15 +219,16 @@ interface RecipeFormData {
                 </mat-select>
               </mat-form-field>
 
-              <!-- Dietary Restrictions -->
-              <mat-form-field appearance="fill" class="w-full">
-                <mat-label>Dietary Restrictions</mat-label>
-                <mat-select formControlName="dietary_restrictions" multiple>
-                  <mat-option *ngFor="let restriction of dietaryOptions" [value]="restriction.value">
-                    {{ restriction.label }}
-                  </mat-option>
-                </mat-select>
-              </mat-form-field>
+              <!-- Note about dietary restrictions -->
+              <div class="p-3 bg-blue-50 rounded border border-blue-200">
+                <div class="flex items-start gap-2">
+                  <mat-icon class="text-blue-600 mt-0.5" style="font-size: 18px;">info</mat-icon>
+                  <div class="text-sm text-blue-800">
+                    <strong>Dietary Information:</strong> Use tags (e.g., "vegetarian", "vegan", "gluten-free") 
+                    or include dietary information in the description for searchability.
+                  </div>
+                </div>
+              </div>
 
               <!-- Tags -->
               <div class="space-y-2">
@@ -454,7 +455,7 @@ export class RecipeFormComponent implements OnInit {
   // Component state
   recipeId: string | null = null;
   difficultyOptions = DIFFICULTY_OPTIONS;
-  dietaryOptions = DIETARY_RESTRICTION_OPTIONS;
+
   cookingMethodOptions = [
     { value: 'baking', label: 'Baking' },
     { value: 'frying', label: 'Frying' },
@@ -475,7 +476,7 @@ export class RecipeFormComponent implements OnInit {
     cooking_method: ['other'],
     cuisine_type: [''],
     categories: [[]],
-    dietary_restrictions: [[]],
+    
     ingredients: this.fb.array([this.createIngredientGroup()]),
     instructions: this.fb.array([this.fb.control('', Validators.required)]),
     nutrition_info: this.fb.group({
@@ -576,7 +577,7 @@ export class RecipeFormComponent implements OnInit {
       cooking_method: recipe.cooking_method || 'other',
       cuisine_type: recipe.cuisine_type,
       categories: recipe.categories.map(cat => cat.id),
-      dietary_restrictions: recipe.dietary_restrictions,
+
       nutrition_info: recipe.nutrition_info || {},
       is_published: true // Assuming we can edit published recipes
     });
@@ -771,18 +772,12 @@ export class RecipeFormComponent implements OnInit {
       });
     }
 
-    if (formValue.dietary_restrictions && formValue.dietary_restrictions.length > 0) {
-      formValue.dietary_restrictions.forEach((restriction: string) => {
-        formData.append('dietary_restrictions', restriction);
-      });
-    }
 
-    // Handle tags from signal (don't JSON.stringify - send as individual form fields)
+
+    // Handle tags from signal (send as JSON array for consistency)
     const tags = this.tags();
     if (tags.length > 0) {
-      tags.forEach((tag: string) => {
-        formData.append('tags', tag);
-      });
+      formData.append('tags', JSON.stringify(tags));
     }
 
     // Handle optional fields

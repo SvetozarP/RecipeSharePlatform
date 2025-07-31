@@ -64,7 +64,7 @@ export interface Recipe {
   difficulty: 'easy' | 'medium' | 'hard';
   cooking_method: string;
   cuisine_type?: string;
-  dietary_restrictions: string[];
+
   tags: string[];
   nutrition_info?: Nutrition;
   images: RecipeImage[];
@@ -115,7 +115,6 @@ export interface RecipeListItem {
   tags: string[];
   
   // Optional fields that might not be included in list view
-  dietary_restrictions?: string[];
   rating_stats?: {
     average_rating: number;
     total_ratings: number;

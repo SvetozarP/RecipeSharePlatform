@@ -39,7 +39,7 @@ describe('RecipeFormComponent', () => {
     difficulty: 'easy',
     cooking_method: 'baking',
     cuisine_type: 'american',
-    dietary_restrictions: ['vegetarian'],
+
     tags: ['quick', 'easy'],
     nutrition_info: {
       calories: 250,

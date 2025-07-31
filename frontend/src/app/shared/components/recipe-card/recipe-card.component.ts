@@ -98,17 +98,7 @@ import { Observable } from 'rxjs';
           </mat-chip-set>
         </div>
 
-        <!-- Dietary Restrictions -->
-        <div class="dietary-section" *ngIf="recipe.dietary_restrictions && recipe.dietary_restrictions.length > 0">
-          <div class="dietary-tags">
-            <span 
-              *ngFor="let restriction of recipe.dietary_restrictions.slice(0, 3)"
-              class="dietary-tag"
-              [class]="'dietary-' + restriction">
-              {{ restriction | titlecase }}
-            </span>
-          </div>
-        </div>
+
 
         <!-- Author Information -->
         <div class="author-section">
