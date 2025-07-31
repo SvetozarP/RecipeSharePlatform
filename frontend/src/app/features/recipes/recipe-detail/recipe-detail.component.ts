@@ -7,7 +7,7 @@ import { RecipeService } from '../../../core/services/recipe.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Recipe, RecipeImage } from '../../../shared/models/recipe.models';
 import { catchError, finalize } from 'rxjs/operators';
-import { of } from 'rxjs';
+import { of, Observable } from 'rxjs';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
@@ -420,6 +420,9 @@ export class RecipeDetailComponent implements OnInit {
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
 
+  // Authentication state
+  isAuthenticated$ = this.authService.isAuthenticated$;
+
   // Signals for reactive state management
   recipe = signal<Recipe | null>(null);
   loading = signal(false);
@@ -469,9 +472,6 @@ export class RecipeDetailComponent implements OnInit {
 
   // Component state
   checkedIngredients: boolean[] = [];
-  
-  // Authentication state
-  isAuthenticated$ = this.authService.isAuthenticated$;
   
   ngOnInit(): void {
     this.route.params.subscribe(params => {

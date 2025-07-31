@@ -543,7 +543,7 @@ export class RecipeListComponent implements OnInit, OnDestroy {
   hasMoreData = true;
   
   // Authentication state
-  isAuthenticated$ = this.authService.isAuthenticated$;
+  isAuthenticated$: Observable<boolean>;
   
   // Pagination vs Infinite Scroll
   usePagination = true; // Toggle between pagination and infinite scroll
@@ -583,6 +583,9 @@ export class RecipeListComponent implements OnInit, OnDestroy {
     this.searchControl = this.fb.control('');
     this.filterForm = this.createFilterForm();
     this.categories$ = this.recipeService.categories$;
+    
+    // Initialize authentication state
+    this.isAuthenticated$ = this.authService.isAuthenticated$;
   }
 
   ngOnInit(): void {
