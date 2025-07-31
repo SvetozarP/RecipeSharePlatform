@@ -1,8 +1,10 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MaterialModule } from '../../material.module';
 import { RecipeListItem } from '../../models/recipe.models';
+import { AuthService } from '../../../core/services/auth.service';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-recipe-card',
@@ -26,8 +28,9 @@ import { RecipeListItem } from '../../models/recipe.models';
             {{ recipe.difficulty | titlecase }}
           </div>
           
-          <!-- Favorite Button -->
+          <!-- Favorite Button (only for authenticated users) -->
           <button 
+            *ngIf="isAuthenticated$ | async"
             mat-icon-button 
             class="favorite-btn"
             [class.favorited]="recipe.is_favorited"
@@ -449,6 +452,10 @@ export class RecipeCardComponent {
 
   @Output() favoriteToggle = new EventEmitter<string>();
   @Output() share = new EventEmitter<RecipeListItem>();
+
+  // Authentication state
+  private authService = inject(AuthService);
+  isAuthenticated$ = this.authService.isAuthenticated$;
 
   getStarArray(): number[] {
     return Array.from({ length: 5 }, (_, i) => i);
