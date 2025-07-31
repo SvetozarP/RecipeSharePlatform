@@ -57,7 +57,7 @@ import { MatTooltip } from '@angular/material/tooltip';
           </div>
           <div class="header-actions">
             <button 
-              *ngIf="authService.isAuthenticated()" 
+              *ngIf="isAuthenticated$ | async" 
               mat-raised-button 
               color="primary"
               routerLink="/recipes/create"
@@ -542,6 +542,9 @@ export class RecipeListComponent implements OnInit, OnDestroy {
   error: string | null = null;
   hasMoreData = true;
   
+  // Authentication state
+  isAuthenticated$ = this.authService.isAuthenticated$;
+  
   // Pagination vs Infinite Scroll
   usePagination = true; // Toggle between pagination and infinite scroll
   
@@ -966,6 +969,7 @@ export class RecipeListComponent implements OnInit, OnDestroy {
   }
 
   onFavoriteToggle(recipeId: string): void {
+    // Check authentication state synchronously
     if (!this.authService.isAuthenticated()) {
       this.router.navigate(['/auth/login']);
       return;

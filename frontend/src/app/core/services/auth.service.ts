@@ -115,7 +115,10 @@ export class AuthService {
     this.currentUserSubject.next(null);
     this.isAuthenticatedSubject.next(false);
     
-    this.router.navigate(['/']);
+    // Navigate away from current route and then to recipes to ensure component reload
+    this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
+      this.router.navigate(['/recipes']);
+    });
   }
 
   getToken(): string | null {

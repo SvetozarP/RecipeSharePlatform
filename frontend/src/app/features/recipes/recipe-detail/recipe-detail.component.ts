@@ -78,7 +78,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
             <div class="flex flex-col gap-3 ml-4">
               <!-- General Actions -->
               <div class="flex gap-2">
-                <button *ngIf="isAuthenticated()" mat-icon-button (click)="toggleFavorite()" 
+                <button *ngIf="isAuthenticated$ | async" mat-icon-button (click)="toggleFavorite()" 
                         [class.text-red-500]="recipe()?.is_favorited"
                         matTooltip="{{ recipe()?.is_favorited ? 'Remove from favorites' : 'Add to favorites' }}">
                   <mat-icon>{{ recipe()?.is_favorited ? 'favorite' : 'favorite_border' }}</mat-icon>
@@ -470,6 +470,9 @@ export class RecipeDetailComponent implements OnInit {
   // Component state
   checkedIngredients: boolean[] = [];
   
+  // Authentication state
+  isAuthenticated$ = this.authService.isAuthenticated$;
+  
   ngOnInit(): void {
     this.route.params.subscribe(params => {
       const idOrSlug = params['id'];
@@ -529,7 +532,7 @@ export class RecipeDetailComponent implements OnInit {
     if (!recipe || !recipe.id) return;
 
     // Check if user is authenticated
-    if (!this.isAuthenticated()) {
+    if (!this.authService.isAuthenticated()) {
       this.snackBar.open('Please log in to add favorites', 'Close', { duration: 3000 });
       return;
     }
@@ -642,9 +645,7 @@ export class RecipeDetailComponent implements OnInit {
     return this.canEditRecipe();
   }
 
-  isAuthenticated(): boolean {
-    return this.authService.isAuthenticated();
-  }
+
 
   // Navigation methods
   goBack(): void {
