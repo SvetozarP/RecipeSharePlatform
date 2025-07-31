@@ -244,7 +244,7 @@ interface RecipeFormData {
                   <mat-form-field appearance="fill" class="flex-1">
                     <mat-label>Add Tag</mat-label>
                     <input matInput #tagInput (keyup.enter)="addTag(tagInput.value); tagInput.value = ''" 
-                           placeholder="Enter a tag and press Enter">
+                           placeholder="Enter a tag and press Add button">
                   </mat-form-field>
                   <button type="button" mat-button (click)="addTag(tagInput.value); tagInput.value = ''"
                           [disabled]="!tagInput.value.trim()">
