@@ -7,7 +7,14 @@ import { MaterialModule } from '../../material.module';
   standalone: true,
   imports: [CommonModule, MaterialModule],
   template: `
-    <div class="flex justify-center items-center" [ngClass]="{'h-64': fullHeight, 'py-4': !fullHeight}">
+    <!-- Inline mode for buttons and compact spaces -->
+    <div *ngIf="inline" class="flex items-center gap-2">
+      <mat-spinner [diameter]="size"></mat-spinner>
+      <span *ngIf="message" class="text-sm">{{ message }}</span>
+    </div>
+    
+    <!-- Full mode for page loading -->
+    <div *ngIf="!inline" class="flex justify-center items-center" [ngClass]="{'h-64': fullHeight, 'py-4': !fullHeight}">
       <div class="text-center">
         <mat-spinner [diameter]="size"></mat-spinner>
         <p class="mt-4 text-gray-600" *ngIf="message">{{ message }}</p>
@@ -19,4 +26,5 @@ export class LoadingComponent {
   @Input() message: string = 'Loading...';
   @Input() size: number = 50;
   @Input() fullHeight: boolean = false;
+  @Input() inline: boolean = false;
 } 

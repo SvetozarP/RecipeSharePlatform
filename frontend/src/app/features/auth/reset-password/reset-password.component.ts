@@ -107,7 +107,7 @@ import { AuthService } from '../../../core/services/auth.service';
                   [disabled]="resetPasswordForm.invalid || isLoading"
                 >
                   <span *ngIf="!isLoading">Reset Password</span>
-                  <app-loading *ngIf="isLoading" [size]="20"></app-loading>
+                  <app-loading *ngIf="isLoading" [size]="20" [inline]="true" message=""></app-loading>
                 </button>
               </form>
             </mat-card-content>

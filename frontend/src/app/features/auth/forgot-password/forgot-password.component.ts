@@ -79,7 +79,7 @@ import { AuthService } from '../../../core/services/auth.service';
                 >
                   <span *ngIf="!isLoading && !isOnCooldown">Send Reset Link</span>
                   <span *ngIf="isOnCooldown">Wait {{ cooldownTimeLeft }}s</span>
-                  <app-loading *ngIf="isLoading" [size]="20"></app-loading>
+                  <app-loading *ngIf="isLoading" [size]="20" [inline]="true" message=""></app-loading>
                 </button>
               </form>
             </mat-card-content>

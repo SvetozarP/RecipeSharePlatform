@@ -203,7 +203,7 @@ import { AuthService, RegisterRequest } from '../../../core/services/auth.servic
                 [disabled]="registerForm.invalid || isLoading"
               >
                 <span *ngIf="!isLoading">Create Account</span>
-                <app-loading *ngIf="isLoading" [size]="20"></app-loading>
+                <app-loading *ngIf="isLoading" [size]="20" [inline]="true" message=""></app-loading>
               </button>
             </form>
           </mat-card-content>

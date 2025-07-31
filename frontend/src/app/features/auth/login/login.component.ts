@@ -105,7 +105,7 @@ import { AuthService, LoginRequest } from '../../../core/services/auth.service';
                 [disabled]="loginForm.invalid || isLoading"
               >
                 <span *ngIf="!isLoading">Sign in</span>
-                <app-loading *ngIf="isLoading" [size]="20"></app-loading>
+                <app-loading *ngIf="isLoading" [size]="20" [inline]="true" message=""></app-loading>
               </button>
             </form>
           </mat-card-content>
