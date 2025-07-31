@@ -472,12 +472,26 @@ export class RecipeDetailComponent implements OnInit {
 
   // Component state
   checkedIngredients: boolean[] = [];
+  private cameFromEdit = false;
   
   ngOnInit(): void {
     this.route.params.subscribe(params => {
       const idOrSlug = params['id'];
       if (idOrSlug) {
         this.loadRecipe(idOrSlug);
+      }
+    });
+
+    // Check if we came from edit and clean the URL
+    this.route.queryParams.subscribe(queryParams => {
+      if (queryParams['fromEdit']) {
+        this.cameFromEdit = true;
+        // Remove the query parameter from URL without affecting navigation
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: {},
+          replaceUrl: true
+        });
       }
     });
   }
@@ -649,9 +663,13 @@ export class RecipeDetailComponent implements OnInit {
 
   // Navigation methods
   goBack(): void {
-    // Use normal back navigation with fallback to recipes list
-    // The form now uses replaceUrl to prevent navigation issues
-    window.history.length > 1 ? window.history.back() : this.router.navigate(['/recipes']);
+    // If we came from edit, always go to recipes list to avoid history issues
+    if (this.cameFromEdit) {
+      this.router.navigate(['/recipes']);
+    } else {
+      // Use normal back navigation with fallback to recipes list
+      window.history.length > 1 ? window.history.back() : this.router.navigate(['/recipes']);
+    }
   }
 
   goToPreviousRecipe(): void {

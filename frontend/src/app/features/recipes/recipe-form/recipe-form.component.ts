@@ -694,7 +694,12 @@ export class RecipeFormComponent implements OnInit {
         const message = this.isEditing() ? 'Recipe updated successfully' : 'Recipe created successfully';
         this.snackBar.open(message, 'Close', { duration: 3000 });
         // Replace URL to prevent going back to form when user clicks back
-        this.router.navigate(['/recipes', recipe.id], { replaceUrl: true });
+        // Add fromEdit flag if we were editing
+        const queryParams = this.isEditing() ? { fromEdit: 'true' } : {};
+        this.router.navigate(['/recipes', recipe.id], { 
+          replaceUrl: true,
+          queryParams 
+        });
       },
       error: (error) => {
         console.error('Recipe submission error:', error);
@@ -802,8 +807,11 @@ export class RecipeFormComponent implements OnInit {
   // Navigation
   goBack(): void {
     if (this.isEditing()) {
-      // Replace current history entry to avoid navigation issues
-      this.router.navigate(['/recipes', this.recipeId], { replaceUrl: true });
+      // Navigate to recipe detail with a flag indicating we came from edit
+      this.router.navigate(['/recipes', this.recipeId], { 
+        replaceUrl: true,
+        queryParams: { fromEdit: 'true' }
+      });
     } else {
       this.router.navigate(['/recipes']);
     }
