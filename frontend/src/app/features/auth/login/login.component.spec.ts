@@ -6,7 +6,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { of, throwError, Subject } from 'rxjs';
 
 import { LoginComponent } from './login.component';
-import { AuthService, LoginRequest, AuthResponse } from '../../../core/services/auth.service';
+import { AuthService, LoginRequest, LoginResponse } from '../../../core/services/auth.service';
 import { MaterialModule } from '../../../shared/material.module';
 import { LoadingComponent } from '../../../shared/components/loading/loading.component';
 
@@ -18,15 +18,17 @@ describe('LoginComponent', () => {
   let mockActivatedRoute: any;
 
   const mockUser = {
-    id: 1,
+    id: '1',
     email: 'test@example.com',
     username: 'testuser',
+    first_name: 'Test',
+    last_name: 'User',
     firstName: 'Test',
     lastName: 'User',
     isAdmin: false
   };
 
-  const mockAuthResponse: AuthResponse = {
+  const mockAuthResponse: LoginResponse = {
     access: 'mock-access-token',
     refresh: 'mock-refresh-token',
     user: mockUser
@@ -35,7 +37,11 @@ describe('LoginComponent', () => {
   beforeEach(async () => {
     // Create spy objects for dependencies
     mockAuthService = jasmine.createSpyObj('AuthService', ['login']);
-    mockRouter = jasmine.createSpyObj('Router', ['navigate']);
+    mockRouter = jasmine.createSpyObj('Router', ['navigate', 'createUrlTree', 'serializeUrl']);
+    mockRouter.createUrlTree.and.returnValue({} as any);
+    mockRouter.serializeUrl.and.returnValue('');
+    // Add events observable for RouterLink
+    (mockRouter as any).events = of({});
     mockActivatedRoute = {
       snapshot: {
         queryParams: {}
@@ -207,14 +213,15 @@ describe('LoginComponent', () => {
       
       const expectedLoginData: LoginRequest = {
         email: 'test@example.com',
-        password: 'password123'
+        password: 'password123',
+        remember_me: false
       };
       
       expect(mockAuthService.login).toHaveBeenCalledWith(expectedLoginData);
     });
 
     it('should set loading state during submission', () => {
-      const loginSubject = new Subject<AuthResponse>();
+      const loginSubject = new Subject<LoginResponse>();
       mockAuthService.login.and.returnValue(loginSubject.asObservable());
       
       // Set up valid form data
@@ -282,7 +289,7 @@ describe('LoginComponent', () => {
       
       component.onSubmit();
       
-      expect(component.errorMessage).toBe('Invalid email or password. Please check your credentials.');
+      expect(component.errorMessage).toBe('An unexpected error occurred. Please try again.');
       expect(component.isLoading).toBeFalse();
     });
 

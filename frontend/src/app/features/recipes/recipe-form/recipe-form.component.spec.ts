@@ -9,6 +9,7 @@ import { RecipeFormComponent } from './recipe-form.component';
 import { RecipeService } from '../../../core/services/recipe.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Recipe, Category } from '../../../shared/models/recipe.models';
+import { MaterialModule } from '../../../shared/material.module';
 
 describe('RecipeFormComponent', () => {
   let component: RecipeFormComponent;
@@ -25,11 +26,11 @@ describe('RecipeFormComponent', () => {
   ];
 
   const mockRecipe: Recipe = {
-    id: 1,
+    id: '1',
     title: 'Test Recipe',
     slug: 'test-recipe',
     description: 'A test recipe description',
-    ingredients: ['1 cup flour', '2 eggs'],
+    ingredients: [{ name: 'flour', amount: '1 cup' }, { name: 'eggs', amount: '2' }],
     instructions: ['Mix flour', 'Add eggs'],
     prep_time: 15,
     cook_time: 30,
@@ -49,7 +50,7 @@ describe('RecipeFormComponent', () => {
     images: [],
     categories: mockCategories,
     author: {
-      id: 1,
+      id: '1',
       username: 'testuser',
       firstName: 'Test',
       lastName: 'User'
@@ -69,16 +70,21 @@ describe('RecipeFormComponent', () => {
       'getCategories', 'getRecipe', 'createRecipe', 'updateRecipe'
     ]);
     const authServiceSpy = jasmine.createSpyObj('AuthService', ['getCurrentUser']);
-    const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
-    const routeSpy = jasmine.createSpyObj('ActivatedRoute', [], {
+    const routerSpy = jasmine.createSpyObj('Router', ['navigate', 'createUrlTree', 'serializeUrl']);
+    routerSpy.createUrlTree.and.returnValue({} as any);
+    routerSpy.serializeUrl.and.returnValue('');
+    // Add events observable for RouterLink
+    (routerSpy as any).events = of({});
+    const routeSpy = {
       params: of({})
-    });
+    };
     const snackBarSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
 
     await TestBed.configureTestingModule({
       imports: [
         RecipeFormComponent,
         ReactiveFormsModule,
+        MaterialModule,
         NoopAnimationsModule
       ],
       providers: [
@@ -116,16 +122,23 @@ describe('RecipeFormComponent', () => {
     });
 
     it('should load and populate form for editing', () => {
-      mockRoute.params = of({ id: '1' });
+      // Set up editing route with ID parameter
+      component.recipeId = '1';
       mockRecipeService.getRecipe.and.returnValue(of(mockRecipe));
       
-      component.ngOnInit();
+      // Simulate editing mode by calling loadRecipe directly
+      component['loadRecipe']('1');
       
       expect(component.isEditing()).toBe(true);
       expect(mockRecipeService.getRecipe).toHaveBeenCalledWith('1');
       expect(component.recipeForm.get('title')?.value).toBe(mockRecipe.title);
       expect(component.ingredientsArray.length).toBe(mockRecipe.ingredients.length);
       expect(component.instructionsArray.length).toBe(mockRecipe.instructions.length);
+      
+      // Check structured ingredient format
+      const firstIngredient = component.ingredientsArray.at(0)?.value;
+      expect(firstIngredient.name).toBe('flour');
+      expect(firstIngredient.amount).toBe('1 cup');
     });
   });
 
@@ -148,7 +161,9 @@ describe('RecipeFormComponent', () => {
         difficulty: 'easy'
       });
       
-      component.ingredientsArray.at(0)?.setValue('1 cup flour');
+      // Update structured ingredient format
+      const ingredientGroup = component.ingredientsArray.at(0) as any;
+      ingredientGroup.patchValue({ name: 'flour', amount: '1 cup' });
       component.instructionsArray.at(0)?.setValue('Mix ingredients');
       
       expect(component.recipeForm.valid).toBe(true);
@@ -166,6 +181,11 @@ describe('RecipeFormComponent', () => {
       component.addIngredient();
       
       expect(component.ingredientsArray.length).toBe(initialLength + 1);
+      
+      // Check that new ingredient has the correct structure
+      const newIngredient = component.ingredientsArray.at(component.ingredientsArray.length - 1);
+      expect(newIngredient.get('name')).toBeDefined();
+      expect(newIngredient.get('amount')).toBeDefined();
     });
 
     it('should remove ingredient', () => {
@@ -238,7 +258,9 @@ describe('RecipeFormComponent', () => {
         servings: 4,
         difficulty: 'easy'
       });
-      component.ingredientsArray.at(0)?.setValue('1 cup flour');
+      // Update structured ingredient format
+      const ingredientGroup = component.ingredientsArray.at(0) as any;
+      ingredientGroup.patchValue({ name: 'flour', amount: '1 cup' });
       component.instructionsArray.at(0)?.setValue('Mix ingredients');
     });
 
@@ -248,7 +270,10 @@ describe('RecipeFormComponent', () => {
       component.onSubmit();
       
       expect(mockRecipeService.createRecipe).toHaveBeenCalled();
-      expect(mockRouter.navigate).toHaveBeenCalledWith(['/recipes', mockRecipe.id]);
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/recipes', mockRecipe.id], {
+        replaceUrl: true,
+        queryParams: {}
+      });
     });
 
     it('should update existing recipe', () => {
@@ -258,7 +283,10 @@ describe('RecipeFormComponent', () => {
       component.onSubmit();
       
       expect(mockRecipeService.updateRecipe).toHaveBeenCalledWith('1', jasmine.any(FormData));
-      expect(mockRouter.navigate).toHaveBeenCalledWith(['/recipes', mockRecipe.id]);
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/recipes', mockRecipe.id], {
+        replaceUrl: true,
+        queryParams: { fromEdit: 'true' }
+      });
     });
 
     it('should save as draft', () => {

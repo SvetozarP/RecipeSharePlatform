@@ -22,7 +22,7 @@ describe('RecipeDetailComponent', () => {
   let mockSnackBar: jasmine.SpyObj<MatSnackBar>;
 
   const mockRecipe: Recipe = {
-    id: 1,
+    id: '1',
     title: 'Test Recipe',
     slug: 'test-recipe',
     description: 'A test recipe description',
@@ -50,7 +50,7 @@ describe('RecipeDetailComponent', () => {
       { id: 1, name: 'Breakfast', slug: 'breakfast', is_active: true, ordering: 1 }
     ],
     author: {
-      id: 1,
+      id: '1',
       username: 'testuser',
       firstName: 'Test',
       lastName: 'User'
@@ -67,10 +67,16 @@ describe('RecipeDetailComponent', () => {
 
   beforeEach(async () => {
     const recipeServiceSpy = jasmine.createSpyObj('RecipeService', ['getRecipe', 'toggleFavorite', 'deleteRecipe']);
-    const authServiceSpy = jasmine.createSpyObj('AuthService', ['getCurrentUser']);
-    const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    const authServiceSpy = jasmine.createSpyObj('AuthService', ['getCurrentUser', 'isAuthenticated']);
+    authServiceSpy.isAuthenticated.and.returnValue(true);
+    const routerSpy = jasmine.createSpyObj('Router', ['navigate', 'createUrlTree', 'serializeUrl']);
+    routerSpy.createUrlTree.and.returnValue({} as any);
+    routerSpy.serializeUrl.and.returnValue('');
+    // Add events observable for RouterLink
+    (routerSpy as any).events = of({});
     const routeSpy = jasmine.createSpyObj('ActivatedRoute', [], {
-      params: of({ id: '1' })
+      params: of({ id: '1' }),
+      queryParams: of({})
     });
     const dialogSpy = jasmine.createSpyObj('MatDialog', ['open']);
     const snackBarSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
@@ -109,7 +115,7 @@ describe('RecipeDetailComponent', () => {
     it('should load recipe on init', () => {
       mockRecipeService.getRecipe.and.returnValue(of(mockRecipe));
       
-      component.ngOnInit();
+      fixture.detectChanges(); // This triggers ngOnInit
       
       expect(mockRecipeService.getRecipe).toHaveBeenCalledWith('1');
       expect(component.recipe()).toEqual(mockRecipe);
@@ -120,7 +126,7 @@ describe('RecipeDetailComponent', () => {
       const error = { error: { detail: 'Recipe not found' } };
       mockRecipeService.getRecipe.and.returnValue(throwError(() => error));
       
-      component.ngOnInit();
+      fixture.detectChanges(); // This triggers ngOnInit
       
       expect(component.error()).toBe('Recipe not found');
       expect(component.loading()).toBe(false);
@@ -204,21 +210,78 @@ describe('RecipeDetailComponent', () => {
   describe('Permissions', () => {
     it('should allow edit for recipe author', () => {
       component.recipe.set(mockRecipe);
-      mockAuthService.getCurrentUser.and.returnValue({ id: '1', isStaff: false });
+      mockAuthService.getCurrentUser.and.returnValue({ 
+        id: '1', 
+        email: 'test@example.com',
+        username: 'testuser',
+        first_name: 'Test',
+        last_name: 'User',
+        isStaff: false 
+      });
       
       expect(component.canEditRecipe()).toBe(true);
     });
 
     it('should allow edit for staff user', () => {
       component.recipe.set(mockRecipe);
-      mockAuthService.getCurrentUser.and.returnValue({ id: '2', isStaff: true });
+      mockAuthService.getCurrentUser.and.returnValue({ 
+        id: '2', 
+        email: 'staff@example.com',
+        username: 'staff',
+        first_name: 'Staff',
+        last_name: 'User',
+        isStaff: true 
+      });
       
       expect(component.canEditRecipe()).toBe(true);
     });
 
     it('should not allow edit for other users', () => {
       component.recipe.set(mockRecipe);
-      mockAuthService.getCurrentUser.and.returnValue({ id: '2', isStaff: false });
+      mockAuthService.getCurrentUser.and.returnValue({ 
+        id: '2', 
+        email: 'other@example.com',
+        username: 'other',
+        first_name: 'Other',
+        last_name: 'User',
+        isStaff: false 
+      });
+      
+      expect(component.canEditRecipe()).toBe(false);
+    });
+
+    it('should not allow edit when user is null', () => {
+      component.recipe.set(mockRecipe);
+      mockAuthService.getCurrentUser.and.returnValue(null);
+      
+      expect(component.canEditRecipe()).toBe(false);
+    });
+
+    it('should not allow edit when recipe is null', () => {
+      component.recipe.set(null);
+      mockAuthService.getCurrentUser.and.returnValue({ 
+        id: '1', 
+        email: 'test@example.com',
+        username: 'testuser',
+        first_name: 'Test',
+        last_name: 'User',
+        isStaff: false 
+      });
+      
+      expect(component.canEditRecipe()).toBe(false);
+    });
+
+    it('should not allow edit when recipe author is null', () => {
+      const recipeWithoutAuthor = { ...mockRecipe, author: null as any };
+      component.recipe.set(recipeWithoutAuthor);
+      mockAuthService.getCurrentUser.and.returnValue({ 
+        id: '1', 
+        email: 'test@example.com',
+        username: 'testuser',
+        first_name: 'Test',
+        last_name: 'User',
+        isStaff: false 
+      });
       
       expect(component.canEditRecipe()).toBe(false);
     });
