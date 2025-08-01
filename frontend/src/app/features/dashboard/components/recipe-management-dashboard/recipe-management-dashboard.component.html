@@ -61,7 +61,7 @@
     <mat-card class="filters-card">
       <div class="filters-content">
         <!-- Search -->
-        <mat-form-field class="search-field" appearance="outline">
+        <mat-form-field class="search-field" appearance="fill">
           <mat-label>Search recipes</mat-label>
           <input 
             matInput 
@@ -73,7 +73,7 @@
         </mat-form-field>
 
         <!-- Status Filter -->
-        <mat-form-field appearance="outline">
+        <mat-form-field appearance="fill">
           <mat-label>Status</mat-label>
           <mat-select [(value)]="statusFilter" (selectionChange)="onFilterChange()">
             <mat-option 
@@ -85,7 +85,7 @@
         </mat-form-field>
 
         <!-- Sort Order -->
-        <mat-form-field appearance="outline">
+        <mat-form-field appearance="fill">
           <mat-label>Sort by</mat-label>
           <mat-select [(value)]="sortOrder" (selectionChange)="onSortChange()">
             <mat-option 

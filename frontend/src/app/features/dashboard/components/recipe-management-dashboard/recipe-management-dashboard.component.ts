@@ -7,6 +7,7 @@ import { LoadingComponent } from '../../../../shared/components/loading/loading.
 import { StarRatingComponent } from '../../../../shared/components/star-rating/star-rating.component';
 
 import { RecipeService } from '../../../../core/services/recipe.service';
+import { AuthService } from '../../../../core/services/auth.service';
 import { Recipe, RecipeListItem, RecipeListResponse } from '../../../../shared/models/recipe.models';
 import { UserStatisticsService } from '../../services/user-statistics.service';
 import { RecipeStats } from '../../models/dashboard-data.model';
@@ -66,7 +67,8 @@ export class RecipeManagementDashboardComponent implements OnInit, OnDestroy {
   constructor(
     private recipeService: RecipeService,
     private userStatsService: UserStatisticsService,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {}
   
   async ngOnInit(): Promise<void> {
@@ -96,16 +98,23 @@ export class RecipeManagementDashboardComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     
     try {
+      const currentUser = this.authService.getCurrentUser();
+      if (!currentUser) {
+        this.userRecipes = [];
+        this.totalRecipes = 0;
+        this.filteredRecipes = [];
+        return;
+      }
+
       const params = {
-        status: this.statusFilter === 'all' ? undefined : this.statusFilter,
         ordering: this.getSortOrderValue(),
-        search: this.searchTerm || undefined,
+        q: this.searchTerm || undefined, // Use 'q' for search instead of 'search'
         page: this.currentPage,
         page_size: this.pageSize,
-        author: 'me' // Filter for current user's recipes
+        author: currentUser.id // Filter by current user's ID
       };
       
-      const response = await this.recipeService.searchRecipes(params).toPromise();
+      const response = await this.recipeService.getRecipes(params).toPromise();
       if (response) {
         this.userRecipes = response.results;
         this.totalRecipes = response.count;
@@ -113,6 +122,10 @@ export class RecipeManagementDashboardComponent implements OnInit, OnDestroy {
       }
     } catch (error) {
       console.error('Failed to load user recipes:', error);
+      // Provide fallback empty data
+      this.userRecipes = [];
+      this.totalRecipes = 0;
+      this.filteredRecipes = [];
     } finally {
       this.isLoading = false;
     }
@@ -136,12 +149,12 @@ export class RecipeManagementDashboardComponent implements OnInit, OnDestroy {
 
   private getSortOrderValue(): string {
     switch (this.sortOrder) {
-      case 'newest': return '-created_at';
-      case 'oldest': return 'created_at';
-      case 'most-viewed': return '-view_count';
-      case 'highest-rated': return '-rating';
+      case 'newest': return 'newest'; // Use semantic ordering supported by backend
+      case 'oldest': return 'oldest';
+      case 'most-viewed': return 'newest'; // Fallback to newest since view_count isn't supported
+      case 'highest-rated': return 'rating'; // Use rating ordering supported by advanced search
       case 'title': return 'title';
-      default: return '-created_at';
+      default: return 'newest';
     }
   }
   

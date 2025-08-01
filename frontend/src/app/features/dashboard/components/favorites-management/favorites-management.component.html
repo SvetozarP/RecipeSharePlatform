@@ -25,7 +25,7 @@
     <mat-card class="filters-card">
       <div class="filters-content">
         <!-- Collection Filter -->
-        <mat-form-field appearance="outline" *ngIf="hasCollections">
+        <mat-form-field appearance="fill" *ngIf="hasCollections">
           <mat-label>Collection</mat-label>
           <mat-select 
             [(value)]="selectedCollection" 
@@ -40,7 +40,7 @@
         </mat-form-field>
 
         <!-- Sort Order -->
-        <mat-form-field appearance="outline">
+        <mat-form-field appearance="fill">
           <mat-label>Sort by</mat-label>
           <mat-select [(value)]="sortOrder" (selectionChange)="onSortChange()">
             <mat-option 
