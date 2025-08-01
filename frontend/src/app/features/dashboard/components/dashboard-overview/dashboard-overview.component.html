@@ -157,7 +157,7 @@
                 <h4 class="recipe-title">{{ recipe.title }}</h4>
                 <div class="recipe-meta">
                   <app-star-rating 
-                    [value]="recipe.rating_stats?.average_rating || 0"
+                    [value]="recipe.rating_stats.average_rating || 0"
                     [interactive]="false"
                     [showValue]="false"
                     [size]="16">
