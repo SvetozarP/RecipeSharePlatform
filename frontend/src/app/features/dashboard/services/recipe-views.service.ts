@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, firstValueFrom } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
 import { Recipe } from '../../../shared/models/recipe.models';
 
@@ -48,7 +48,7 @@ export class RecipeViewsService {
         data.view_duration_seconds = durationSeconds;
       }
       
-      const response = await this.apiService.post<RecipeView>('/recipes/views/', data).toPromise();
+      const response = await firstValueFrom(this.apiService.post<RecipeView>('/recipes/views/', data));
       if (!response) {
         throw new Error('Failed to record recipe view: No response received');
       }
@@ -64,7 +64,7 @@ export class RecipeViewsService {
    */
   async getUserViews(params?: RecipeViewParams): Promise<RecipeView[]> {
     try {
-      const response = await this.apiService.get<RecipeView[]>('/recipes/views/my_views/', { params }).toPromise();
+      const response = await firstValueFrom(this.apiService.get<RecipeView[]>('/recipes/views/my_views/', { params }));
       return response || [];
     } catch (error) {
       console.error('Failed to get user views:', error);
@@ -77,7 +77,7 @@ export class RecipeViewsService {
    */
   async getRecipeViewStats(recipeId: string): Promise<RecipeViewStats | null> {
     try {
-      const response = await this.apiService.get<RecipeViewStats>(`/recipes/views/recipe_stats/?recipe_id=${recipeId}`).toPromise();
+      const response = await firstValueFrom(this.apiService.get<RecipeViewStats>(`/recipes/views/recipe_stats/?recipe_id=${recipeId}`));
       return response || null;
     } catch (error) {
       console.error('Failed to get recipe view stats:', error);
@@ -90,7 +90,7 @@ export class RecipeViewsService {
    */
   async getUserViewStats(): Promise<ViewStats> {
     try {
-      const response = await this.apiService.get<ViewStats>('/recipes/views/user_stats/').toPromise();
+      const response = await firstValueFrom(this.apiService.get<ViewStats>('/recipes/views/user_stats/'));
       return response || {
         total_views: 0,
         unique_views: 0,

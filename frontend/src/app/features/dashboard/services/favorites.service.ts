@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, BehaviorSubject } from 'rxjs';
+import { Observable, BehaviorSubject, firstValueFrom } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Recipe, PaginatedResponse } from '../../../shared/models/recipe.models';
@@ -34,7 +34,7 @@ export class FavoritesService {
   async getFavoriteRecipes(params?: FavoriteParams): Promise<PaginatedResponse<Recipe>> {
     try {
       // Use backend API to get favorites
-      const response = await this.apiService.get<any>('/recipes/favorites/', { params }).toPromise();
+      const response = await firstValueFrom(this.apiService.get<any>('/recipes/favorites/', { params }));
       
       // The backend returns UserFavorite objects with a 'recipe' property
       // We need to extract the recipe objects from the results
@@ -73,7 +73,7 @@ export class FavoritesService {
   async addToFavorites(recipeId: string): Promise<Favorite> {
     try {
       // Use backend API to add to favorites
-      const response = await this.apiService.post<Favorite>('/recipes/favorites/', { recipe_id: recipeId }).toPromise();
+      const response = await firstValueFrom(this.apiService.post<Favorite>('/recipes/favorites/', { recipe_id: recipeId }));
       
       if (!response) {
         throw new Error('Failed to add to favorites: No response received');
@@ -96,7 +96,7 @@ export class FavoritesService {
     try {
       // Use the toggle endpoint to remove from favorites
       // The toggle endpoint will remove the favorite if it exists
-      const response = await this.apiService.post<{is_favorite: boolean, message: string}>('/recipes/favorites/toggle/', { recipe_id: recipeId }).toPromise();
+      const response = await firstValueFrom(this.apiService.post<{is_favorite: boolean, message: string}>('/recipes/favorites/toggle/', { recipe_id: recipeId }));
       
       if (!response) {
         throw new Error('Failed to remove from favorites: No response received');
@@ -114,7 +114,7 @@ export class FavoritesService {
     try {
       // Remove each recipe from favorites using the toggle endpoint
       const removePromises = recipeIds.map(recipeId => 
-        this.apiService.post<{is_favorite: boolean, message: string}>('/recipes/favorites/toggle/', { recipe_id: recipeId }).toPromise()
+        firstValueFrom(this.apiService.post<{is_favorite: boolean, message: string}>('/recipes/favorites/toggle/', { recipe_id: recipeId }))
       );
       
       await Promise.all(removePromises);
@@ -132,7 +132,7 @@ export class FavoritesService {
   async isFavorite(recipeId: string): Promise<boolean> {
     try {
       // Use backend API to check favorite status
-      const response = await this.apiService.get<{is_favorite: boolean}>(`/recipes/favorites/check/?recipe_id=${recipeId}`).toPromise();
+      const response = await firstValueFrom(this.apiService.get<{is_favorite: boolean}>(`/recipes/favorites/check/?recipe_id=${recipeId}`));
       return response?.is_favorite || false;
     } catch (error) {
       console.error('Failed to check favorite status:', error);
@@ -215,7 +215,7 @@ export class FavoritesService {
   async toggleFavorite(recipeId: string): Promise<{is_favorite: boolean, message: string}> {
     try {
       // Use backend API to toggle favorite status
-      const response = await this.apiService.post<{is_favorite: boolean, message: string}>('/recipes/favorites/toggle/', { recipe_id: recipeId }).toPromise();
+      const response = await firstValueFrom(this.apiService.post<{is_favorite: boolean, message: string}>('/recipes/favorites/toggle/', { recipe_id: recipeId }));
       
       if (!response) {
         throw new Error('Failed to toggle favorite: No response received');
