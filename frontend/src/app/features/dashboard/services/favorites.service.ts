@@ -94,8 +94,13 @@ export class FavoritesService {
 
   async removeFromFavorites(recipeId: string): Promise<void> {
     try {
-      // Use backend API to remove from favorites
-      await this.apiService.delete(`/recipes/favorites/${recipeId}/`).toPromise();
+      // Use the toggle endpoint to remove from favorites
+      // The toggle endpoint will remove the favorite if it exists
+      const response = await this.apiService.post<{is_favorite: boolean, message: string}>('/recipes/favorites/toggle/', { recipe_id: recipeId }).toPromise();
+      
+      if (!response) {
+        throw new Error('Failed to remove from favorites: No response received');
+      }
       
       // Update local cache
       this.removeFromFavoritesLocal(recipeId);
@@ -107,6 +112,14 @@ export class FavoritesService {
 
   async bulkRemoveFromFavorites(recipeIds: string[]): Promise<void> {
     try {
+      // Remove each recipe from favorites using the toggle endpoint
+      const removePromises = recipeIds.map(recipeId => 
+        this.apiService.post<{is_favorite: boolean, message: string}>('/recipes/favorites/toggle/', { recipe_id: recipeId }).toPromise()
+      );
+      
+      await Promise.all(removePromises);
+      
+      // Update local cache
       recipeIds.forEach(recipeId => {
         this.removeFromFavoritesLocal(recipeId);
       });
