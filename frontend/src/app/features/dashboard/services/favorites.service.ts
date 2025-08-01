@@ -64,6 +64,10 @@ export class FavoritesService {
       // Use backend API to add to favorites
       const response = await this.apiService.post<Favorite>('/recipes/favorites/', { recipe_id: recipeId }).toPromise();
       
+      if (!response) {
+        throw new Error('Failed to add to favorites: No response received');
+      }
+      
       // Update local cache
       if (!this.favoritesCache.includes(recipeId)) {
         this.favoritesCache.push(recipeId);
@@ -188,6 +192,10 @@ export class FavoritesService {
     try {
       // Use backend API to toggle favorite status
       const response = await this.apiService.post<{is_favorite: boolean, message: string}>('/recipes/favorites/toggle/', { recipe_id: recipeId }).toPromise();
+      
+      if (!response) {
+        throw new Error('Failed to toggle favorite: No response received');
+      }
       
       // Update local cache based on response
       if (response.is_favorite) {
