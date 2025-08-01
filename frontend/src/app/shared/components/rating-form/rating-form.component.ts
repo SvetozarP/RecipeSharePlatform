@@ -260,9 +260,9 @@ import { Subject, takeUntil } from 'rxjs';
 })
 export class RatingFormComponent implements OnInit, OnDestroy {
   @Input() recipeId!: string;
-  @Input() isOwnRecipe: boolean = false;
+  @Input() isOwnRecipe = false;
   @Input() existingRating?: Rating;
-  @Input() showCancelButton: boolean = true;
+  @Input() showCancelButton = true;
 
   @Output() ratingSubmitted = new EventEmitter<RatingCreate | RatingUpdate>();
   @Output() ratingDeleted = new EventEmitter<void>();

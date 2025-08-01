@@ -501,3 +501,115 @@ class Rating(BaseModel):
         recipe = self.recipe
         super().delete(*args, **kwargs)
         recipe.update_rating_stats()
+
+
+class UserFavorite(BaseModel):
+    """Model for tracking user favorite recipes."""
+    
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+        help_text=_("Unique identifier for this favorite")
+    )
+    
+    # Relationships
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='favorites',
+        help_text=_("User who favorited the recipe")
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='favorited_by',
+        help_text=_("Recipe that was favorited")
+    )
+    
+    class Meta:
+        verbose_name = _('user favorite')
+        verbose_name_plural = _('user favorites')
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user']),
+            models.Index(fields=['recipe']),
+            models.Index(fields=['created_at']),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'recipe'],
+                name='unique_user_recipe_favorite'
+            ),
+        ]
+
+    def __str__(self):
+        """Return string representation."""
+        return f"{self.user.email} favorited {self.recipe.title}"
+
+
+class RecipeView(BaseModel):
+    """Model for tracking recipe views by users."""
+    
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+        help_text=_("Unique identifier for this view")
+    )
+    
+    # Relationships
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='recipe_views',
+        null=True,
+        blank=True,
+        help_text=_("User who viewed the recipe (null for anonymous views)")
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='views',
+        help_text=_("Recipe that was viewed")
+    )
+    
+    # View tracking fields
+    ip_address = models.GenericIPAddressField(
+        null=True,
+        blank=True,
+        help_text=_("IP address of the viewer")
+    )
+    user_agent = models.TextField(
+        blank=True,
+        help_text=_("User agent string of the viewer")
+    )
+    session_key = models.CharField(
+        max_length=40,
+        blank=True,
+        help_text=_("Session key for anonymous users")
+    )
+    
+    # Duration tracking
+    view_duration_seconds = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text=_("How long the user spent viewing the recipe (in seconds)")
+    )
+    
+    class Meta:
+        verbose_name = _('recipe view')
+        verbose_name_plural = _('recipe views')
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user']),
+            models.Index(fields=['recipe']),
+            models.Index(fields=['created_at']),
+            models.Index(fields=['ip_address']),
+            models.Index(fields=['session_key']),
+        ]
+
+    def __str__(self):
+        """Return string representation."""
+        viewer = self.user.email if self.user else f"Anonymous ({self.ip_address})"
+        return f"{viewer} viewed {self.recipe.title}"

@@ -1,16 +1,17 @@
-import { Component, OnInit, inject, signal, computed, Inject } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, Inject, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MaterialModule } from '../../../shared/material.module';
 import { RecipeService } from '../../../core/services/recipe.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { Recipe, RecipeImage, Rating, RatingListItem, RatingCreate, RatingUpdate } from '../../../shared/models/recipe.models';
+import { Recipe, Rating, RatingListItem, RatingCreate, RatingUpdate } from '../../../shared/models/recipe.models';
 import { StarRatingComponent, ReviewDisplayComponent, RatingFormComponent } from '../../../shared/components';
 import { catchError, finalize } from 'rxjs/operators';
-import { of, Observable } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { RecipeViewsService } from '../../dashboard/services/recipe-views.service';
 
 @Component({
   selector: 'app-recipe-detail',
@@ -470,13 +471,16 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     }
   `]
 })
-export class RecipeDetailComponent implements OnInit {
+export class RecipeDetailComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private recipeService = inject(RecipeService);
   private authService = inject(AuthService);
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
+  private recipeViewsService = inject(RecipeViewsService);
+  private destroy$ = new Subject<void>();
+  private viewStartTime = Date.now();
 
   // Authentication state
   isAuthenticated$ = this.authService.isAuthenticated$;
@@ -602,6 +606,19 @@ export class RecipeDetailComponent implements OnInit {
     });
   }
 
+  ngOnDestroy(): void {
+    // Record view duration when component is destroyed
+    if (this.recipe()) {
+      const viewDuration = Math.floor((Date.now() - this.viewStartTime) / 1000);
+      this.recipeViewsService.recordView(this.recipe()!.id, viewDuration).catch(error => {
+        console.error('Failed to record recipe view:', error);
+      });
+    }
+    
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   private loadRecipe(idOrSlug: string): void {
     this.loading.set(true);
     this.error.set(null);
@@ -666,7 +683,7 @@ export class RecipeDetailComponent implements OnInit {
     });
   }
 
-  private loadReviews(recipeId: string, append: boolean = false): void {
+  private loadReviews(recipeId: string, append = false): void {
     this.reviewsLoading.set(!append);
     if (append) {
       this.reviewsLoadingMore.set(true);
@@ -814,7 +831,7 @@ export class RecipeDetailComponent implements OnInit {
     });
   }
 
-  onEditReview(review: RatingListItem): void {
+  onEditReview(_review: RatingListItem): void {
     this.editingReview.set(true);
     this.showRatingFormSignal.set(true);
   }
@@ -952,7 +969,7 @@ export class RecipeDetailComponent implements OnInit {
     const currentUserId = currentUser.id.toString();
     
     // Check isStaff with both possible field names (isStaff and is_staff)
-    const isStaff = !!(currentUser.isStaff || (currentUser as any).is_staff);
+    const isStaff = !!(currentUser.isStaff || (currentUser as { is_staff?: boolean }).is_staff);
     
     return recipeAuthorId === currentUserId || isStaff;
   }

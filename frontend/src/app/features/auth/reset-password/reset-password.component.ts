@@ -179,8 +179,8 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
   showPassword = false;
   showConfirmPassword = false;
   
-  private uidb64: string = '';
-  private token: string = '';
+  private uidb64 = '';
+  private token = '';
   private destroy$ = new Subject<void>();
 
   constructor(

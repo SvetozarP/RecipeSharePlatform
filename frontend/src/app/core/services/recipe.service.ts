@@ -210,34 +210,14 @@ export class RecipeService extends ApiService {
    * Toggle recipe favorite status
    */
   toggleFavorite(recipeId: string): Observable<{ is_favorited: boolean }> {
-    // Use localStorage-based favorites management (same approach as FavoritesService)
-    const FAVORITES_KEY = 'user_favorite_recipes';
-    
-    try {
-      // Get current favorites from localStorage
-      let favorites: string[] = [];
-      const favoritesJson = localStorage.getItem(FAVORITES_KEY);
-      if (favoritesJson) {
-        favorites = JSON.parse(favoritesJson);
-      }
-      
-      const currentlyFavorited = favorites.includes(recipeId);
-      
-      if (currentlyFavorited) {
-        // Remove from favorites
-        favorites = favorites.filter(id => id !== recipeId);
-        localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+    // Use backend API for favorites management
+    return this.post<{ is_favorited: boolean; message: string }>('/recipes/favorites/toggle/', { recipe_id: recipeId }).pipe(
+      map(response => ({ is_favorited: response.is_favorited })),
+      catchError(error => {
+        console.error('Failed to toggle favorite:', error);
         return of({ is_favorited: false });
-      } else {
-        // Add to favorites
-        favorites.push(recipeId);
-        localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
-        return of({ is_favorited: true });
-      }
-    } catch (error) {
-      console.error('Failed to toggle favorite:', error);
-      return of({ is_favorited: false });
-    }
+      })
+    );
   }
 
   /**

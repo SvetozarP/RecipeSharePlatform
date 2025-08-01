@@ -18,7 +18,7 @@ export class ActivityService {
     private authService: AuthService
   ) {}
 
-  async getRecentActivity(limit: number = 10): Promise<Activity[]> {
+  async getRecentActivity(limit = 10): Promise<Activity[]> {
     try {
       // Generate activity from user's recipes and actions
       const activities = await this.generateActivityFromRecipes();
@@ -152,7 +152,7 @@ export class ActivityService {
   }
 
   // Observable methods
-  getRecentActivityObservable(limit: number = 10): Observable<Activity[]> {
+  getRecentActivityObservable(limit = 10): Observable<Activity[]> {
     return new Observable(observer => {
       this.getRecentActivity(limit).then(activities => {
         observer.next(activities);

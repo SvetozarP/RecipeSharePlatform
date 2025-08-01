@@ -91,7 +91,7 @@ export class AuthService {
       );
   }
 
-  logout(skipServerCall: boolean = false): void {
+  logout(skipServerCall = false): void {
     const refreshToken = this.getRefreshToken();
     
     // Try to blacklist the token on the server only if tokens aren't expired

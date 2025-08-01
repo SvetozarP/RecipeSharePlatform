@@ -146,10 +146,10 @@ import { AuthService, LoginRequest } from '../../../core/services/auth.service';
 })
 export class LoginComponent implements OnInit, OnDestroy {
   loginForm: FormGroup;
-  isLoading: boolean = false;
-  errorMessage: string = '';
-  returnUrl: string = '/dashboard';
-  showPassword: boolean = false;
+  isLoading = false;
+  errorMessage = '';
+  returnUrl = '/dashboard';
+  showPassword = false;
 
   private destroy$ = new Subject<void>();
 

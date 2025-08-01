@@ -9,7 +9,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q
 from django.utils.text import slugify
 
-from .models import Recipe, Category, Rating
+from .models import Recipe, Category, Rating, UserFavorite, RecipeView
 from .serializers import (
     RecipeSerializer, 
     RecipeListSerializer, 
@@ -26,7 +26,11 @@ from .serializers import (
     SearchResultSerializer,
     SearchSuggestionsSerializer,
     AdvancedSearchSerializer,
-    SearchResultsSerializer
+    SearchResultsSerializer,
+    UserFavoriteSerializer,
+    RecipeViewSerializer,
+    FavoriteStatsSerializer,
+    ViewStatsSerializer
 )
 from .services.recipe_service import recipe_service
 from .services.search_service import search_service
@@ -836,4 +840,272 @@ class RatingViewSet(viewsets.ModelViewSet):
             )
         
         serializer = RecipeRatingStatsSerializer(recipe)
+        return Response(serializer.data)
+
+
+class UserFavoriteViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for managing user favorites.
+    
+    Provides CRUD operations for user favorites with proper permissions.
+    """
+    serializer_class = UserFavoriteSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ['created_at']
+    ordering = ['-created_at']
+
+    def get_queryset(self):
+        """Return favorites for the current user."""
+        return UserFavorite.objects.filter(user=self.request.user).select_related('recipe', 'recipe__author')
+
+    def perform_create(self, serializer):
+        """Create favorite for current user."""
+        serializer.save(user=self.request.user)
+
+    @action(detail=False, methods=['post'])
+    def toggle(self, request):
+        """Toggle favorite status for a recipe."""
+        recipe_id = request.data.get('recipe_id')
+        if not recipe_id:
+            return Response(
+                {'error': 'recipe_id is required'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            recipe = Recipe.objects.get(id=recipe_id)
+        except Recipe.DoesNotExist:
+            return Response(
+                {'error': 'Recipe not found'}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        favorite, created = UserFavorite.objects.get_or_create(
+            user=request.user, 
+            recipe=recipe
+        )
+
+        if not created:
+            # Remove from favorites
+            favorite.delete()
+            return Response(
+                {
+                    'message': 'Recipe removed from favorites',
+                    'is_favorite': False
+                },
+                status=status.HTTP_200_OK
+            )
+        else:
+            # Added to favorites
+            serializer = self.get_serializer(favorite)
+            return Response(
+                {
+                    'message': 'Recipe added to favorites',
+                    'is_favorite': True,
+                    'favorite': serializer.data
+                },
+                status=status.HTTP_201_CREATED
+            )
+
+    @action(detail=False, methods=['get'])
+    def check(self, request):
+        """Check if a recipe is favorited by current user."""
+        recipe_id = request.query_params.get('recipe_id')
+        if not recipe_id:
+            return Response(
+                {'error': 'recipe_id is required'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        is_favorite = UserFavorite.objects.filter(
+            user=request.user, 
+            recipe_id=recipe_id
+        ).exists()
+
+        return Response({'is_favorite': is_favorite})
+
+    @action(detail=False, methods=['get'])
+    def stats(self, request):
+        """Get user's favorite statistics."""
+        user_favorites = self.get_queryset()
+        favorite_recipes = [f.recipe for f in user_favorites[:10]]  # Top 10
+
+        stats_data = {
+            'total_favorites': user_favorites.count(),
+            'favorite_recipes': favorite_recipes
+        }
+
+        serializer = FavoriteStatsSerializer(stats_data)
+        return Response(serializer.data)
+
+
+class RecipeViewViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for managing recipe views.
+    
+    Provides tracking and retrieval of recipe view statistics.
+    """
+    serializer_class = RecipeViewSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = ['recipe', 'user']
+    ordering_fields = ['created_at', 'view_duration_seconds']
+    ordering = ['-created_at']
+
+    def get_queryset(self):
+        """Return views based on user permissions."""
+        if self.request.user.is_authenticated:
+            # Authenticated users can see their own views
+            if self.action in ['list', 'retrieve']:
+                return RecipeView.objects.filter(user=self.request.user).select_related('recipe', 'user')
+        
+        # For stats and creation, return all views
+        return RecipeView.objects.all().select_related('recipe', 'user')
+
+    def create(self, request, *args, **kwargs):
+        """Create a new recipe view record."""
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        # Check if this is a duplicate view within a short time window
+        recipe_id = serializer.validated_data.get('recipe_id')
+        user = request.user if request.user.is_authenticated else None
+        ip_address = serializer.get_client_ip(request)
+        
+        # Don't create duplicate views within 5 minutes
+        from django.utils import timezone
+        from datetime import timedelta
+        
+        recent_view_exists = False
+        time_threshold = timezone.now() - timedelta(minutes=5)
+        
+        if user:
+            recent_view_exists = RecipeView.objects.filter(
+                recipe_id=recipe_id,
+                user=user,
+                created_at__gte=time_threshold
+            ).exists()
+        else:
+            recent_view_exists = RecipeView.objects.filter(
+                recipe_id=recipe_id,
+                ip_address=ip_address,
+                created_at__gte=time_threshold
+            ).exists()
+        
+        if recent_view_exists:
+            return Response(
+                {'message': 'View already recorded recently'},
+                status=status.HTTP_200_OK
+            )
+
+        view = serializer.save()
+        return Response(
+            {
+                'message': 'View recorded successfully',
+                'view': RecipeViewSerializer(view, context={'request': request}).data
+            },
+            status=status.HTTP_201_CREATED
+        )
+
+    @action(detail=False, methods=['get'])
+    def my_views(self, request):
+        """Get current user's recipe views."""
+        if not request.user.is_authenticated:
+            return Response(
+                {'error': 'Authentication required'}, 
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        queryset = self.get_queryset()
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def recipe_stats(self, request):
+        """Get view statistics for a specific recipe."""
+        recipe_id = request.query_params.get('recipe_id')
+        if not recipe_id:
+            return Response(
+                {'error': 'recipe_id is required'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            recipe = Recipe.objects.get(id=recipe_id)
+        except Recipe.DoesNotExist:
+            return Response(
+                {'error': 'Recipe not found'}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        views = RecipeView.objects.filter(recipe=recipe)
+        total_views = views.count()
+        unique_views = views.values('user', 'ip_address').distinct().count()
+        
+        # Calculate average view duration (excluding None values)
+        view_durations = views.exclude(view_duration_seconds__isnull=True)
+        avg_duration = None
+        if view_durations.exists():
+            from django.db.models import Avg
+            avg_duration = view_durations.aggregate(Avg('view_duration_seconds'))['view_duration_seconds__avg']
+
+        stats_data = {
+            'recipe': recipe,
+            'total_views': total_views,
+            'unique_views': unique_views,
+            'average_view_duration': avg_duration
+        }
+
+        return Response(stats_data)
+
+    @action(detail=False, methods=['get'])
+    def user_stats(self, request):
+        """Get user's view statistics."""
+        if not request.user.is_authenticated:
+            return Response(
+                {'error': 'Authentication required'}, 
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        user_views = RecipeView.objects.filter(user=request.user)
+        total_views = user_views.count()
+        unique_recipes = user_views.values('recipe').distinct().count()
+        
+        # Get most viewed recipes by this user
+        from django.db.models import Count
+        most_viewed = (
+            user_views.values('recipe')
+            .annotate(view_count=Count('id'))
+            .order_by('-view_count')[:5]
+        )
+        
+        most_viewed_recipes = []
+        for item in most_viewed:
+            try:
+                recipe = Recipe.objects.get(id=item['recipe'])
+                most_viewed_recipes.append(recipe)
+            except Recipe.DoesNotExist:
+                continue
+
+        # Calculate average view duration
+        view_durations = user_views.exclude(view_duration_seconds__isnull=True)
+        avg_duration = None
+        if view_durations.exists():
+            from django.db.models import Avg
+            avg_duration = view_durations.aggregate(Avg('view_duration_seconds'))['view_duration_seconds__avg']
+
+        stats_data = {
+            'total_views': total_views,
+            'unique_views': unique_recipes,
+            'average_view_duration': avg_duration,
+            'most_viewed_recipes': most_viewed_recipes
+        }
+
+        serializer = ViewStatsSerializer(stats_data)
         return Response(serializer.data)

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
@@ -10,6 +10,12 @@ export interface Favorite {
   created_at: string;
 }
 
+export interface FavoriteParams {
+  page?: number;
+  page_size?: number;
+  ordering?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -18,52 +24,29 @@ export class FavoritesService {
   public favoriteRecipes$ = this.favoriteRecipesSubject.asObservable();
   private favoritesCache: string[] = [];
 
-  constructor(
-    private apiService: ApiService,
-    private authService: AuthService
-  ) {
-    this.loadFavoritesFromStorage();
+  private apiService = inject(ApiService);
+  private authService = inject(AuthService);
+
+  constructor() {
+    this.loadFavoritesFromBackend();
   }
 
-  async getFavoriteRecipes(params?: any): Promise<PaginatedResponse<Recipe>> {
+  async getFavoriteRecipes(params?: FavoriteParams): Promise<PaginatedResponse<Recipe>> {
     try {
-      // Since we don't have a favorites endpoint, we'll simulate it
-      // by storing favorite IDs locally and fetching those recipes
-      if (this.favoritesCache.length === 0) {
-        return {
-          count: 0,
-          next: null,
-          previous: null,
-          results: []
-        };
+      // Use backend API to get favorites
+      const response = await this.apiService.get<PaginatedResponse<Recipe>>('/recipes/favorites/', { params }).toPromise();
+      
+      // Update cache with recipe IDs
+      if (response && response.results) {
+        this.favoritesCache = response.results.map(recipe => recipe.id);
+        this.favoriteRecipesSubject.next([...this.favoritesCache]);
       }
-
-      // Get recipe details for favorite IDs
-      const favoriteRecipes: Recipe[] = [];
-      for (const recipeId of this.favoritesCache) {
-        try {
-          const recipe = await this.apiService.get<Recipe>(`/recipes/${recipeId}/`).toPromise();
-          if (recipe) {
-            favoriteRecipes.push(recipe);
-          }
-        } catch (error) {
-          // Recipe might not exist anymore, remove from favorites
-          this.removeFromFavoritesLocal(recipeId);
-        }
-      }
-
-      // Apply pagination if needed
-      const page = params?.page || 1;
-      const pageSize = params?.page_size || 20;
-      const startIndex = (page - 1) * pageSize;
-      const endIndex = startIndex + pageSize;
-      const paginatedResults = favoriteRecipes.slice(startIndex, endIndex);
-
-      return {
-        count: favoriteRecipes.length,
-        next: endIndex < favoriteRecipes.length ? `page=${page + 1}` : null,
-        previous: page > 1 ? `page=${page - 1}` : null,
-        results: paginatedResults
+      
+      return response || {
+        count: 0,
+        next: null,
+        previous: null,
+        results: []
       };
     } catch (error) {
       console.error('Failed to load favorite recipes:', error);
@@ -78,24 +61,16 @@ export class FavoritesService {
 
   async addToFavorites(recipeId: string): Promise<Favorite> {
     try {
-      // First verify the recipe exists
-      const recipe = await this.apiService.get<Recipe>(`/recipes/${recipeId}/`).toPromise();
-      if (!recipe) {
-        throw new Error('Recipe not found');
-      }
-
-      // Add to local favorites
+      // Use backend API to add to favorites
+      const response = await this.apiService.post<Favorite>('/recipes/favorites/', { recipe_id: recipeId }).toPromise();
+      
+      // Update local cache
       if (!this.favoritesCache.includes(recipeId)) {
         this.favoritesCache.push(recipeId);
-        this.saveFavoritesToStorage();
         this.favoriteRecipesSubject.next([...this.favoritesCache]);
       }
-
-      return {
-        id: recipeId,
-        recipe: recipe,
-        created_at: new Date().toISOString()
-      };
+      
+      return response;
     } catch (error) {
       console.error('Failed to add to favorites:', error);
       throw error;
@@ -104,6 +79,10 @@ export class FavoritesService {
 
   async removeFromFavorites(recipeId: string): Promise<void> {
     try {
+      // Use backend API to remove from favorites
+      await this.apiService.delete(`/recipes/favorites/${recipeId}/`).toPromise();
+      
+      // Update local cache
       this.removeFromFavoritesLocal(recipeId);
     } catch (error) {
       console.error('Failed to remove from favorites:', error);
@@ -123,36 +102,32 @@ export class FavoritesService {
   }
 
   async isFavorite(recipeId: string): Promise<boolean> {
-    return this.favoritesCache.includes(recipeId);
-  }
-
-  // Local storage management
-  private loadFavoritesFromStorage(): void {
     try {
-      const currentUser = this.authService.getCurrentUser();
-      if (!currentUser) return;
-
-      const storageKey = `favorites_${currentUser.id}`;
-      const stored = localStorage.getItem(storageKey);
-      if (stored) {
-        this.favoritesCache = JSON.parse(stored);
-        this.favoriteRecipesSubject.next([...this.favoritesCache]);
-      }
+      // Use backend API to check favorite status
+      const response = await this.apiService.get<{is_favorite: boolean}>(`/recipes/favorites/check/?recipe_id=${recipeId}`).toPromise();
+      return response?.is_favorite || false;
     } catch (error) {
-      console.error('Failed to load favorites from storage:', error);
-      this.favoritesCache = [];
+      console.error('Failed to check favorite status:', error);
+      // Fallback to local cache
+      return this.favoritesCache.includes(recipeId);
     }
   }
 
-  private saveFavoritesToStorage(): void {
+  // Backend API management
+  private async loadFavoritesFromBackend(): Promise<void> {
     try {
       const currentUser = this.authService.getCurrentUser();
       if (!currentUser) return;
 
-      const storageKey = `favorites_${currentUser.id}`;
-      localStorage.setItem(storageKey, JSON.stringify(this.favoritesCache));
+      // Load favorites from backend
+      const response = await this.getFavoriteRecipes();
+      if (response && response.results) {
+        this.favoritesCache = response.results.map(recipe => recipe.id);
+        this.favoriteRecipesSubject.next([...this.favoritesCache]);
+      }
     } catch (error) {
-      console.error('Failed to save favorites to storage:', error);
+      console.error('Failed to load favorites from backend:', error);
+      this.favoritesCache = [];
     }
   }
 
@@ -160,7 +135,6 @@ export class FavoritesService {
     const index = this.favoritesCache.indexOf(recipeId);
     if (index > -1) {
       this.favoritesCache.splice(index, 1);
-      this.saveFavoritesToStorage();
       this.favoriteRecipesSubject.next([...this.favoritesCache]);
     }
   }
@@ -171,7 +145,7 @@ export class FavoritesService {
   }
 
   // Observable methods for reactive programming
-  getFavoriteRecipesObservable(params?: any): Observable<PaginatedResponse<Recipe>> {
+  getFavoriteRecipesObservable(params?: FavoriteParams): Observable<PaginatedResponse<Recipe>> {
     return new Observable(observer => {
       this.getFavoriteRecipes(params).then(result => {
         observer.next(result);
@@ -208,10 +182,27 @@ export class FavoritesService {
   clearCache(): void {
     this.favoritesCache = [];
     this.favoriteRecipesSubject.next([]);
-    const currentUser = this.authService.getCurrentUser();
-    if (currentUser) {
-      const storageKey = `favorites_${currentUser.id}`;
-      localStorage.removeItem(storageKey);
+  }
+
+  async toggleFavorite(recipeId: string): Promise<{is_favorite: boolean, message: string}> {
+    try {
+      // Use backend API to toggle favorite status
+      const response = await this.apiService.post<{is_favorite: boolean, message: string}>('/recipes/favorites/toggle/', { recipe_id: recipeId }).toPromise();
+      
+      // Update local cache based on response
+      if (response.is_favorite) {
+        if (!this.favoritesCache.includes(recipeId)) {
+          this.favoritesCache.push(recipeId);
+        }
+      } else {
+        this.removeFromFavoritesLocal(recipeId);
+      }
+      
+      this.favoriteRecipesSubject.next([...this.favoritesCache]);
+      return response;
+    } catch (error) {
+      console.error('Failed to toggle favorite:', error);
+      throw error;
     }
   }
 }

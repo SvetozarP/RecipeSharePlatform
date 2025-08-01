@@ -4,7 +4,7 @@ Serializers for recipe data.
 from rest_framework import serializers
 from django.core.exceptions import ValidationError as DjangoValidationError
 
-from .models import Recipe, Category, Rating
+from .models import Recipe, Category, Rating, UserFavorite, RecipeView
 from core.services.storage_service import storage_service
 
 
@@ -840,3 +840,106 @@ class SearchResultsSerializer(serializers.Serializer):
     
     class Meta:
         fields = ['count', 'num_pages', 'current_page', 'page_size', 'results', 'search_time']
+
+
+class UserFavoriteSerializer(serializers.ModelSerializer):
+    """Serializer for UserFavorite model."""
+    
+    recipe = RecipeListSerializer(read_only=True)
+    recipe_id = serializers.UUIDField(write_only=True)
+    
+    class Meta:
+        model = UserFavorite
+        fields = [
+            'id', 'recipe', 'recipe_id', 'created_at'
+        ]
+        read_only_fields = ['id', 'created_at']
+    
+    def create(self, validated_data):
+        """Create a new favorite."""
+        recipe_id = validated_data.pop('recipe_id')
+        user = self.context['request'].user
+        
+        # Check if recipe exists
+        try:
+            recipe = Recipe.objects.get(id=recipe_id)
+        except Recipe.DoesNotExist:
+            raise serializers.ValidationError({'recipe_id': 'Recipe not found.'})
+        
+        # Check if already favorited
+        if UserFavorite.objects.filter(user=user, recipe=recipe).exists():
+            raise serializers.ValidationError('Recipe is already in favorites.')
+        
+        return UserFavorite.objects.create(user=user, recipe=recipe)
+
+
+class RecipeViewSerializer(serializers.ModelSerializer):
+    """Serializer for RecipeView model."""
+    
+    recipe = RecipeListSerializer(read_only=True)
+    recipe_id = serializers.UUIDField(write_only=True)
+    user_email = serializers.CharField(source='user.email', read_only=True)
+    
+    class Meta:
+        model = RecipeView
+        fields = [
+            'id', 'recipe', 'recipe_id', 'user_email', 'ip_address',
+            'view_duration_seconds', 'created_at'
+        ]
+        read_only_fields = ['id', 'user_email', 'ip_address', 'created_at']
+    
+    def create(self, validated_data):
+        """Create a new recipe view."""
+        recipe_id = validated_data.pop('recipe_id')
+        request = self.context['request']
+        
+        # Check if recipe exists
+        try:
+            recipe = Recipe.objects.get(id=recipe_id)
+        except Recipe.DoesNotExist:
+            raise serializers.ValidationError({'recipe_id': 'Recipe not found.'})
+        
+        # Get IP address and user agent from request
+        ip_address = self.get_client_ip(request)
+        user_agent = request.META.get('HTTP_USER_AGENT', '')
+        
+        # Create view record
+        view_data = {
+            'recipe': recipe,
+            'ip_address': ip_address,
+            'user_agent': user_agent,
+            **validated_data
+        }
+        
+        # Add user if authenticated
+        if request.user.is_authenticated:
+            view_data['user'] = request.user
+        else:
+            view_data['session_key'] = request.session.session_key or ''
+        
+        return RecipeView.objects.create(**view_data)
+    
+    def get_client_ip(self, request):
+        """Get the client IP address from request."""
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip
+
+
+class FavoriteStatsSerializer(serializers.Serializer):
+    """Serializer for favorite statistics."""
+    
+    total_favorites = serializers.IntegerField()
+    favorite_recipes = RecipeListSerializer(many=True)
+    
+    
+class ViewStatsSerializer(serializers.Serializer):
+    """Serializer for view statistics."""
+    
+    total_views = serializers.IntegerField()
+    unique_views = serializers.IntegerField()
+    average_view_duration = serializers.FloatField(allow_null=True)
+    most_viewed_recipes = RecipeListSerializer(many=True)

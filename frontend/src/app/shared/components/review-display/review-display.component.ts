@@ -369,12 +369,12 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 })
 export class ReviewDisplayComponent implements OnInit {
   @Input() reviews: RatingListItem[] = [];
-  @Input() loading: boolean = false;
-  @Input() loadingMore: boolean = false;
-  @Input() hasMore: boolean = false;
-  @Input() totalCount: number = 0;
-  @Input() sortBy: string = '-created_at';
-  @Input() showHeader: boolean = true;
+  @Input() loading = false;
+  @Input() loadingMore = false;
+  @Input() hasMore = false;
+  @Input() totalCount = 0;
+  @Input() sortBy = '-created_at';
+  @Input() showHeader = true;
   @Input() highlightedReviewId?: string;
   @Input() currentUserReview?: RatingListItem;
 

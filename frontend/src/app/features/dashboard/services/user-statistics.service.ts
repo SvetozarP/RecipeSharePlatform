@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
@@ -9,6 +9,10 @@ import {
 import { UserStatistics } from '../models/dashboard-data.model';
 import { RecipeStats } from '../models/dashboard-data.model';
 import { Recipe } from '../../../shared/models/recipe.models';
+import { FavoritesService } from './favorites.service';
+import { RecipeViewsService } from './recipe-views.service';
+import { PaginatedResponse } from '../../../shared/models/recipe.models';
+import { ViewStats } from './recipe-views.service';
 
 @Injectable({
   providedIn: 'root'
@@ -17,15 +21,18 @@ export class UserStatisticsService {
   private statsUpdatesSubject = new BehaviorSubject<UserStatistics | null>(null);
   public statsUpdates$ = this.statsUpdatesSubject.asObservable();
 
-  constructor(
-    private apiService: ApiService,
-    private authService: AuthService
-  ) {}
+  private apiService = inject(ApiService);
+  private authService = inject(AuthService);
+  private favoritesService = inject(FavoritesService);
+  private recipeViewsService = inject(RecipeViewsService);
 
   async getUserStatistics(): Promise<UserStatistics> {
     try {
       const userRecipes = await this.getUserRecipes();
-      const stats = this.calculateUserStatistics(userRecipes);
+      const favoritesStats = await this.favoritesService.getFavoriteRecipes();
+      const viewsStats = await this.recipeViewsService.getUserViewStats();
+      
+      const stats = this.calculateUserStatistics(userRecipes, favoritesStats, viewsStats);
       this.statsUpdatesSubject.next(stats);
       return stats;
     } catch (error) {
@@ -83,7 +90,7 @@ export class UserStatisticsService {
       if (!currentUser) return [];
       
       const params = this.apiService.buildParams({ author: currentUser.id });
-      const response = await this.apiService.get<any>('/recipes/', params).toPromise();
+      const response = await this.apiService.get<PaginatedResponse<Recipe>>('/recipes/', params).toPromise();
       return response?.results || [];
     } catch (error) {
       console.error('Failed to load user recipes:', error);
@@ -91,23 +98,30 @@ export class UserStatisticsService {
     }
   }
 
-  private calculateUserStatistics(userRecipes: Recipe[]): UserStatistics {
+  private calculateUserStatistics(
+    userRecipes: Recipe[], 
+    favoritesStats?: PaginatedResponse<Recipe>, 
+    viewsStats?: ViewStats
+  ): UserStatistics {
     const totalRecipes = userRecipes.length;
+    const publishedRecipes = totalRecipes; // Assume all retrieved are published since is_published not in Recipe interface
+    const draftRecipes = 0;
+    const privateRecipes = 0;
     
-    // Calculate average rating
-    const ratingsSum = userRecipes.reduce((sum, recipe) => {
-      return sum + (recipe.rating_stats?.average_rating || 0);
-    }, 0);
-    const averageRating = totalRecipes > 0 ? ratingsSum / totalRecipes : 0;
+    const totalViews = viewsStats?.total_views || 0;
+    const totalRatings = userRecipes.reduce((sum, recipe) => sum + (recipe.rating_stats?.total_ratings || 0), 0);
+    const averageRating = totalRecipes > 0 
+      ? userRecipes.reduce((sum, recipe) => sum + (recipe.rating_stats?.average_rating || 0), 0) / totalRecipes 
+      : 0;
 
     return {
       total_recipes: totalRecipes,
-      published_recipes: totalRecipes, // Assume all retrieved are published
-      draft_recipes: 0,
-      private_recipes: 0,
-      total_favorites: 0, // Will be updated by components
-      total_views: 0, // Not available in current Recipe interface
-      total_ratings: userRecipes.reduce((sum, recipe) => sum + (recipe.rating_stats?.total_ratings || 0), 0),
+      published_recipes: publishedRecipes,
+      draft_recipes: draftRecipes,
+      private_recipes: privateRecipes,
+      total_favorites: favoritesStats?.count || 0,
+      total_views: totalViews,
+      total_ratings: totalRatings,
       average_rating: averageRating,
       total_comments: 0, // Not available in current Recipe interface
       first_recipe_date: userRecipes.length > 0 ? userRecipes[userRecipes.length - 1].created_at : new Date().toISOString(),
@@ -152,7 +166,7 @@ export class UserStatisticsService {
     const filteredRecipes = this.filterRecipesByTimeRange(userRecipes, timeRange);
     
     // Count recipes by category
-    const categoryCounts: { [key: string]: number } = {};
+    const categoryCounts: Record<string, number> = {};
     filteredRecipes.forEach(recipe => {
       if (recipe.categories && recipe.categories.length > 0) {
         recipe.categories.forEach(category => {
@@ -177,7 +191,7 @@ export class UserStatisticsService {
     const filteredRecipes = this.filterRecipesByTimeRange(userRecipes, timeRange);
     
     // Count recipes by difficulty
-    const difficultyCounts: { [key: string]: number } = {};
+    const difficultyCounts: Record<string, number> = {};
     filteredRecipes.forEach(recipe => {
       const difficulty = recipe.difficulty || 'Medium';
       difficultyCounts[difficulty] = (difficultyCounts[difficulty] || 0) + 1;

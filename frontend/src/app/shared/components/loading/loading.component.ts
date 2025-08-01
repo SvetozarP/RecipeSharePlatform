@@ -23,8 +23,8 @@ import { MaterialModule } from '../../material.module';
   `
 })
 export class LoadingComponent {
-  @Input() message: string = 'Loading...';
-  @Input() size: number = 50;
-  @Input() fullHeight: boolean = false;
-  @Input() inline: boolean = false;
+  @Input() message = 'Loading...';
+  @Input() size = 50;
+  @Input() fullHeight = false;
+  @Input() inline = false;
 } 

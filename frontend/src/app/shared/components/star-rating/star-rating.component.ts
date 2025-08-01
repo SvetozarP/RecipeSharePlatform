@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, signal, computed } from '@angular/core';
+import { Component, Input, Output, EventEmitter, signal, computed, OnInit, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../material.module';
 
@@ -185,16 +185,16 @@ import { MaterialModule } from '../../material.module';
     }
   `]
 })
-export class StarRatingComponent {
-  @Input() value: number = 0; // Current rating value (0-5)
-  @Input() interactive: boolean = false; // Whether rating can be changed
-  @Input() disabled: boolean = false; // Whether interactive rating is disabled
-  @Input() showValue: boolean = false; // Show numeric value next to stars
-  @Input() showCount: boolean = false; // Show count in parentheses
+export class StarRatingComponent implements OnInit, OnChanges {
+  @Input() value = 0; // Current rating value (0-5)
+  @Input() interactive = false; // Whether rating can be changed
+  @Input() disabled = false; // Whether interactive rating is disabled
+  @Input() showValue = false; // Show numeric value next to stars
+  @Input() showCount = false; // Show count in parentheses
   @Input() count?: number; // Number of ratings/reviews
-  @Input() allowClear: boolean = true; // Allow clearing the rating in interactive mode
-  @Input() size: number = 20; // Star size in pixels
-  @Input() cssClass: string = ''; // Additional CSS classes
+  @Input() allowClear = true; // Allow clearing the rating in interactive mode
+  @Input() size = 20; // Star size in pixels
+  @Input() cssClass = ''; // Additional CSS classes
 
   @Output() ratingChange = new EventEmitter<number>();
   @Output() ratingHover = new EventEmitter<number>();
