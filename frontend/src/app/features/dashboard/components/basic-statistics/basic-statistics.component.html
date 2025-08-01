@@ -78,7 +78,7 @@
         
         <mat-card class="stat-card accent">
           <div class="stat-content">
-            <div class="stat-value">{{ userStats.average_rating | cookingStats:'rating' }}</div>
+            <div class="stat-value">{{ (userStats.average_rating || 0) | cookingStats:'rating' }}</div>
             <div class="stat-label">Avg Rating</div>
           </div>
           <mat-icon class="stat-icon">star</mat-icon>
@@ -107,7 +107,7 @@
             <mat-card-title>Most Viewed Recipe</mat-card-title>
           </mat-card-header>
           <mat-card-content>
-            <div class="recipe-highlight">
+            <div class="recipe-highlight" *ngIf="recipeStats.most_viewed_recipe?.title; else noRecipeTemplate">
               <h3 class="recipe-title">{{ recipeStats.most_viewed_recipe.title }}</h3>
               <p class="recipe-description">{{ recipeStats.most_viewed_recipe.description }}</p>
               <div class="recipe-stats">
@@ -121,6 +121,12 @@
                 </span>
               </div>
             </div>
+            <ng-template #noRecipeTemplate>
+              <div class="no-recipe-message">
+                <mat-icon>restaurant_menu</mat-icon>
+                <p>Create your first recipe to see performance data!</p>
+              </div>
+            </ng-template>
           </mat-card-content>
         </mat-card>
         
@@ -129,7 +135,7 @@
             <mat-card-title>Highest Rated Recipe</mat-card-title>
           </mat-card-header>
           <mat-card-content>
-            <div class="recipe-highlight">
+            <div class="recipe-highlight" *ngIf="recipeStats.highest_rated_recipe?.title && recipeStats.highest_rated_recipe?.rating_stats; else noRatedRecipeTemplate">
               <h3 class="recipe-title">{{ recipeStats.highest_rated_recipe.title }}</h3>
               <p class="recipe-description">{{ recipeStats.highest_rated_recipe.description }}</p>
               <div class="recipe-stats">
@@ -143,6 +149,12 @@
                 </span>
               </div>
             </div>
+            <ng-template #noRatedRecipeTemplate>
+              <div class="no-recipe-message">
+                <mat-icon>star_border</mat-icon>
+                <p>Create and get ratings on your recipes to see top performers!</p>
+              </div>
+            </ng-template>
           </mat-card-content>
         </mat-card>
       </div>

@@ -27,6 +27,8 @@ export class RecipeService extends ApiService {
   private loadingSubject = new BehaviorSubject<boolean>(false);
   public loading$ = this.loadingSubject.asObservable();
 
+
+
   /**
    * Get paginated list of recipes with optional search and filtering
    */
@@ -208,14 +210,96 @@ export class RecipeService extends ApiService {
    * Toggle recipe favorite status
    */
   toggleFavorite(recipeId: string): Observable<{ is_favorited: boolean }> {
-    return this.post<{ is_favorited: boolean }>(`/recipes/${recipeId}/toggle-favorite/`, {});
+    // Use localStorage-based favorites management (same approach as FavoritesService)
+    const FAVORITES_KEY = 'user_favorite_recipes';
+    
+    try {
+      // Get current favorites from localStorage
+      let favorites: string[] = [];
+      const favoritesJson = localStorage.getItem(FAVORITES_KEY);
+      if (favoritesJson) {
+        favorites = JSON.parse(favoritesJson);
+      }
+      
+      const currentlyFavorited = favorites.includes(recipeId);
+      
+      if (currentlyFavorited) {
+        // Remove from favorites
+        favorites = favorites.filter(id => id !== recipeId);
+        localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+        return of({ is_favorited: false });
+      } else {
+        // Add to favorites
+        favorites.push(recipeId);
+        localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+        return of({ is_favorited: true });
+      }
+    } catch (error) {
+      console.error('Failed to toggle favorite:', error);
+      return of({ is_favorited: false });
+    }
   }
 
   /**
    * Get user's favorite recipes
    */
   getFavoriteRecipes(params: RecipeSearchParams = {}): Observable<RecipeListResponse> {
-    return this.get<RecipeListResponse>('/recipes/favorites/', params);
+    // Get favorite recipe IDs from localStorage
+    const FAVORITES_KEY = 'user_favorite_recipes';
+    
+    try {
+      let favoriteIds: string[] = [];
+      const favoritesJson = localStorage.getItem(FAVORITES_KEY);
+      if (favoritesJson) {
+        favoriteIds = JSON.parse(favoritesJson);
+      }
+      
+      if (favoriteIds.length === 0) {
+        // Return empty result if no favorites
+        return of({
+          count: 0,
+          next: null,
+          previous: null,
+          results: []
+        });
+      }
+      
+      // For now, return a basic structure
+      // In a real implementation, you'd fetch the actual recipe objects
+      return of({
+        count: favoriteIds.length,
+        next: null,
+        previous: null,
+        results: [] // Would need to fetch actual recipes by IDs
+      });
+    } catch (error) {
+      console.error('Failed to get favorite recipes:', error);
+      return of({
+        count: 0,
+        next: null,
+        previous: null,
+        results: []
+      });
+    }
+  }
+
+  /**
+   * Check if a recipe is favorited
+   */
+  isFavorite(recipeId: string): boolean {
+    const FAVORITES_KEY = 'user_favorite_recipes';
+    
+    try {
+      const favoritesJson = localStorage.getItem(FAVORITES_KEY);
+      if (favoritesJson) {
+        const favorites: string[] = JSON.parse(favoritesJson);
+        return favorites.includes(recipeId);
+      }
+      return false;
+    } catch (error) {
+      console.error('Failed to check favorite status:', error);
+      return false;
+    }
   }
 
   /**

@@ -168,7 +168,7 @@ export class UserStatisticsService {
     return Object.entries(categoryCounts).map(([name, count]) => ({
       category_name: name,
       recipe_count: count,
-      percentage: filteredRecipes.length > 0 ? (count / filteredRecipes.length) * 100 : 0
+      percentage: filteredRecipes.length > 0 ? Math.round(((count / filteredRecipes.length) * 100) * 100) / 100 : 0
     }));
   }
 
@@ -187,7 +187,7 @@ export class UserStatisticsService {
     return Object.entries(difficultyCounts).map(([difficulty, count]) => ({
       difficulty: difficulty,
       recipe_count: count,
-      percentage: filteredRecipes.length > 0 ? (count / filteredRecipes.length) * 100 : 0
+      percentage: filteredRecipes.length > 0 ? Math.round(((count / filteredRecipes.length) * 100) * 100) / 100 : 0
     }));
   }
 

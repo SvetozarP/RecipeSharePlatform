@@ -111,7 +111,12 @@
         @apply relative overflow-hidden;
         
         .recipe-image {
-          @apply w-full h-48 object-cover;
+          @apply w-full h-48 object-cover bg-gray-100 transition-opacity;
+          
+          // Handle broken/missing images gracefully
+          &[src=""], &:not([src]) {
+            @apply opacity-0;
+          }
         }
         
         .recipe-actions {
@@ -182,7 +187,12 @@
           @apply flex gap-4;
           
           .list-item-image {
-            @apply w-20 h-20 md:w-24 md:h-24 object-cover rounded-lg flex-shrink-0;
+            @apply w-20 h-20 md:w-24 md:h-24 object-cover rounded-lg flex-shrink-0 bg-gray-100 transition-opacity;
+            
+            // Handle broken/missing images gracefully
+            &[src=""], &:not([src]) {
+              @apply opacity-0;
+            }
           }
           
           .list-item-info {

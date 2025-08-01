@@ -166,6 +166,18 @@
           }
         }
       }
+
+      .no-recipe-message {
+        @apply flex flex-col items-center justify-center py-8 text-center text-gray-500;
+        
+        mat-icon {
+          @apply text-4xl mb-2 text-gray-400;
+        }
+        
+        p {
+          @apply text-sm font-medium;
+        }
+      }
     }
   }
 }

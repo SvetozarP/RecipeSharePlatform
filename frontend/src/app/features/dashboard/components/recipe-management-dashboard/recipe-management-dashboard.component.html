@@ -167,7 +167,8 @@
             [src]="getRecipeImageUrl(recipe)" 
             [alt]="recipe.title"
             class="recipe-image"
-            loading="lazy">
+            loading="lazy"
+            (error)="onImageError($event)">
           <div class="recipe-actions">
             <button 
               mat-icon-button 
@@ -254,7 +255,8 @@
               [src]="getRecipeImageUrl(recipe)" 
               [alt]="recipe.title"
               class="list-item-image"
-              loading="lazy">
+              loading="lazy"
+              (error)="onImageError($event)">
             
             <div class="list-item-info">
               <h3 class="list-item-title">{{ recipe.title }}</h3>

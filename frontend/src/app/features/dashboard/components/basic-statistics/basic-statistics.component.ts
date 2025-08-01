@@ -150,18 +150,18 @@ export class BasicStatisticsComponent implements OnInit {
 
   private getMockCategoryBreakdown(): CategoryStats[] {
     return [
-      { category_name: 'Desserts', recipe_count: 5, percentage: 42 },
-      { category_name: 'Main Dishes', recipe_count: 4, percentage: 33 },
-      { category_name: 'Appetizers', recipe_count: 2, percentage: 17 },
-      { category_name: 'Beverages', recipe_count: 1, percentage: 8 }
+      { category_name: 'Desserts', recipe_count: 5, percentage: 41.67 },
+      { category_name: 'Main Dishes', recipe_count: 4, percentage: 33.33 },
+      { category_name: 'Appetizers', recipe_count: 2, percentage: 16.67 },
+      { category_name: 'Beverages', recipe_count: 1, percentage: 8.33 }
     ];
   }
 
   private getMockDifficultyBreakdown(): DifficultyStats[] {
     return [
-      { difficulty: 'easy', recipe_count: 6, percentage: 50 },
-      { difficulty: 'medium', recipe_count: 5, percentage: 42 },
-      { difficulty: 'hard', recipe_count: 1, percentage: 8 }
+      { difficulty: 'easy', recipe_count: 6, percentage: 50.00 },
+      { difficulty: 'medium', recipe_count: 5, percentage: 41.67 },
+      { difficulty: 'hard', recipe_count: 1, percentage: 8.33 }
     ];
   }
   

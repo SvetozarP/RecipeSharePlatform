@@ -218,7 +218,44 @@ export class RecipeManagementDashboardComponent implements OnInit, OnDestroy {
   }
 
   getRecipeImageUrl(recipe: RecipeListItem): string {
-    return recipe.thumbnail_url || '/assets/images/recipe-placeholder.jpg';
+    // Check if the recipe has any images available
+    if (recipe.thumbnail_url) {
+      return recipe.thumbnail_url;
+    }
+    
+    // If no thumbnail, check for main image URL
+    if ((recipe as any).main_image_url) {
+      return (recipe as any).main_image_url;
+    }
+    
+    // If no images available, return placeholder
+    return this.getPlaceholderImage();
+  }
+
+  private getPlaceholderImage(): string {
+    // Create a data URL for a clean placeholder (same as recipe card component)
+    const svg = `
+      <svg width="350" height="200" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#f8f9fa;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#e9ecef;stop-opacity:1" />
+          </linearGradient>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#bg)"/>
+        <circle cx="175" cy="70" r="20" fill="#dee2e6"/>
+        <path d="M165 75 L175 65 L185 75 L180 80 L175 75 L170 80 Z" fill="#6c757d"/>
+        <rect x="155" y="110" width="40" height="4" rx="2" fill="#dee2e6"/>
+        <rect x="160" y="120" width="30" height="3" rx="1" fill="#e9ecef"/>
+        <rect x="165" y="128" width="20" height="3" rx="1" fill="#e9ecef"/>
+      </svg>
+    `;
+    return `data:image/svg+xml;base64,${btoa(svg)}`;
+  }
+
+  onImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.src = this.getPlaceholderImage();
   }
 
   getRecipeRating(recipe: RecipeListItem): number {
