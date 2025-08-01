@@ -30,9 +30,9 @@ export class UserStatisticsService {
     try {
       const userRecipes = await this.getUserRecipes();
       const favoritesStats = await this.favoritesService.getFavoriteRecipes();
-      const viewsStats = await this.recipeViewsService.getUserViewStats();
+      const authorViewsStats = await this.recipeViewsService.getAuthorViewStats();
       
-      const stats = this.calculateUserStatistics(userRecipes, favoritesStats, viewsStats);
+      const stats = this.calculateUserStatistics(userRecipes, favoritesStats, authorViewsStats);
       this.statsUpdatesSubject.next(stats);
       return stats;
     } catch (error) {
@@ -46,7 +46,8 @@ export class UserStatisticsService {
   async getRecipeStatistics(): Promise<RecipeStats> {
     try {
       const userRecipes = await this.getUserRecipes();
-      return this.calculateRecipeStats(userRecipes);
+      const authorViewsStats = await this.recipeViewsService.getAuthorViewStats();
+      return this.calculateRecipeStats(userRecipes, authorViewsStats);
     } catch (error) {
       console.error('Failed to load recipe statistics:', error);
       return {
@@ -131,7 +132,7 @@ export class UserStatisticsService {
     };
   }
 
-  private calculateRecipeStats(userRecipes: Recipe[]): RecipeStats {
+  private calculateRecipeStats(userRecipes: Recipe[], authorViewsStats?: ViewStats): RecipeStats {
     const totalRecipes = userRecipes.length;
     
     // Calculate average rating
@@ -141,7 +142,7 @@ export class UserStatisticsService {
     const averageRating = totalRecipes > 0 ? ratingsSum / totalRecipes : 0;
 
     // Find most viewed and highest rated recipes
-    const mostViewedRecipe = userRecipes.length > 0 ? userRecipes[0] : {} as Recipe;
+    const mostViewedRecipe = authorViewsStats?.most_viewed_recipes?.[0] || (userRecipes.length > 0 ? userRecipes[0] : {} as Recipe);
     const highestRatedRecipe = userRecipes.length > 0 
       ? userRecipes.reduce((prev, current) => 
           (current.rating_stats?.average_rating || 0) > (prev.rating_stats?.average_rating || 0) ? current : prev
@@ -153,7 +154,7 @@ export class UserStatisticsService {
       published_recipes: totalRecipes, // Assume all retrieved are published
       draft_recipes: 0,
       private_recipes: 0,
-      total_views: 0, // Not available in current Recipe interface
+      total_views: authorViewsStats?.total_views || 0,
       total_ratings: userRecipes.reduce((sum, recipe) => sum + (recipe.rating_stats?.total_ratings || 0), 0),
       average_rating: parseFloat(averageRating.toFixed(2)),
       most_viewed_recipe: mostViewedRecipe,

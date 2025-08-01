@@ -524,9 +524,7 @@ class RecipeListSerializer(serializers.ModelSerializer):
         if request and request.user.is_authenticated:
             from recipes.models import UserFavorite
             is_favorited = UserFavorite.objects.filter(user=request.user, recipe=obj).exists()
-            print(f"DEBUG RecipeListSerializer: Recipe {obj.id} - User {request.user.id} - is_favorited: {is_favorited}")
             return is_favorited
-        print(f"DEBUG RecipeListSerializer: Recipe {obj.id} - No request or user not authenticated")
         return False
 
 
@@ -769,9 +767,7 @@ class SearchResultSerializer(serializers.ModelSerializer):
         if request and request.user.is_authenticated:
             from recipes.models import UserFavorite
             is_favorited = UserFavorite.objects.filter(user=request.user, recipe=obj).exists()
-            print(f"DEBUG SearchResultSerializer: Recipe {obj.id} - User {request.user.id} - is_favorited: {is_favorited}")
             return is_favorited
-        print(f"DEBUG SearchResultSerializer: Recipe {obj.id} - No request or user not authenticated")
         return False
 
 

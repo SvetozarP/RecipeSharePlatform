@@ -86,7 +86,7 @@ export class RecipeViewsService {
   }
 
   /**
-   * Get user's view statistics
+   * Get user's view statistics (views made by the user)
    */
   async getUserViewStats(): Promise<ViewStats> {
     try {
@@ -99,6 +99,29 @@ export class RecipeViewsService {
       };
     } catch (error) {
       console.error('Failed to get user view stats:', error);
+      return {
+        total_views: 0,
+        unique_views: 0,
+        average_view_duration: 0,
+        most_viewed_recipes: []
+      };
+    }
+  }
+
+  /**
+   * Get author's view statistics (views of recipes created by the user)
+   */
+  async getAuthorViewStats(): Promise<ViewStats> {
+    try {
+      const response = await firstValueFrom(this.apiService.get<ViewStats>('/recipes/views/author_stats/'));
+      return response || {
+        total_views: 0,
+        unique_views: 0,
+        average_view_duration: 0,
+        most_viewed_recipes: []
+      };
+    } catch (error) {
+      console.error('Failed to get author view stats:', error);
       return {
         total_views: 0,
         unique_views: 0,

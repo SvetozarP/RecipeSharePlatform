@@ -223,4 +223,46 @@ class TestRecipeViewSet:
         # Unpublish
         response = api_client.post(unpublish_url)
         assert response.status_code == status.HTTP_200_OK
-        assert response.data['is_published'] is False 
+        assert response.data['is_published'] is False
+
+
+class TestRecipeViewViewSet:
+    """Test RecipeViewViewSet."""
+
+    def test_author_stats(self, api_client):
+        """Test author_stats endpoint returns correct view statistics for user's recipes."""
+        from recipes.models import RecipeView
+        
+        # Create a user and their recipes
+        user = UserFactory()
+        user_recipe1 = RecipeFactory(author=user, is_published=True)
+        user_recipe2 = RecipeFactory(author=user, is_published=True)
+        
+        # Create another user's recipe
+        other_user = UserFactory()
+        other_recipe = RecipeFactory(author=other_user, is_published=True)
+        
+        # Create some views for user's recipes
+        viewer1 = UserFactory()
+        viewer2 = UserFactory()
+        
+        # Views on user's recipes
+        RecipeView.objects.create(recipe=user_recipe1, user=viewer1)
+        RecipeView.objects.create(recipe=user_recipe1, user=viewer2)
+        RecipeView.objects.create(recipe=user_recipe2, user=viewer1)
+        
+        # View on other user's recipe (should not be counted)
+        RecipeView.objects.create(recipe=other_recipe, user=user)
+        
+        # Test the endpoint
+        api_client.force_authenticate(user=user)
+        url = reverse('recipes:view-author-stats')
+        response = api_client.get(url)
+        
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data['total_views'] == 3  # 3 views on user's recipes
+        assert response.data['total_recipes'] == 2  # 2 recipes created by user
+        assert response.data['unique_viewers'] == 2  # 2 unique viewers (excluding author)
+        
+        # Verify most viewed recipe is returned
+        assert 'most_viewed_recipe' in response.data 

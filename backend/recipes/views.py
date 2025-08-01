@@ -97,7 +97,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
         Returns root categories with their nested children.
         """
         root_categories = self.get_queryset().filter(parent=None).order_by('order', 'name')
-        serializer = CategoryTreeSerializer(root_categories, many=True)
+        serializer = CategoryTreeSerializer(root_categories, many=True, context={'request': request})
         return Response(serializer.data)
 
     @action(detail=True, methods=['get'])
@@ -125,11 +125,11 @@ class CategoryViewSet(viewsets.ModelViewSet):
         page = self.paginate_queryset(recipes)
         if page is not None:
             from .serializers import RecipeListSerializer
-            serializer = RecipeListSerializer(page, many=True)
+            serializer = RecipeListSerializer(page, many=True, context={'request': request})
             return self.get_paginated_response(serializer.data)
         
         from .serializers import RecipeListSerializer
-        serializer = RecipeListSerializer(recipes, many=True)
+        serializer = RecipeListSerializer(recipes, many=True, context={'request': request})
         return Response(serializer.data)
 
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAdminUser])
@@ -284,7 +284,7 @@ class RecipeViewSet(viewsets.ViewSet):
         paginator = Paginator(queryset, page_size)
         page_obj = paginator.get_page(page_number)
         
-        serializer = RecipeListSerializer(page_obj, many=True)
+        serializer = RecipeListSerializer(page_obj, many=True, context={'request': request})
         
         return Response({
             'count': paginator.count,
@@ -534,7 +534,7 @@ class RecipeViewSet(viewsets.ViewSet):
         paginator = Paginator(recipes, page_size)
         page_obj = paginator.get_page(page_number)
         
-        serializer = RecipeListSerializer(page_obj, many=True)
+        serializer = RecipeListSerializer(page_obj, many=True, context={'request': request})
         
         return Response({
             'category': {
@@ -589,7 +589,7 @@ class RecipeViewSet(viewsets.ViewSet):
             page_obj = paginator.get_page(page_number)
             
             # Serialize results
-            serializer = SearchResultSerializer(page_obj, many=True)
+            serializer = SearchResultSerializer(page_obj, many=True, context={'request': request})
             
             search_time = time.time() - start_time
             
@@ -640,7 +640,7 @@ class RecipeViewSet(viewsets.ViewSet):
             page_obj = paginator.get_page(page_number)
             
             # Serialize results
-            serializer = SearchResultSerializer(page_obj, many=True)
+            serializer = SearchResultSerializer(page_obj, many=True, context={'request': request})
             
             search_time = time.time() - start_time
             
@@ -936,7 +936,7 @@ class UserFavoriteViewSet(viewsets.ModelViewSet):
             'favorite_recipes': favorite_recipes
         }
 
-        serializer = FavoriteStatsSerializer(stats_data)
+        serializer = FavoriteStatsSerializer(stats_data, context={'request': request})
         return Response(serializer.data)
 
 
@@ -1107,5 +1107,62 @@ class RecipeViewViewSet(viewsets.ModelViewSet):
             'most_viewed_recipes': most_viewed_recipes
         }
 
-        serializer = ViewStatsSerializer(stats_data)
+        serializer = ViewStatsSerializer(stats_data, context={'request': request})
         return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def author_stats(self, request):
+        """Get view statistics for recipes created by the current user."""
+        if not request.user.is_authenticated:
+            return Response(
+                {'error': 'Authentication required'}, 
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        # Get all recipes created by the current user
+        user_recipes = Recipe.objects.filter(author=request.user)
+        
+        # Get total views for all user's recipes
+        from django.db.models import Sum, Count
+        recipe_views = RecipeView.objects.filter(recipe__author=request.user)
+        total_views = recipe_views.count()
+        
+        # Get unique viewers (excluding the author's own views)
+        unique_viewers = recipe_views.exclude(user=request.user).values('user', 'ip_address').distinct().count()
+        
+        # Get most viewed recipe by the user
+        most_viewed_recipe = None
+        if user_recipes.exists():
+            most_viewed = (
+                recipe_views.values('recipe')
+                .annotate(view_count=Count('id'))
+                .order_by('-view_count')
+                .first()
+            )
+            if most_viewed:
+                try:
+                    most_viewed_recipe = Recipe.objects.get(id=most_viewed['recipe'])
+                except Recipe.DoesNotExist:
+                    pass
+
+        # Calculate average view duration (excluding None values)
+        view_durations = recipe_views.exclude(view_duration_seconds__isnull=True)
+        avg_duration = None
+        if view_durations.exists():
+            from django.db.models import Avg
+            avg_duration = view_durations.aggregate(Avg('view_duration_seconds'))['view_duration_seconds__avg']
+
+        stats_data = {
+            'total_views': total_views,
+            'unique_viewers': unique_viewers,
+            'average_view_duration': avg_duration,
+            'most_viewed_recipe': most_viewed_recipe,
+            'total_recipes': user_recipes.count()
+        }
+
+        # Serialize the most viewed recipe if it exists
+        if most_viewed_recipe:
+            from .serializers import RecipeSerializer
+            stats_data['most_viewed_recipe'] = RecipeSerializer(most_viewed_recipe).data
+
+        return Response(stats_data)
