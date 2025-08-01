@@ -190,6 +190,12 @@ class RecipeViewSet(viewsets.ViewSet):
         
         queryset = self.get_queryset()
         
+        # Add rating statistics annotations for consistent data
+        queryset = queryset.annotate(
+            _avg_rating_sort=Avg('ratings__rating'),
+            _rating_count_sort=Count('ratings')
+        )
+        
         # Handle ordering - use simple field-based ordering only
         # Safely access query parameters (DRF uses query_params, Django uses GET)
         query_params = getattr(request, 'query_params', request.GET)

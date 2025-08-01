@@ -495,10 +495,24 @@ class RecipeListSerializer(serializers.ModelSerializer):
 
     def get_rating_stats(self, obj):
         """Get rating statistics for the recipe."""
+        # Use annotated fields if available (from list view), otherwise fall back to properties
+        avg_rating = 0.0
+        total_ratings = 0
+        
+        if hasattr(obj, '_avg_rating_sort') and obj._avg_rating_sort is not None:
+            avg_rating = round(obj._avg_rating_sort, 1)
+        else:
+            avg_rating = obj.average_rating or 0.0
+            
+        if hasattr(obj, '_rating_count_sort'):
+            total_ratings = obj._rating_count_sort
+        else:
+            total_ratings = obj.rating_count or 0
+            
         return {
-            'average_rating': obj.average_rating or 0.0,
-            'total_ratings': obj.rating_count or 0,
-            'rating_distribution': obj.rating_distribution
+            'average_rating': avg_rating,
+            'total_ratings': total_ratings,
+            'rating_distribution': getattr(obj, 'rating_distribution', {})
         }
 
 
@@ -632,11 +646,16 @@ class RecipeRatingStatsSerializer(serializers.Serializer):
 class SearchResultSerializer(serializers.ModelSerializer):
     """Serializer for search result recipes with additional search metadata."""
     
+    # Author information  
+    author = serializers.SerializerMethodField()
     author_name = serializers.CharField(source='author.get_full_name', read_only=True)
     author_username = serializers.CharField(source='author.username', read_only=True)
     total_time = serializers.IntegerField(read_only=True)
     main_image_url = serializers.CharField(read_only=True)
     thumbnail_url = serializers.CharField(read_only=True)
+    
+    # Image information for consistency with RecipeListSerializer
+    images = serializers.SerializerMethodField()
     
     # Category information
     categories = CategoryListSerializer(many=True, read_only=True)
@@ -646,9 +665,8 @@ class SearchResultSerializer(serializers.ModelSerializer):
     search_rank = serializers.FloatField(source='rank', read_only=True, default=0.0)
     search_snippet = serializers.SerializerMethodField()
     
-    # Rating information
-    average_rating = serializers.SerializerMethodField()
-    rating_count = serializers.SerializerMethodField()
+    # Rating information - using same format as RecipeListSerializer
+    rating_stats = serializers.SerializerMethodField()
     
     class Meta:
         model = Recipe
@@ -656,15 +674,52 @@ class SearchResultSerializer(serializers.ModelSerializer):
             'id', 'title', 'description', 'prep_time', 'cook_time', 'total_time',
             'servings', 'difficulty', 'cooking_method', 'main_image_url', 
             'thumbnail_url', 'author', 'author_name', 'author_username', 
-            'categories', 'category_names', 'tags', 'created_at',
-            'search_rank', 'search_snippet', 'average_rating', 'rating_count'
+            'images', 'categories', 'category_names', 'tags', 'created_at',
+            'search_rank', 'search_snippet', 'rating_stats', 'is_published'
         ]
         read_only_fields = [
             'id', 'author', 'created_at', 'total_time', 'main_image_url', 
             'thumbnail_url', 'category_names', 'search_rank', 'search_snippet',
-            'average_rating', 'rating_count'
+            'rating_stats', 'is_published', 'images'
         ]
     
+    def get_author(self, obj):
+        """Serialize author information for frontend permissions."""
+        if obj.author:
+            return {
+                'id': str(obj.author.id),  # Ensure ID is string for UUID consistency
+                'username': obj.author.username,
+                'firstName': obj.author.first_name,
+                'lastName': obj.author.last_name,
+            }
+        return None
+
+    def get_images(self, obj):
+        """Serialize images in the format expected by frontend."""
+        if obj.images and isinstance(obj.images, dict):
+            from core.services.storage_service import storage_service
+            # Convert stored image URLs to frontend-expected format
+            images = []
+            # Use thumbnail for list view for better performance
+            if 'thumbnail' in obj.images:
+                images.append({
+                    'id': 1,
+                    'image': storage_service._ensure_absolute_url(obj.images['thumbnail']),
+                    'alt_text': obj.title,
+                    'is_primary': True,
+                    'ordering': 0
+                })
+            elif 'medium' in obj.images:
+                images.append({
+                    'id': 1,
+                    'image': storage_service._ensure_absolute_url(obj.images['medium']),
+                    'alt_text': obj.title,
+                    'is_primary': True,
+                    'ordering': 0
+                })
+            return images
+        return []
+
     def get_search_snippet(self, obj):
         """Generate a search snippet highlighting relevant content."""
         # For now, return a truncated description
@@ -674,25 +729,27 @@ class SearchResultSerializer(serializers.ModelSerializer):
             return description[:147] + "..."
         return description
     
-    def get_average_rating(self, obj):
-        """Get average rating for the recipe."""
+    def get_rating_stats(self, obj):
+        """Get rating statistics in the same format as RecipeListSerializer."""
         # Check for annotation from ordering (from advanced search)
+        avg_rating = 0.0
+        total_ratings = 0
+        
         if hasattr(obj, '_avg_rating_sort') and obj._avg_rating_sort:
-            return round(obj._avg_rating_sort, 1)
-        # Check for model property
+            avg_rating = round(obj._avg_rating_sort, 1)
         elif hasattr(obj, 'average_rating') and obj.average_rating:
-            return round(obj.average_rating, 1)
-        return 0.0
-    
-    def get_rating_count(self, obj):
-        """Get rating count for the recipe."""
-        # Check for annotation from ordering (from advanced search)
+            avg_rating = round(obj.average_rating, 1)
+            
         if hasattr(obj, '_rating_count_sort'):
-            return obj._rating_count_sort
-        # Check for model property
+            total_ratings = obj._rating_count_sort
         elif hasattr(obj, 'rating_count'):
-            return obj.rating_count
-        return 0
+            total_ratings = obj.rating_count
+            
+        return {
+            'average_rating': avg_rating,
+            'total_ratings': total_ratings,
+            'rating_distribution': getattr(obj, 'rating_distribution', {})
+        }
 
 
 class SearchSuggestionsSerializer(serializers.Serializer):
