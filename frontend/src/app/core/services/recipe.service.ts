@@ -9,7 +9,12 @@ import {
   RecipeSearchParams, 
   Category, 
   SearchSuggestion,
-  FilterOption
+  FilterOption,
+  Rating,
+  RatingCreate,
+  RatingUpdate,
+  RatingListItem,
+  RatingStats
 } from '../../shared/models/recipe.models';
 
 @Injectable({
@@ -303,5 +308,70 @@ export class RecipeService extends ApiService {
    */
   clearCache(): void {
     this.categoriesSubject.next([]);
+  }
+
+  // ===== RATING METHODS =====
+
+  /**
+   * Get ratings for a specific recipe
+   */
+  getRecipeRatings(recipeId: string, params: { page?: number; page_size?: number; ordering?: string } = {}): Observable<{ count: number; next: string | null; previous: string | null; results: RatingListItem[] }> {
+    const searchParams = { recipe_id: recipeId, ...params };
+    return this.get<{ count: number; next: string | null; previous: string | null; results: RatingListItem[] }>('/ratings/', searchParams);
+  }
+
+  /**
+   * Get rating statistics for a specific recipe
+   */
+  getRecipeRatingStats(recipeId: string): Observable<RatingStats> {
+    return this.get<RatingStats>('/ratings/recipe_stats/', { recipe_id: recipeId });
+  }
+
+  /**
+   * Create a new rating for a recipe
+   */
+  createRating(ratingData: RatingCreate): Observable<Rating> {
+    return this.post<Rating>('/ratings/', ratingData);
+  }
+
+  /**
+   * Update an existing rating
+   */
+  updateRating(ratingId: string, ratingData: RatingUpdate): Observable<Rating> {
+    return this.put<Rating>(`/ratings/${ratingId}/`, ratingData);
+  }
+
+  /**
+   * Delete a rating
+   */
+  deleteRating(ratingId: string): Observable<void> {
+    return this.delete<void>(`/ratings/${ratingId}/`);
+  }
+
+  /**
+   * Mark a rating as helpful
+   */
+  markRatingHelpful(ratingId: string): Observable<{ message: string; helpful_count: number }> {
+    return this.post<{ message: string; helpful_count: number }>(`/ratings/${ratingId}/mark_helpful/`, {});
+  }
+
+  /**
+   * Get current user's ratings
+   */
+  getMyRatings(params: { page?: number; page_size?: number } = {}): Observable<{ count: number; next: string | null; previous: string | null; results: RatingListItem[] }> {
+    return this.get<{ count: number; next: string | null; previous: string | null; results: RatingListItem[] }>('/ratings/my_ratings/', params);
+  }
+
+  /**
+   * Get current user's rating for a specific recipe
+   */
+  getMyRatingForRecipe(recipeId: string): Observable<Rating | null> {
+    return this.get<{ count: number; results: Rating[] }>('/ratings/', { recipe_id: recipeId }).pipe(
+      map(response => {
+        // Filter to find current user's rating (backend should already filter this)
+        return response.results && response.results.length > 0 ? response.results[0] : null;
+      }),
+      catchError(() => of(null))
+    );
   }
 }

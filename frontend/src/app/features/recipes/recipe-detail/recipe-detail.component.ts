@@ -5,7 +5,8 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MaterialModule } from '../../../shared/material.module';
 import { RecipeService } from '../../../core/services/recipe.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { Recipe, RecipeImage } from '../../../shared/models/recipe.models';
+import { Recipe, RecipeImage, Rating, RatingListItem, RatingCreate, RatingUpdate } from '../../../shared/models/recipe.models';
+import { StarRatingComponent, ReviewDisplayComponent, RatingFormComponent } from '../../../shared/components';
 import { catchError, finalize } from 'rxjs/operators';
 import { of, Observable } from 'rxjs';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -14,7 +15,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 @Component({
   selector: 'app-recipe-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, MaterialModule, RouterModule],
+  imports: [CommonModule, FormsModule, MaterialModule, RouterModule, StarRatingComponent, ReviewDisplayComponent, RatingFormComponent],
   template: `
     <div class="container mx-auto px-4 py-8">
       <!-- Loading State -->
@@ -318,6 +319,79 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     </div>
         </div>
 
+        <!-- Ratings and Reviews Section -->
+        <div class="bg-white rounded-lg shadow-sm p-6">
+          <div class="mb-6">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <mat-icon>star</mat-icon>
+              Ratings & Reviews
+            </h2>
+            
+            <!-- Rating Statistics -->
+            <div *ngIf="recipe()?.rating_stats" class="rating-stats mb-6 p-4 bg-gray-50 rounded-lg">
+              <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-4">
+                  <div class="text-center">
+                    <div class="text-3xl font-bold text-gray-900">{{ recipe()?.rating_stats?.average_rating | number:'1.1-1' }}</div>
+                    <app-star-rating 
+                      [value]="recipe()?.rating_stats?.average_rating || 0" 
+                      [interactive]="false"
+                      [size]="20">
+                    </app-star-rating>
+                    <div class="text-sm text-gray-600 mt-1">{{ recipe()?.rating_stats?.total_ratings }} reviews</div>
+                  </div>
+                </div>
+                
+                <!-- Rating Distribution -->
+                <div class="flex-1 max-w-md ml-8">
+                  <div *ngFor="let star of [5,4,3,2,1]" class="flex items-center gap-2 mb-1">
+                    <span class="text-sm w-6">{{ star }}</span>
+                    <mat-icon class="text-yellow-400 text-sm">star</mat-icon>
+                    <div class="flex-1 bg-gray-200 rounded-full h-2">
+                      <div 
+                        class="bg-yellow-400 h-2 rounded-full transition-all duration-300"
+                        [style.width.%]="getRatingPercentage(star)">
+                      </div>
+                    </div>
+                    <span class="text-sm text-gray-600 w-8">{{ getRatingCount(star) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rating Form -->
+          <div class="mb-8">
+            <app-rating-form
+              [recipeId]="recipe()?.id || ''"
+              [isOwnRecipe]="isOwnRecipe()"
+              [existingRating]="currentUserRating() || undefined"
+              [showCancelButton]="showRatingForm()"
+              (ratingSubmitted)="onRatingSubmitted($event)"
+              (ratingDeleted)="onRatingDeleted()"
+              (cancelled)="onRatingFormCancelled()">
+            </app-rating-form>
+          </div>
+
+          <!-- Reviews Display -->
+          <div>
+            <app-review-display
+              [reviews]="reviews()"
+              [loading]="reviewsLoading()"
+              [loadingMore]="reviewsLoadingMore()"
+              [hasMore]="reviewsHasMore()"
+              [totalCount]="reviewsTotalCount()"
+              [sortBy]="reviewsSortBy()"
+              [currentUserReview]="currentUserRatingListItem()"
+              (sortChange)="onReviewsSortChange($event)"
+              (loadMore)="onLoadMoreReviews()"
+              (markHelpful)="onMarkReviewHelpful($event)"
+              (editReview)="onEditReview($event)"
+              (deleteReview)="onDeleteReview($event)">
+            </app-review-display>
+          </div>
+        </div>
+
         <!-- Recipe Navigation -->
         <div class="bg-white rounded-lg shadow-sm p-6">
           <div class="flex justify-between items-center">
@@ -457,6 +531,54 @@ export class RecipeDetailComponent implements OnInit {
   // Component state
   checkedIngredients: boolean[] = [];
   private cameFromEdit = false;
+
+  // Rating and Reviews state
+  currentUserRating = signal<Rating | null>(null);
+  reviews = signal<RatingListItem[]>([]);
+  reviewsLoading = signal(false);
+  reviewsLoadingMore = signal(false);
+  reviewsHasMore = signal(false);
+  reviewsTotalCount = signal(0);
+  reviewsSortBy = signal('-created_at');
+  editingReview = signal(false);
+  showRatingFormSignal = signal(false);
+  private currentReviewsPage = 1;
+
+  // Computed properties for ratings and reviews
+  isOwnRecipe = computed(() => {
+    const recipe = this.recipe();
+    const currentUser = this.authService.getCurrentUser();
+    
+    if (!recipe || !currentUser || !recipe.author || !recipe.author.id) {
+      return false;
+    }
+    
+    const recipeAuthorId = recipe.author.id.toString();
+    const currentUserId = currentUser.id.toString();
+    
+    return recipeAuthorId === currentUserId;
+  });
+
+  showRatingForm = computed(() => {
+    return this.showRatingFormSignal() || this.editingReview();
+  });
+
+  currentUserRatingListItem = computed(() => {
+    const rating = this.currentUserRating();
+    if (!rating) return undefined;
+    
+    const currentUser = this.authService.getCurrentUser();
+    return {
+      id: rating.id,
+      rating: rating.rating,
+      review: rating.review,
+      user_name: currentUser?.firstName + ' ' + currentUser?.lastName || 'You',
+      star_display: rating.star_display || '',
+      helpful_count: rating.helpful_count,
+      is_verified_purchase: rating.is_verified_purchase,
+      created_at: rating.created_at
+    } as RatingListItem;
+  });
   
   ngOnInit(): void {
     this.route.params.subscribe(params => {
@@ -500,6 +622,10 @@ export class RecipeDetailComponent implements OnInit {
         const images = this.recipeImages();
         const primaryIndex = images.findIndex(img => img.is_primary);
         this.currentImageIndex.set(primaryIndex >= 0 ? primaryIndex : 0);
+
+        // Load rating and review data
+        this.loadCurrentUserRating(recipe.id);
+        this.loadReviews(recipe.id);
       }
     });
   }
@@ -522,6 +648,198 @@ export class RecipeDetailComponent implements OnInit {
 
   setCurrentImage(index: number): void {
     this.currentImageIndex.set(index);
+  }
+
+  // Rating and Review methods
+  private loadCurrentUserRating(recipeId: string): void {
+    if (!this.authService.isAuthenticated()) {
+      return;
+    }
+
+    this.recipeService.getMyRatingForRecipe(recipeId).subscribe({
+      next: (rating) => {
+        this.currentUserRating.set(rating);
+      },
+      error: (error) => {
+        console.error('Error loading user rating:', error);
+      }
+    });
+  }
+
+  private loadReviews(recipeId: string, append: boolean = false): void {
+    this.reviewsLoading.set(!append);
+    if (append) {
+      this.reviewsLoadingMore.set(true);
+    }
+
+    const page = append ? this.currentReviewsPage + 1 : 1;
+    
+    this.recipeService.getRecipeRatings(recipeId, {
+      page,
+      page_size: 10,
+      ordering: this.reviewsSortBy()
+    }).subscribe({
+      next: (response) => {
+        if (append) {
+          this.reviews.set([...this.reviews(), ...response.results]);
+          this.currentReviewsPage++;
+        } else {
+          this.reviews.set(response.results);
+          this.currentReviewsPage = 1;
+        }
+        
+        this.reviewsTotalCount.set(response.count);
+        this.reviewsHasMore.set(!!response.next);
+      },
+      error: (error) => {
+        console.error('Error loading reviews:', error);
+        this.snackBar.open('Failed to load reviews', 'Close', { duration: 3000 });
+      },
+      complete: () => {
+        this.reviewsLoading.set(false);
+        this.reviewsLoadingMore.set(false);
+      }
+    });
+  }
+
+  onRatingSubmitted(ratingData: RatingCreate | RatingUpdate): void {
+    const recipe = this.recipe();
+    if (!recipe) return;
+
+    if ('recipe' in ratingData) {
+      // Creating new rating
+      this.recipeService.createRating(ratingData as RatingCreate).subscribe({
+        next: (rating) => {
+          this.currentUserRating.set(rating);
+          this.showRatingFormSignal.set(false);
+          this.editingReview.set(false);
+          this.snackBar.open('Your review has been submitted!', 'Close', { duration: 3000 });
+          
+          // Reload recipe to get updated stats and reviews
+          this.loadRecipe(recipe.id);
+        },
+        error: (error) => {
+          console.error('Error creating rating:', error);
+          this.snackBar.open(
+            error.error?.detail || 'Failed to submit review', 
+            'Close', 
+            { duration: 3000 }
+          );
+        }
+      });
+    } else {
+      // Updating existing rating
+      const currentRating = this.currentUserRating();
+      if (!currentRating) return;
+
+      this.recipeService.updateRating(currentRating.id, ratingData as RatingUpdate).subscribe({
+        next: (rating) => {
+          this.currentUserRating.set(rating);
+          this.editingReview.set(false);
+          this.snackBar.open('Your review has been updated!', 'Close', { duration: 3000 });
+          
+          // Reload recipe to get updated stats and reviews
+          this.loadRecipe(recipe.id);
+        },
+        error: (error) => {
+          console.error('Error updating rating:', error);
+          this.snackBar.open(
+            error.error?.detail || 'Failed to update review', 
+            'Close', 
+            { duration: 3000 }
+          );
+        }
+      });
+    }
+  }
+
+  onRatingDeleted(): void {
+    const currentRating = this.currentUserRating();
+    const recipe = this.recipe();
+    if (!currentRating || !recipe) return;
+
+    this.recipeService.deleteRating(currentRating.id).subscribe({
+      next: () => {
+        this.currentUserRating.set(null);
+        this.editingReview.set(false);
+        this.snackBar.open('Your review has been deleted', 'Close', { duration: 3000 });
+        
+        // Reload recipe to get updated stats and reviews
+        this.loadRecipe(recipe.id);
+      },
+      error: (error) => {
+        console.error('Error deleting rating:', error);
+        this.snackBar.open('Failed to delete review', 'Close', { duration: 3000 });
+      }
+    });
+  }
+
+  onRatingFormCancelled(): void {
+    this.showRatingFormSignal.set(false);
+    this.editingReview.set(false);
+  }
+
+  onReviewsSortChange(sortBy: string): void {
+    this.reviewsSortBy.set(sortBy);
+    this.loadReviews(this.recipe()?.id || '');
+  }
+
+  onLoadMoreReviews(): void {
+    const recipe = this.recipe();
+    if (recipe) {
+      this.loadReviews(recipe.id, true);
+    }
+  }
+
+  onMarkReviewHelpful(review: RatingListItem): void {
+    this.recipeService.markRatingHelpful(review.id).subscribe({
+      next: (response) => {
+        // Update the review in the list
+        const updatedReviews = this.reviews().map(r => 
+          r.id === review.id 
+            ? { ...r, helpful_count: response.helpful_count }
+            : r
+        );
+        this.reviews.set(updatedReviews);
+        this.snackBar.open('Review marked as helpful', 'Close', { duration: 3000 });
+      },
+      error: (error) => {
+        console.error('Error marking review as helpful:', error);
+        this.snackBar.open(
+          error.error?.error || 'Failed to mark review as helpful', 
+          'Close', 
+          { duration: 3000 }
+        );
+      }
+    });
+  }
+
+  onEditReview(review: RatingListItem): void {
+    this.editingReview.set(true);
+    this.showRatingFormSignal.set(true);
+  }
+
+  onDeleteReview(review: RatingListItem): void {
+    // This should only be called for the current user's review
+    if (review.id === this.currentUserRating()?.id) {
+      this.onRatingDeleted();
+    }
+  }
+
+  // Rating statistics helper methods
+  getRatingPercentage(stars: number): number {
+    const stats = this.recipe()?.rating_stats;
+    if (!stats || stats.total_ratings === 0) return 0;
+    
+    const count = stats.rating_distribution[stars as keyof typeof stats.rating_distribution] || 0;
+    return (count / stats.total_ratings) * 100;
+  }
+
+  getRatingCount(stars: number): number {
+    const stats = this.recipe()?.rating_stats;
+    if (!stats) return 0;
+    
+    return stats.rating_distribution[stars as keyof typeof stats.rating_distribution] || 0;
   }
 
   // Action methods

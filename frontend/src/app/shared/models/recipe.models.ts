@@ -21,19 +21,53 @@ export interface RecipeImage {
 }
 
 export interface Rating {
-  id: number;
-  user: {
-    id: number;
-    username: string;
-    firstName: string;
-    lastName: string;
-  };
-  rating: number;
+  id: string;
+  recipe?: string; // UUID of recipe
+  user?: string; // UUID of user
+  user_email?: string;
+  user_name?: string;
+  recipe_title?: string;
+  rating: number; // 1-5
   review?: string;
   is_verified_purchase: boolean;
   helpful_count: number;
+  star_display?: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface RatingCreate {
+  recipe: string; // UUID of recipe
+  rating: number; // 1-5
+  review?: string;
+}
+
+export interface RatingUpdate {
+  rating: number;
+  review?: string;
+}
+
+export interface RatingListItem {
+  id: string;
+  rating: number;
+  review?: string;
+  user_name: string;
+  star_display: string;
+  helpful_count: number;
+  is_verified_purchase: boolean;
+  created_at: string;
+}
+
+export interface RatingStats {
+  average_rating: number;
+  total_ratings: number;
+  rating_distribution: {
+    5: number;
+    4: number;
+    3: number;
+    2: number;
+    1: number;
+  };
 }
 
 export interface Nutrition {
@@ -78,17 +112,8 @@ export interface Recipe {
     firstName: string;
     lastName: string;
   };
-  rating_stats: {
-    average_rating: number;
-    total_ratings: number;
-    rating_distribution: {
-      5: number;
-      4: number;
-      3: number;
-      2: number;
-      1: number;
-    };
-  };
+  rating_stats: RatingStats;
+  current_user_rating?: Rating;
   is_favorited?: boolean;
   created_at: string;
   updated_at: string;
@@ -115,10 +140,7 @@ export interface RecipeListItem {
   tags: string[];
   
   // Optional fields that might not be included in list view
-  rating_stats?: {
-    average_rating: number;
-    total_ratings: number;
-  };
+  rating_stats?: RatingStats;
   
   // Metadata
   is_published: boolean;
