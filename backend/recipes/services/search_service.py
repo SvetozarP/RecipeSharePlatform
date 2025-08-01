@@ -398,7 +398,8 @@ class RecipeSearchService:
                 # Fallback to created_at if rank is not available
                 return queryset.order_by('-created_at')
         elif order_by == 'rating':
-            from django.db.models import Coalesce, Value
+            from django.db.models.functions import Coalesce
+            from django.db.models import Value
             return queryset.annotate(
                 _avg_rating_sort=Coalesce(Avg('ratings__rating'), Value(0.0)),
                 _rating_count_sort=Count('ratings')

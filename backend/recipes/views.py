@@ -191,7 +191,8 @@ class RecipeViewSet(viewsets.ViewSet):
         queryset = self.get_queryset()
         
         # Add rating statistics annotations for consistent data
-        from django.db.models import Coalesce, Value
+        from django.db.models.functions import Coalesce
+        from django.db.models import Value
         queryset = queryset.annotate(
             _avg_rating_sort=Coalesce(Avg('ratings__rating'), Value(0.0)),
             _rating_count_sort=Count('ratings')
