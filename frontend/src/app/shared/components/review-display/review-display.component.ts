@@ -20,7 +20,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
         </h3>
         
         <div class="sorting-controls" *ngIf="reviews.length > 0">
-          <mat-form-field appearance="outline" class="sort-field">
+          <mat-form-field appearance="fill" class="sort-field">
             <mat-label>Sort by</mat-label>
             <mat-select [value]="sortBy" (selectionChange)="onSortChange($event.value)">
               <mat-option value="-created_at">Newest First</mat-option>
