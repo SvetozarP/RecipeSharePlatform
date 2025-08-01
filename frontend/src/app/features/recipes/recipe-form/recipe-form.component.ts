@@ -399,10 +399,10 @@ interface RecipeFormData {
             <button type="button" mat-button (click)="goBack()">
               Cancel
             </button>
-            <button type="button" mat-button color="primary" 
+            <!-- <button type="button" mat-button color="primary" 
                     (click)="saveDraft()" [disabled]="submitting()">
               Save as Draft
-            </button>
+            </button> -->
             <button type="submit" mat-raised-button color="primary" 
                     [disabled]="recipeForm.invalid || submitting()">
               <mat-icon *ngIf="submitting()">hourglass_empty</mat-icon>
