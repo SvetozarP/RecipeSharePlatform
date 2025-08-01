@@ -212,6 +212,11 @@ export class FavoritesService {
     this.favoriteRecipesSubject.next([]);
   }
 
+  // Refresh favorites cache from backend
+  async refreshCache(): Promise<void> {
+    await this.loadFavoritesFromBackend();
+  }
+
   async toggleFavorite(recipeId: string): Promise<{is_favorite: boolean, message: string}> {
     try {
       // Use backend API to toggle favorite status
