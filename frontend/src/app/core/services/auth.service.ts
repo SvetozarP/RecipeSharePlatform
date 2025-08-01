@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { map, tap, catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
@@ -91,15 +91,19 @@ export class AuthService {
       );
   }
 
-  logout(): void {
+  logout(skipServerCall: boolean = false): void {
     const refreshToken = this.getRefreshToken();
     
-    // Try to blacklist the token on the server
-    if (refreshToken) {
+    // Try to blacklist the token on the server only if tokens aren't expired
+    if (refreshToken && !skipServerCall) {
       this.http.post(`${environment.apiUrl}/auth/logout/`, { refresh: refreshToken })
         .subscribe({
           next: () => console.log('Token blacklisted successfully'),
-          error: (error) => console.warn('Failed to blacklist token:', error)
+          error: (error) => {
+            console.warn('Failed to blacklist token:', error);
+            // If blacklisting fails, it's likely the token is already expired
+            // Don't treat this as a critical error
+          }
         });
     }
 
@@ -119,6 +123,24 @@ export class AuthService {
     this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
       this.router.navigate(['/recipes']);
     });
+  }
+
+  // Check if we should attempt token refresh or just logout
+  private shouldAttemptRefresh(): boolean {
+    const refreshToken = this.getRefreshToken();
+    if (!refreshToken) {
+      return false;
+    }
+    
+    // If we can decode the token, check if it's not expired
+    try {
+      const payload = JSON.parse(atob(refreshToken.split('.')[1]));
+      const now = Math.floor(Date.now() / 1000);
+      return payload.exp > now;
+    } catch {
+      // If we can't decode the token, assume it might still be valid
+      return true;
+    }
   }
 
   getToken(): string | null {
@@ -141,7 +163,7 @@ export class AuthService {
     const refreshToken = this.getRefreshToken();
     if (!refreshToken) {
       this.clearTokens();
-      return of();
+      return throwError(() => new Error('No refresh token available'));
     }
 
     return this.http.post<{ access: string }>(`${environment.apiUrl}/auth/token/refresh/`, {
@@ -152,7 +174,8 @@ export class AuthService {
       }),
       catchError(error => {
         console.error('Token refresh error:', error);
-        this.clearTokens();
+        // For expired refresh tokens, skip server call during logout
+        this.logout(true);
         throw error;
       })
     );

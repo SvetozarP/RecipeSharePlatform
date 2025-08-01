@@ -47,9 +47,9 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
               break;
             }
             
-            // Try token refresh first for API calls
+            // Try token refresh first for API calls, but only if refresh token exists and isn't a refresh attempt
             const refreshToken = authService.getRefreshToken();
-            if (refreshToken && !req.url.includes('/auth/token/refresh/')) {
+            if (refreshToken && !req.url.includes('/auth/token/refresh/') && !req.url.includes('/auth/logout/')) {
               console.log('Attempting token refresh due to 401 error');
               
               return authService.refreshToken().pipe(
@@ -63,7 +63,15 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
                 }),
                 catchError((refreshError) => {
                   console.log('Token refresh failed, logging out');
-                  authService.logout();
+                  // Show user-friendly message for expired session
+                  snackBar.open('Your session has expired after being inactive. Please log in again.', 'Close', {
+                    duration: 7000,
+                    horizontalPosition: 'center',
+                    verticalPosition: 'top',
+                    panelClass: ['warning-snackbar']
+                  });
+                  // Skip server call since refresh token is likely expired
+                  authService.logout(true);
                   router.navigate(['/auth/login']);
                   return EMPTY;
                 })
@@ -72,7 +80,9 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
             
             // If no refresh token or refresh endpoint failed, logout
             errorMessage = 'Session expired. Please log in again.';
-            authService.logout();
+            shouldShowSnackBar = false; // We'll show this via the refresh error handler above
+            // Skip server call since tokens are likely expired
+            authService.logout(true);
             router.navigate(['/auth/login']);
             break;
             
