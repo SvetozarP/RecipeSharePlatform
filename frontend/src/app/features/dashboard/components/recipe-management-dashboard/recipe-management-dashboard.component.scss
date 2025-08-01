@@ -164,9 +164,15 @@
         }
         
         .recipe-stats {
-          @apply flex items-center justify-between;
+          @apply flex flex-col gap-2;
+          
+          .recipe-rating {
+            @apply flex justify-start;
+          }
           
           .recipe-status {
+            @apply flex justify-start;
+            
             mat-chip {
               @apply scale-75;
             }

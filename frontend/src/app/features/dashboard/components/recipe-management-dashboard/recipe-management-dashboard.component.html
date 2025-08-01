@@ -222,14 +222,16 @@
           </div>
 
           <div class="recipe-stats">
-            <app-star-rating 
-              [value]="getRecipeRating(recipe)"
-              [interactive]="false"
-              [showValue]="true"
-              [count]="getRecipeRatingCount(recipe)"
-              [showCount]="true"
-              [size]="16">
-            </app-star-rating>
+            <div class="recipe-rating">
+              <app-star-rating 
+                [value]="getRecipeRating(recipe)"
+                [interactive]="false"
+                [showValue]="true"
+                [count]="getRecipeRatingCount(recipe)"
+                [showCount]="true"
+                [size]="16">
+              </app-star-rating>
+            </div>
             <div class="recipe-status">
               <mat-chip 
                 [color]="getStatusColor('published')"
