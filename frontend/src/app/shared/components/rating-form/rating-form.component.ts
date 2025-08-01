@@ -69,7 +69,7 @@ import { Subject, takeUntil } from 'rxjs';
 
         <!-- Review Text -->
         <div class="review-section">
-          <mat-form-field appearance="outline" class="review-field">
+          <mat-form-field appearance="fill" class="review-field">
             <mat-label>Your Review (optional)</mat-label>
             <textarea 
               matInput
