@@ -447,13 +447,16 @@ class RecipeListSerializer(serializers.ModelSerializer):
     # Rating information
     rating_stats = serializers.SerializerMethodField()
     
+    # Favorite status for authenticated users
+    is_favorited = serializers.SerializerMethodField()
+    
     class Meta:
         model = Recipe
         fields = [
             'id', 'title', 'description', 'prep_time', 'cook_time', 'total_time',
             'servings', 'difficulty', 'cooking_method', 'thumbnail_url',
             'author', 'author_name', 'images', 'categories', 'category_names', 'is_published', 
-            'tags', 'created_at', 'rating_stats'
+            'tags', 'created_at', 'rating_stats', 'is_favorited'
         ]
 
     def get_author(self, obj):
@@ -514,6 +517,14 @@ class RecipeListSerializer(serializers.ModelSerializer):
             'total_ratings': total_ratings,
             'rating_distribution': getattr(obj, 'rating_distribution', {})
         }
+
+    def get_is_favorited(self, obj):
+        """Check if the current user has favorited this recipe."""
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            from recipes.models import UserFavorite
+            return UserFavorite.objects.filter(user=request.user, recipe=obj).exists()
+        return False
 
 
 class RatingSerializer(serializers.ModelSerializer):
@@ -668,6 +679,9 @@ class SearchResultSerializer(serializers.ModelSerializer):
     # Rating information - using same format as RecipeListSerializer
     rating_stats = serializers.SerializerMethodField()
     
+    # Favorite status for authenticated users
+    is_favorited = serializers.SerializerMethodField()
+    
     class Meta:
         model = Recipe
         fields = [
@@ -675,14 +689,12 @@ class SearchResultSerializer(serializers.ModelSerializer):
             'servings', 'difficulty', 'cooking_method', 'main_image_url', 
             'thumbnail_url', 'author', 'author_name', 'author_username', 
             'images', 'categories', 'category_names', 'tags', 'created_at',
-            'search_rank', 'search_snippet', 'rating_stats', 'is_published'
+            'search_rank', 'search_snippet', 'rating_stats', 'is_published', 'is_favorited'
         ]
         read_only_fields = [
-            'id', 'author', 'created_at', 'total_time', 'main_image_url', 
-            'thumbnail_url', 'category_names', 'search_rank', 'search_snippet',
-            'rating_stats', 'is_published', 'images'
+            'id', 'created_at', 'search_rank', 'search_snippet', 'is_favorited'
         ]
-    
+
     def get_author(self, obj):
         """Serialize author information for frontend permissions."""
         if obj.author:
@@ -721,35 +733,40 @@ class SearchResultSerializer(serializers.ModelSerializer):
         return []
 
     def get_search_snippet(self, obj):
-        """Generate a search snippet highlighting relevant content."""
-        # For now, return a truncated description
-        # This can be enhanced to highlight search terms
-        description = obj.description
-        if len(description) > 150:
-            return description[:147] + "..."
-        return description
-    
+        """Get search snippet highlighting matched terms."""
+        if hasattr(obj, 'search_snippet'):
+            return obj.search_snippet
+        return None
+
     def get_rating_stats(self, obj):
-        """Get rating statistics in the same format as RecipeListSerializer."""
-        # Check for annotation from ordering (from advanced search)
+        """Get rating statistics for the recipe."""
+        # Use annotated fields if available (from search view), otherwise fall back to properties
         avg_rating = 0.0
         total_ratings = 0
         
-        if hasattr(obj, '_avg_rating_sort') and obj._avg_rating_sort:
+        if hasattr(obj, '_avg_rating_sort') and obj._avg_rating_sort is not None:
             avg_rating = round(obj._avg_rating_sort, 1)
-        elif hasattr(obj, 'average_rating') and obj.average_rating:
-            avg_rating = round(obj.average_rating, 1)
+        else:
+            avg_rating = obj.average_rating or 0.0
             
         if hasattr(obj, '_rating_count_sort'):
             total_ratings = obj._rating_count_sort
-        elif hasattr(obj, 'rating_count'):
-            total_ratings = obj.rating_count
+        else:
+            total_ratings = obj.rating_count or 0
             
         return {
             'average_rating': avg_rating,
             'total_ratings': total_ratings,
             'rating_distribution': getattr(obj, 'rating_distribution', {})
         }
+
+    def get_is_favorited(self, obj):
+        """Check if the current user has favorited this recipe."""
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            from recipes.models import UserFavorite
+            return UserFavorite.objects.filter(user=request.user, recipe=obj).exists()
+        return False
 
 
 class SearchSuggestionsSerializer(serializers.Serializer):

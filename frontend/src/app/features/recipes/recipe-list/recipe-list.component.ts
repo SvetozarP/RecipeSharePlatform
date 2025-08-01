@@ -866,11 +866,7 @@ export class RecipeListComponent implements OnInit, OnDestroy {
         this.hasMoreData = newRecipes.length === this.pageSize;
         this.loading = false;
         
-        // Check favorite status for recipes if user is authenticated
-        if (this.authService.isAuthenticated()) {
-          this.checkFavoriteStatusForRecipes(newRecipes);
-        }
-        
+        // The backend now provides is_favorited field directly, so no need to check manually
         this.cdr.markForCheck();
       },
       error: (error) => {
@@ -880,23 +876,6 @@ export class RecipeListComponent implements OnInit, OnDestroy {
         console.error('Error loading recipes:', error);
       }
     });
-  }
-
-  private async checkFavoriteStatusForRecipes(recipes: RecipeListItem[]): Promise<void> {
-    try {
-      // Get all favorite recipe IDs from the favorites service
-      const favoriteRecipes = await this.favoritesService.getFavoriteRecipes();
-      const favoriteIds = new Set(favoriteRecipes.results.map(recipe => recipe.id));
-      
-      // Update the is_favorited property for each recipe
-      recipes.forEach(recipe => {
-        recipe.is_favorited = favoriteIds.has(recipe.id);
-      });
-      
-      this.cdr.markForCheck();
-    } catch (error) {
-      console.error('Failed to check favorite status:', error);
-    }
   }
 
   private buildSearchParams(): RecipeSearchParams {
@@ -929,8 +908,40 @@ export class RecipeListComponent implements OnInit, OnDestroy {
       params.difficulty = filterValues.difficulty;
     }
     
+    if (filterValues.cooking_method && filterValues.cooking_method.length > 0) {
+      params.cooking_method = filterValues.cooking_method;
+    }
+    
+    if (filterValues.max_prep_time) {
+      params.max_prep_time = filterValues.max_prep_time;
+    }
+    
+    if (filterValues.max_cook_time) {
+      params.max_cook_time = filterValues.max_cook_time;
+    }
+    
+    if (filterValues.min_servings) {
+      params.min_servings = filterValues.min_servings;
+    }
+    
+    if (filterValues.max_servings) {
+      params.max_servings = filterValues.max_servings;
+    }
+    
     if (filterValues.dietary_restrictions && filterValues.dietary_restrictions.length > 0) {
       params.dietary_restrictions = filterValues.dietary_restrictions;
+    }
+    
+    if (filterValues.author && filterValues.author.trim()) {
+      params.author = filterValues.author.trim();
+    }
+    
+    if (filterValues.min_rating) {
+      params.min_rating = filterValues.min_rating;
+    }
+    
+    if (filterValues.tags && filterValues.tags.length > 0) {
+      params.tags = filterValues.tags;
     }
     
     return params;
