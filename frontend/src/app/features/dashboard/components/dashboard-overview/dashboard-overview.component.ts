@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { MaterialModule } from '../../../../shared/material.module';
 import { StarRatingComponent } from '../../../../shared/components/star-rating/star-rating.component';
 import { LoadingComponent } from '../../../../shared/components/loading/loading.component';
@@ -23,7 +23,8 @@ import { takeUntil } from 'rxjs/operators';
     CommonModule, 
     MaterialModule, 
     StarRatingComponent, 
-    LoadingComponent
+    LoadingComponent,
+    RouterLink
   ],
   templateUrl: './dashboard-overview.component.html',
   styleUrls: ['./dashboard-overview.component.scss']
