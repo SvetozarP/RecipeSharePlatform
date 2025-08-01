@@ -858,12 +858,6 @@ export class RecipeListComponent implements OnInit, OnDestroy {
       next: (response) => {
         const newRecipes = response.results || [];
         
-        // Debug: Log the first recipe to see if is_favorited is present
-        if (newRecipes.length > 0) {
-          console.log('First recipe from backend:', newRecipes[0]);
-          console.log('is_favorited field:', newRecipes[0].is_favorited);
-        }
-        
         if (this.usePagination || this.currentPage === 1) {
           this.recipes = newRecipes;
         } else {
@@ -1027,19 +1021,15 @@ export class RecipeListComponent implements OnInit, OnDestroy {
     try {
       const result = await this.favoritesService.toggleFavorite(recipeId);
       
-      console.log('Toggle favorite result:', result);
-      
       // Update the recipe in the list by creating a new array reference
       // This ensures OnPush change detection picks up the change
       const recipeIndex = this.recipes.findIndex(r => r.id === recipeId);
       if (recipeIndex !== -1) {
-        console.log('Before update - recipe is_favorited:', this.recipes[recipeIndex].is_favorited);
         this.recipes = [
           ...this.recipes.slice(0, recipeIndex),
           { ...this.recipes[recipeIndex], is_favorited: result.is_favorite },
           ...this.recipes.slice(recipeIndex + 1)
         ];
-        console.log('After update - recipe is_favorited:', this.recipes[recipeIndex].is_favorited);
       }
       
       this.favoriteLoadingIds.delete(recipeId);
