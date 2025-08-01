@@ -943,6 +943,11 @@ class RecipeViewSerializer(serializers.ModelSerializer):
             ip = x_forwarded_for.split(',')[0]
         else:
             ip = request.META.get('REMOTE_ADDR')
+        
+        # Strip port number if present (e.g., "154.56.239.200:50458" -> "154.56.239.200")
+        if ip and ':' in ip:
+            ip = ip.split(':')[0]
+        
         return ip
 
 
