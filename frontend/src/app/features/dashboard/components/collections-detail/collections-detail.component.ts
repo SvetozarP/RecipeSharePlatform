@@ -260,7 +260,7 @@ export class CollectionsDetailComponent implements OnInit, OnDestroy {
     if (!this.selectedCollection) return;
     
     try {
-      await this.collectionsService.removeRecipeFromCollection(this.selectedCollection.id, Number(recipe.id));
+      await this.collectionsService.removeRecipeFromCollection(this.selectedCollection.id, recipe.id);
       this.collectionRecipes = this.collectionRecipes.filter(r => r.id !== recipe.id);
       
       // Update collection recipe count

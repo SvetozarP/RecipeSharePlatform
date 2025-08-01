@@ -135,7 +135,7 @@ export class FavoritesManagementComponent implements OnInit, OnDestroy {
   
   async onRemoveFromFavorites(recipe: Recipe): Promise<void> {
     try {
-      await this.favoritesService.removeFromFavorites(Number(recipe.id));
+      await this.favoritesService.removeFromFavorites(recipe.id);
       this.favoriteRecipes = this.favoriteRecipes.filter(r => r.id !== recipe.id);
       this.totalFavorites--;
     } catch (error) {
@@ -171,7 +171,7 @@ export class FavoritesManagementComponent implements OnInit, OnDestroy {
   
   private async bulkRemoveFromFavorites(recipes: Recipe[]): Promise<void> {
     try {
-      const recipeIds = recipes.map(r => Number(r.id));
+      const recipeIds = recipes.map(r => r.id);
       await this.favoritesService.bulkRemoveFromFavorites(recipeIds);
       await this.loadFavoriteRecipes();
     } catch (error) {
