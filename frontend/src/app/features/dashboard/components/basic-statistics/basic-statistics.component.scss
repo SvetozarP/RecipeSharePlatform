@@ -1,0 +1,424 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+.basic-statistics {
+  @apply max-w-6xl mx-auto px-4 py-6;
+}
+
+.statistics-header {
+  @apply flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4;
+  
+  .title-section {
+    .page-title {
+      @apply text-2xl md:text-3xl font-bold text-gray-900 mb-2 flex items-center gap-2;
+      
+      mat-icon {
+        @apply text-blue-600;
+      }
+    }
+    
+    .page-subtitle {
+      @apply text-gray-600;
+    }
+  }
+  
+  .header-actions {
+    @apply flex items-center gap-3;
+    
+    mat-form-field {
+      @apply min-w-[140px];
+    }
+    
+    button {
+      @apply text-gray-600 hover:text-blue-600;
+    }
+  }
+}
+
+.statistics-content {
+  @apply space-y-8;
+  
+  .section-title {
+    @apply text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2;
+    
+    mat-icon {
+      @apply text-gray-600;
+    }
+  }
+}
+
+.stats-overview {
+  .stats-grid {
+    @apply grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4;
+    
+    .stat-card {
+      @apply flex items-center justify-between p-4 transition-all duration-200 hover:shadow-lg;
+      
+      &.primary {
+        @apply bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200;
+        
+        .stat-value {
+          @apply text-blue-600;
+        }
+        
+        .stat-icon {
+          @apply text-blue-500;
+        }
+      }
+      
+      &.success {
+        @apply bg-gradient-to-r from-green-50 to-green-100 border-green-200;
+        
+        .stat-value {
+          @apply text-green-600;
+        }
+        
+        .stat-icon {
+          @apply text-green-500;
+        }
+      }
+      
+      &.warning {
+        @apply bg-gradient-to-r from-red-50 to-red-100 border-red-200;
+        
+        .stat-value {
+          @apply text-red-600;
+        }
+        
+        .stat-icon {
+          @apply text-red-500;
+        }
+      }
+      
+      &.info {
+        @apply bg-gradient-to-r from-cyan-50 to-cyan-100 border-cyan-200;
+        
+        .stat-value {
+          @apply text-cyan-600;
+        }
+        
+        .stat-icon {
+          @apply text-cyan-500;
+        }
+      }
+      
+      &.accent {
+        @apply bg-gradient-to-r from-yellow-50 to-yellow-100 border-yellow-200;
+        
+        .stat-value {
+          @apply text-yellow-600;
+        }
+        
+        .stat-icon {
+          @apply text-yellow-500;
+        }
+      }
+      
+      &.secondary {
+        @apply bg-gradient-to-r from-purple-50 to-purple-100 border-purple-200;
+        
+        .stat-value {
+          @apply text-purple-600;
+        }
+        
+        .stat-icon {
+          @apply text-purple-500;
+        }
+      }
+      
+      .stat-content {
+        .stat-value {
+          @apply text-2xl font-bold mb-1;
+        }
+        
+        .stat-label {
+          @apply text-sm text-gray-600;
+        }
+      }
+      
+      .stat-icon {
+        @apply text-3xl opacity-60;
+      }
+    }
+  }
+}
+
+.recipe-performance {
+  .performance-grid {
+    @apply grid md:grid-cols-2 gap-6;
+    
+    .performance-card {
+      .recipe-highlight {
+        .recipe-title {
+          @apply text-lg font-semibold text-gray-900 mb-2;
+        }
+        
+        .recipe-description {
+          @apply text-gray-600 mb-4 line-clamp-2;
+        }
+        
+        .recipe-stats {
+          @apply flex flex-wrap gap-2;
+          
+          .stat-chip {
+            @apply flex items-center gap-1 bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-sm;
+            
+            mat-icon {
+              @apply w-4 h-4;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+.category-breakdown,
+.difficulty-breakdown {
+  .breakdown-card {
+    .breakdown-list {
+      @apply space-y-4;
+      
+      .breakdown-item {
+        @apply flex items-center justify-between gap-4;
+        
+        .item-info {
+          @apply flex-1 min-w-0;
+          
+          .item-label {
+            @apply font-medium mb-1 flex items-center gap-2;
+            
+            .difficulty-icon {
+              @apply w-5 h-5;
+            }
+          }
+          
+          .item-count {
+            @apply text-sm text-gray-500;
+          }
+        }
+        
+        .item-percentage {
+          @apply flex items-center gap-3 flex-shrink-0;
+          
+          .percentage-bar {
+            @apply w-20 h-2 bg-gray-200 rounded-full overflow-hidden;
+            
+            .percentage-fill {
+              @apply h-full transition-all duration-500 ease-out;
+            }
+          }
+          
+          .percentage-text {
+            @apply text-sm font-medium text-gray-600 w-10 text-right;
+          }
+        }
+      }
+    }
+  }
+}
+
+.achievements-section {
+  .achievements-grid {
+    @apply grid md:grid-cols-2 lg:grid-cols-3 gap-4;
+    
+    .achievement-card {
+      @apply flex items-start gap-4 p-4 transition-all duration-200;
+      
+      &.unlocked {
+        @apply bg-gradient-to-r from-green-50 to-green-100 border-green-200 hover:shadow-lg;
+        
+        .achievement-icon {
+          @apply bg-green-500 text-white;
+        }
+        
+        .achievement-title {
+          @apply text-green-800;
+        }
+      }
+      
+      &:not(.unlocked) {
+        @apply bg-gray-50 border-gray-200;
+        
+        .achievement-icon {
+          @apply bg-gray-400 text-white;
+        }
+        
+        .achievement-title {
+          @apply text-gray-600;
+        }
+        
+        .achievement-description {
+          @apply text-gray-500;
+        }
+      }
+      
+      .achievement-icon {
+        @apply w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0;
+        
+        mat-icon {
+          @apply w-6 h-6;
+        }
+      }
+      
+      .achievement-content {
+        @apply flex-1 min-w-0;
+        
+        .achievement-title {
+          @apply font-semibold mb-1;
+        }
+        
+        .achievement-description {
+          @apply text-sm mb-2;
+        }
+        
+        .achievement-status {
+          @apply flex items-center gap-1 text-sm text-green-600;
+          
+          .check-icon {
+            @apply w-4 h-4;
+          }
+          
+          .unlock-date {
+            @apply text-gray-500 ml-2;
+          }
+        }
+      }
+    }
+  }
+}
+
+.insights-section {
+  .insights-grid {
+    @apply grid md:grid-cols-2 lg:grid-cols-4 gap-4;
+    
+    .insight-card {
+      @apply flex items-start gap-4 p-4 hover:shadow-lg transition-all duration-200;
+      
+      .insight-icon {
+        @apply w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center flex-shrink-0;
+        
+        mat-icon {
+          @apply w-6 h-6;
+        }
+      }
+      
+      .insight-content {
+        @apply flex-1 min-w-0;
+        
+        .insight-title {
+          @apply font-semibold text-gray-900 mb-1;
+        }
+        
+        .insight-description {
+          @apply text-sm text-gray-600 mb-2;
+        }
+        
+        .insight-value {
+          @apply text-lg font-bold text-blue-600;
+        }
+      }
+    }
+  }
+}
+
+// Material Design overrides
+::ng-deep {
+  .mat-mdc-card {
+    @apply shadow-sm hover:shadow-md transition-shadow duration-200;
+  }
+  
+  .mat-mdc-card-header {
+    .mat-mdc-card-title {
+      @apply text-lg font-semibold;
+    }
+  }
+  
+  .mat-mdc-form-field {
+    .mat-mdc-text-field-wrapper {
+      @apply bg-white;
+    }
+  }
+}
+
+// Color utility classes that aren't available in Tailwind by default
+:host ::ng-deep .bg-blue-600 { background-color: #2563eb !important; }
+:host ::ng-deep .bg-green-600 { background-color: #16a34a !important; }
+:host ::ng-deep .bg-purple-600 { background-color: #9333ea !important; }
+:host ::ng-deep .bg-orange-600 { background-color: #ea580c !important; }
+:host ::ng-deep .bg-pink-600 { background-color: #dc2626 !important; }
+:host ::ng-deep .bg-yellow-600 { background-color: #ca8a04 !important; }
+:host ::ng-deep .bg-red-600 { background-color: #dc2626 !important; }
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .basic-statistics {
+    @apply px-2;
+  }
+  
+  .statistics-header {
+    @apply items-stretch;
+    
+    .header-actions {
+      @apply justify-between;
+      
+      mat-form-field {
+        @apply flex-1 min-w-0;
+      }
+    }
+  }
+  
+  .stats-grid {
+    @apply grid-cols-2 gap-3;
+    
+    .stat-card {
+      @apply p-3;
+      
+      .stat-content .stat-value {
+        @apply text-xl;
+      }
+      
+      .stat-icon {
+        @apply text-2xl;
+      }
+    }
+  }
+  
+  .performance-grid {
+    @apply grid-cols-1 gap-4;
+  }
+  
+  .achievements-grid {
+    @apply grid-cols-1 gap-3;
+  }
+  
+  .insights-grid {
+    @apply grid-cols-1 gap-3;
+  }
+  
+  .breakdown-item {
+    @apply flex-col items-start gap-2;
+    
+    .item-percentage {
+      @apply w-full;
+      
+      .percentage-bar {
+        @apply flex-1;
+      }
+    }
+  }
+}
+
+// Print styles
+@media print {
+  .header-actions,
+  button {
+    @apply hidden;
+  }
+  
+  .achievements-grid,
+  .insights-grid {
+    @apply grid-cols-2;
+  }
+}

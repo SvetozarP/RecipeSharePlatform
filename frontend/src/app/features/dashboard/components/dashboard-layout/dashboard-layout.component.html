@@ -1,0 +1,95 @@
+<div class="dashboard-layout">
+  <!-- Top Navigation Bar -->
+  <mat-toolbar color="primary" class="dashboard-toolbar">
+    <button mat-icon-button (click)="onToggleMenu()" class="menu-toggle md:hidden">
+      <mat-icon>menu</mat-icon>
+    </button>
+    
+    <span class="toolbar-title">Recipe Dashboard</span>
+    
+    <span class="spacer"></span>
+    
+    <!-- Quick Actions -->
+    <div class="quick-actions hidden md:flex">
+      <button mat-button (click)="onCreateRecipe()" class="action-button">
+        <mat-icon>add</mat-icon>
+        Create Recipe
+      </button>
+      <button mat-button (click)="onBrowseRecipes()" class="action-button">
+        <mat-icon>search</mat-icon>
+        Browse
+      </button>
+    </div>
+    
+    <!-- User Menu -->
+    <button mat-icon-button [matMenuTriggerFor]="userMenu" class="user-menu-trigger">
+      <mat-icon>account_circle</mat-icon>
+    </button>
+    <mat-menu #userMenu="matMenu">
+      <div class="user-info">
+        <div class="user-name">{{ currentUser?.first_name || currentUser?.username }}</div>
+        <div class="user-email">{{ currentUser?.email }}</div>
+      </div>
+      <mat-divider></mat-divider>
+      <button mat-menu-item (click)="onProfile()">
+        <mat-icon>person</mat-icon>
+        Profile
+      </button>
+      <button mat-menu-item (click)="onLogout()">
+        <mat-icon>exit_to_app</mat-icon>
+        Logout
+      </button>
+    </mat-menu>
+  </mat-toolbar>
+
+  <div class="dashboard-container">
+    <!-- Side Navigation -->
+    <nav class="dashboard-sidenav" [class.mobile-open]="isMenuOpen">
+      <!-- Welcome Section -->
+      <div class="welcome-section">
+        <h2 class="welcome-title">{{ getWelcomeMessage() }}</h2>
+        <p class="welcome-subtitle">Manage your culinary journey</p>
+      </div>
+
+      <!-- Navigation Menu -->
+      <mat-nav-list class="navigation-list">
+        <a 
+          *ngFor="let item of navigationItems"
+          mat-list-item 
+          [routerLink]="item.route"
+          [routerLinkActive]="'active'"
+          [routerLinkActiveOptions]="{exact: item.route === '/dashboard'}"
+          (click)="onNavigate(item.route)"
+          class="nav-item">
+          <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+          <div matListItemTitle>{{ item.label }}</div>
+          <div matListItemLine class="nav-description">{{ item.description }}</div>
+        </a>
+      </mat-nav-list>
+
+      <!-- Quick Actions for Mobile -->
+      <div class="mobile-quick-actions md:hidden">
+        <button mat-raised-button color="primary" (click)="onCreateRecipe()" class="w-full mb-2">
+          <mat-icon>add</mat-icon>
+          Create Recipe
+        </button>
+        <button mat-stroked-button (click)="onBrowseRecipes()" class="w-full">
+          <mat-icon>search</mat-icon>
+          Browse Recipes
+        </button>
+      </div>
+    </nav>
+
+    <!-- Mobile Overlay -->
+    <div 
+      class="mobile-overlay md:hidden" 
+      [class.visible]="isMenuOpen"
+      (click)="onToggleMenu()">
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="dashboard-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

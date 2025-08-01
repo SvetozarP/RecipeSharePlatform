@@ -1,0 +1,282 @@
+<div class="basic-statistics">
+  <!-- Header Section -->
+  <div class="statistics-header">
+    <div class="title-section">
+      <h1 class="page-title">
+        <mat-icon>analytics</mat-icon>
+        Cooking Statistics
+      </h1>
+      <p class="page-subtitle">Insights into your recipe creation and cooking journey</p>
+    </div>
+    
+    <div class="header-actions">
+      <mat-form-field appearance="outline">
+        <mat-label>Time Range</mat-label>
+        <mat-select [(value)]="selectedTimeRange" (selectionChange)="onTimeRangeChange()">
+          <mat-option 
+            *ngFor="let option of timeRangeOptions" 
+            [value]="option.value">
+            {{ option.label }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      
+      <button 
+        mat-icon-button 
+        (click)="refreshStatistics()"
+        matTooltip="Refresh statistics">
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <app-loading *ngIf="isLoading" [message]="'Loading your statistics...'"></app-loading>
+
+  <!-- Statistics Content -->
+  <div *ngIf="!isLoading" class="statistics-content">
+    
+    <!-- Overview Statistics -->
+    <div class="stats-overview">
+      <h2 class="section-title">
+        <mat-icon>dashboard</mat-icon>
+        Overview
+      </h2>
+      
+      <div class="stats-grid" *ngIf="userStats">
+        <mat-card class="stat-card primary">
+          <div class="stat-content">
+            <div class="stat-value">{{ userStats.total_recipes }}</div>
+            <div class="stat-label">Total Recipes</div>
+          </div>
+          <mat-icon class="stat-icon">restaurant</mat-icon>
+        </mat-card>
+        
+        <mat-card class="stat-card success">
+          <div class="stat-content">
+            <div class="stat-value">{{ userStats.published_recipes }}</div>
+            <div class="stat-label">Published</div>
+          </div>
+          <mat-icon class="stat-icon">publish</mat-icon>
+        </mat-card>
+        
+        <mat-card class="stat-card warning">
+          <div class="stat-content">
+            <div class="stat-value">{{ userStats.total_favorites }}</div>
+            <div class="stat-label">Favorites</div>
+          </div>
+          <mat-icon class="stat-icon">favorite</mat-icon>
+        </mat-card>
+        
+        <mat-card class="stat-card info">
+          <div class="stat-content">
+            <div class="stat-value">{{ userStats.total_views }}</div>
+            <div class="stat-label">Recipe Views</div>
+          </div>
+          <mat-icon class="stat-icon">visibility</mat-icon>
+        </mat-card>
+        
+        <mat-card class="stat-card accent">
+          <div class="stat-content">
+            <div class="stat-value">{{ userStats.average_rating | cookingStats:'rating' }}</div>
+            <div class="stat-label">Avg Rating</div>
+          </div>
+          <mat-icon class="stat-icon">star</mat-icon>
+        </mat-card>
+        
+        <mat-card class="stat-card secondary">
+          <div class="stat-content">
+            <div class="stat-value">{{ userStats.total_ratings }}</div>
+            <div class="stat-label">Total Ratings</div>
+          </div>
+          <mat-icon class="stat-icon">reviews</mat-icon>
+        </mat-card>
+      </div>
+    </div>
+
+    <!-- Recipe Performance -->
+    <div class="recipe-performance" *ngIf="recipeStats">
+      <h2 class="section-title">
+        <mat-icon>trending_up</mat-icon>
+        Recipe Performance
+      </h2>
+      
+      <div class="performance-grid">
+        <mat-card class="performance-card">
+          <mat-card-header>
+            <mat-card-title>Most Viewed Recipe</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="recipe-highlight">
+              <h3 class="recipe-title">{{ recipeStats.most_viewed_recipe.title }}</h3>
+              <p class="recipe-description">{{ recipeStats.most_viewed_recipe.description }}</p>
+              <div class="recipe-stats">
+                <span class="stat-chip">
+                  <mat-icon>visibility</mat-icon>
+                  Most Viewed
+                </span>
+                <span class="stat-chip">
+                  <mat-icon>schedule</mat-icon>
+                  {{ recipeStats.most_viewed_recipe.total_time }}m
+                </span>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+        
+        <mat-card class="performance-card">
+          <mat-card-header>
+            <mat-card-title>Highest Rated Recipe</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="recipe-highlight">
+              <h3 class="recipe-title">{{ recipeStats.highest_rated_recipe.title }}</h3>
+              <p class="recipe-description">{{ recipeStats.highest_rated_recipe.description }}</p>
+              <div class="recipe-stats">
+                <span class="stat-chip">
+                  <mat-icon>star</mat-icon>
+                  {{ recipeStats.highest_rated_recipe.rating_stats.average_rating | cookingStats:'rating' }}
+                </span>
+                <span class="stat-chip">
+                  <mat-icon>people</mat-icon>
+                  {{ recipeStats.highest_rated_recipe.servings }} servings
+                </span>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+
+    <!-- Category Breakdown -->
+    <div class="category-breakdown" *ngIf="categoryBreakdown.length > 0">
+      <h2 class="section-title">
+        <mat-icon>category</mat-icon>
+        Recipe Categories
+      </h2>
+      
+      <mat-card class="breakdown-card">
+        <mat-card-content>
+          <div class="breakdown-list">
+            <div 
+              *ngFor="let category of categoryBreakdown; let i = index"
+              class="breakdown-item">
+              <div class="item-info">
+                <div class="item-label" [ngClass]="getCategoryColor(i)">
+                  {{ category.category_name }}
+                </div>
+                <div class="item-count">{{ category.recipe_count }} recipes</div>
+              </div>
+              <div class="item-percentage">
+                <div class="percentage-bar">
+                  <div 
+                    class="percentage-fill"
+                    [style.width.%]="category.percentage"
+                    [ngClass]="getCategoryColor(i).replace('text-', 'bg-')">
+                  </div>
+                </div>
+                <span class="percentage-text">{{ category.percentage }}%</span>
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Difficulty Breakdown -->
+    <div class="difficulty-breakdown" *ngIf="difficultyBreakdown.length > 0">
+      <h2 class="section-title">
+        <mat-icon>trending_up</mat-icon>
+        Recipe Difficulty
+      </h2>
+      
+      <mat-card class="breakdown-card">
+        <mat-card-content>
+          <div class="breakdown-list">
+            <div 
+              *ngFor="let difficulty of difficultyBreakdown"
+              class="breakdown-item">
+              <div class="item-info">
+                <div class="item-label" [ngClass]="getDifficultyColor(difficulty.difficulty)">
+                  <mat-icon class="difficulty-icon">
+                    {{ difficulty.difficulty === 'easy' ? 'sentiment_very_satisfied' : 
+                       difficulty.difficulty === 'medium' ? 'sentiment_satisfied' : 'sentiment_neutral' }}
+                  </mat-icon>
+                  {{ difficulty.difficulty | titlecase }}
+                </div>
+                <div class="item-count">{{ difficulty.recipe_count }} recipes</div>
+              </div>
+              <div class="item-percentage">
+                <div class="percentage-bar">
+                  <div 
+                    class="percentage-fill"
+                    [style.width.%]="difficulty.percentage"
+                    [ngClass]="getDifficultyColor(difficulty.difficulty).replace('text-', 'bg-')">
+                  </div>
+                </div>
+                <span class="percentage-text">{{ difficulty.percentage }}%</span>
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Achievements -->
+    <div class="achievements-section">
+      <h2 class="section-title">
+        <mat-icon>emoji_events</mat-icon>
+        Achievements
+      </h2>
+      
+      <div class="achievements-grid">
+        <mat-card 
+          *ngFor="let achievement of getAchievements()"
+          class="achievement-card"
+          [class.unlocked]="achievement.unlocked">
+          <div class="achievement-icon">
+            <mat-icon>{{ achievement.icon }}</mat-icon>
+          </div>
+          <div class="achievement-content">
+            <h3 class="achievement-title">{{ achievement.title }}</h3>
+            <p class="achievement-description">{{ achievement.description }}</p>
+            <div class="achievement-status" *ngIf="achievement.unlocked">
+              <mat-icon class="check-icon">check_circle</mat-icon>
+              <span>Unlocked</span>
+              <span *ngIf="achievement.unlockedDate" class="unlock-date">
+                {{ achievement.unlockedDate | date:'mediumDate' }}
+              </span>
+            </div>
+          </div>
+        </mat-card>
+      </div>
+    </div>
+
+    <!-- Cooking Insights -->
+    <div class="insights-section">
+      <h2 class="section-title">
+        <mat-icon>lightbulb</mat-icon>
+        Cooking Insights
+      </h2>
+      
+      <div class="insights-grid">
+        <mat-card 
+          *ngFor="let insight of getCookingInsights()"
+          class="insight-card">
+          <div class="insight-icon">
+            <mat-icon>{{ insight.icon }}</mat-icon>
+          </div>
+          <div class="insight-content">
+            <h3 class="insight-title">{{ insight.title }}</h3>
+            <p class="insight-description">{{ insight.description }}</p>
+            <div class="insight-value" *ngIf="insight.value">
+              {{ insight.value }}
+              <span *ngIf="insight.type === 'publishing'">%</span>
+            </div>
+          </div>
+        </mat-card>
+      </div>
+    </div>
+
+  </div>
+</div>

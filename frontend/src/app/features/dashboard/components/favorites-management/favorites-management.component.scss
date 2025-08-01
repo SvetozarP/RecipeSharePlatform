@@ -1,0 +1,367 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+.favorites-management {
+  @apply max-w-7xl mx-auto px-4 py-6;
+}
+
+.dashboard-header {
+  @apply flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4;
+  
+  .title-section {
+    .page-title {
+      @apply text-2xl md:text-3xl font-bold text-gray-900 mb-2 flex items-center gap-2;
+      
+      mat-icon {
+        @apply text-red-500;
+      }
+    }
+    
+    .page-subtitle {
+      @apply text-gray-600;
+    }
+  }
+  
+  .header-actions {
+    .create-collection-btn {
+      @apply flex items-center gap-2;
+    }
+  }
+}
+
+.filters-section {
+  @apply mb-6;
+  
+  .filters-card {
+    @apply p-4;
+    
+    .filters-content {
+      @apply flex flex-col md:flex-row gap-4 items-start md:items-center;
+      
+      mat-form-field {
+        @apply min-w-[160px];
+      }
+      
+      .view-mode-toggle {
+        @apply flex-shrink-0;
+      }
+    }
+    
+    .results-info {
+      @apply mt-4 pt-4 border-t border-gray-200 text-sm text-gray-600;
+    }
+  }
+}
+
+.favorites-content {
+  .no-favorites {
+    @apply flex justify-center mb-8;
+    
+    .no-favorites-card {
+      @apply text-center p-8 max-w-md;
+      
+      .no-favorites-icon {
+        @apply text-6xl text-gray-400 mb-4;
+      }
+      
+      h3 {
+        @apply text-xl font-semibold text-gray-900 mb-2;
+      }
+      
+      p {
+        @apply text-gray-600 mb-6;
+      }
+      
+      .no-favorites-actions {
+        @apply flex flex-col sm:flex-row gap-3 justify-center;
+      }
+    }
+  }
+  
+  .favorites-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8;
+    
+    .favorite-card {
+      @apply cursor-pointer hover:shadow-lg transition-all duration-200 transform hover:scale-105;
+      
+      .recipe-image-container {
+        @apply relative overflow-hidden;
+        
+        .recipe-image {
+          @apply w-full h-48 object-cover;
+        }
+        
+        .recipe-actions {
+          @apply absolute top-2 right-2 flex gap-1 opacity-0 transition-opacity;
+          
+          button {
+            @apply bg-white bg-opacity-90 hover:bg-opacity-100;
+            
+            mat-icon {
+              @apply text-gray-700;
+            }
+            
+            &.remove-favorite {
+              mat-icon {
+                @apply text-red-500;
+              }
+            }
+          }
+        }
+        
+        &:hover .recipe-actions {
+          @apply opacity-100;
+        }
+      }
+      
+      .recipe-info {
+        @apply p-4;
+        
+        .recipe-title {
+          @apply text-lg font-semibold text-gray-900 mb-2 line-clamp-2;
+        }
+        
+        .recipe-description {
+          @apply text-sm text-gray-600 mb-3 line-clamp-2;
+        }
+        
+        .recipe-meta {
+          @apply flex flex-wrap gap-3 mb-3 text-xs text-gray-500;
+          
+          .meta-item {
+            @apply flex items-center gap-1;
+            
+            .meta-icon {
+              @apply w-4 h-4;
+            }
+            
+            .difficulty {
+              @apply capitalize;
+            }
+          }
+        }
+        
+        .recipe-stats {
+          @apply flex items-center justify-between;
+          
+          .recipe-author {
+            @apply text-xs text-gray-500;
+          }
+        }
+      }
+    }
+  }
+  
+  .favorites-list {
+    @apply mb-8;
+    
+    .list-card {
+      @apply divide-y divide-gray-200;
+      
+      .favorite-list-item {
+        @apply p-4 hover:bg-gray-50 cursor-pointer transition-colors;
+        
+        .list-item-content {
+          @apply flex gap-4;
+          
+          .list-item-image {
+            @apply w-20 h-20 md:w-24 md:h-24 object-cover rounded-lg flex-shrink-0;
+          }
+          
+          .list-item-info {
+            @apply flex-1 min-w-0;
+            
+            .list-item-title {
+              @apply text-lg font-semibold text-gray-900 mb-1;
+            }
+            
+            .list-item-description {
+              @apply text-sm text-gray-600 mb-1 line-clamp-2;
+            }
+            
+            .list-item-author {
+              @apply text-xs text-gray-500 mb-2;
+            }
+            
+            .list-item-meta {
+              @apply flex flex-wrap gap-3 items-center text-xs text-gray-500;
+              
+              .meta-tag {
+                @apply flex items-center gap-1;
+                
+                mat-icon {
+                  @apply w-3 h-3;
+                }
+                
+                &.difficulty-easy {
+                  @apply text-green-600;
+                }
+                
+                &.difficulty-medium {
+                  @apply text-yellow-600;
+                }
+                
+                &.difficulty-hard {
+                  @apply text-red-600;
+                }
+              }
+            }
+          }
+          
+          .list-item-actions {
+            @apply flex items-center gap-2 flex-shrink-0;
+            
+            .remove-favorite {
+              mat-icon {
+                @apply text-red-500;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  .pagination-section {
+    @apply mb-8 flex justify-center;
+  }
+}
+
+.collections-section {
+  .collections-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4;
+    
+    .collection-item {
+      @apply flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors border border-gray-200;
+      
+      .collection-icon {
+        @apply flex-shrink-0 w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center;
+        
+        mat-icon {
+          @apply text-blue-600;
+        }
+      }
+      
+      .collection-info {
+        @apply flex-1 min-w-0;
+        
+        .collection-title {
+          @apply text-sm font-medium text-gray-900 mb-1 line-clamp-1;
+        }
+        
+        .collection-count {
+          @apply text-xs text-gray-500 mb-1;
+        }
+        
+        .collection-visibility {
+          @apply flex items-center text-xs text-green-600;
+          
+          .visibility-icon {
+            @apply w-3 h-3 mr-1;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Menu styling
+::ng-deep {
+  .remove-action {
+    color: #ef4444 !important;
+    
+    mat-icon {
+      color: #ef4444 !important;
+    }
+  }
+  
+  .mat-mdc-card {
+    @apply shadow-sm hover:shadow-md transition-shadow duration-200;
+  }
+  
+  .mat-mdc-menu-panel {
+    @apply shadow-lg;
+  }
+  
+  .mat-mdc-button-toggle-group {
+    @apply shadow-sm;
+  }
+  
+  .mat-mdc-form-field {
+    .mat-mdc-text-field-wrapper {
+      @apply bg-white;
+    }
+  }
+  
+  .mat-mdc-paginator {
+    @apply bg-white rounded-lg shadow-sm;
+  }
+  
+  .mat-mdc-card-header {
+    .mat-mdc-card-title {
+      @apply flex items-center gap-2;
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .favorites-management {
+    @apply px-2;
+  }
+  
+  .dashboard-header {
+    @apply items-stretch;
+    
+    .header-actions {
+      @apply w-full;
+      
+      .create-collection-btn {
+        @apply w-full justify-center;
+      }
+    }
+  }
+  
+  .filters-content {
+    @apply flex-col items-stretch;
+    
+    mat-form-field {
+      @apply w-full;
+    }
+    
+    .view-mode-toggle {
+      @apply self-center;
+    }
+  }
+  
+  .favorites-grid {
+    @apply grid-cols-1 gap-4;
+  }
+  
+  .list-item-content {
+    @apply flex-col gap-3;
+    
+    .list-item-image {
+      @apply w-full h-32 self-center;
+    }
+    
+    .list-item-actions {
+      @apply justify-center;
+    }
+  }
+  
+  .collections-grid {
+    @apply grid-cols-1 gap-3;
+  }
+}
+
+// Print styles
+@media print {
+  .filters-section,
+  .recipe-actions,
+  .list-item-actions,
+  button {
+    @apply hidden;
+  }
+}

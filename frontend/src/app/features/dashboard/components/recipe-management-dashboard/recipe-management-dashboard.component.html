@@ -1,0 +1,330 @@
+<div class="recipe-management-dashboard">
+  <!-- Header Section -->
+  <div class="dashboard-header">
+    <div class="title-section">
+      <h1 class="page-title">
+        <mat-icon>restaurant</mat-icon>
+        My Recipes
+      </h1>
+      <p class="page-subtitle">Manage and organize your recipe collection</p>
+    </div>
+    
+    <div class="header-actions">
+      <button 
+        mat-raised-button 
+        color="primary" 
+        (click)="onCreateRecipe()"
+        class="create-btn">
+        <mat-icon>add</mat-icon>
+        Create Recipe
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats Overview -->
+  <div class="stats-overview" *ngIf="recipeStats">
+    <mat-card class="stat-card">
+      <div class="stat-content">
+        <div class="stat-value">{{ recipeStats.total_recipes }}</div>
+        <div class="stat-label">Total Recipes</div>
+      </div>
+      <mat-icon class="stat-icon">restaurant</mat-icon>
+    </mat-card>
+    
+    <mat-card class="stat-card">
+      <div class="stat-content">
+        <div class="stat-value">{{ recipeStats.total_views }}</div>
+        <div class="stat-label">Total Views</div>
+      </div>
+      <mat-icon class="stat-icon">visibility</mat-icon>
+    </mat-card>
+    
+    <mat-card class="stat-card">
+      <div class="stat-content">
+        <div class="stat-value">{{ recipeStats.average_rating | number:'1.1-1' }}</div>
+        <div class="stat-label">Avg Rating</div>
+      </div>
+      <mat-icon class="stat-icon">star</mat-icon>
+    </mat-card>
+    
+    <mat-card class="stat-card">
+      <div class="stat-content">
+        <div class="stat-value">{{ recipeStats.total_ratings }}</div>
+        <div class="stat-label">Total Ratings</div>
+      </div>
+      <mat-icon class="stat-icon">reviews</mat-icon>
+    </mat-card>
+  </div>
+
+  <!-- Filters and Controls -->
+  <div class="filters-section">
+    <mat-card class="filters-card">
+      <div class="filters-content">
+        <!-- Search -->
+        <mat-form-field class="search-field" appearance="outline">
+          <mat-label>Search recipes</mat-label>
+          <input 
+            matInput 
+            #searchInput
+            [value]="searchTerm"
+            (input)="onSearchChange(searchInput.value)"
+            placeholder="Search by title, ingredients...">
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+
+        <!-- Status Filter -->
+        <mat-form-field appearance="outline">
+          <mat-label>Status</mat-label>
+          <mat-select [(value)]="statusFilter" (selectionChange)="onFilterChange()">
+            <mat-option 
+              *ngFor="let option of statusOptions" 
+              [value]="option.value">
+              {{ option.label }} ({{ option.count }})
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Sort Order -->
+        <mat-form-field appearance="outline">
+          <mat-label>Sort by</mat-label>
+          <mat-select [(value)]="sortOrder" (selectionChange)="onSortChange()">
+            <mat-option 
+              *ngFor="let option of sortOptions" 
+              [value]="option.value">
+              {{ option.label }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- View Mode Toggle -->
+        <div class="view-mode-toggle">
+          <mat-button-toggle-group 
+            [(value)]="viewMode" 
+            (change)="onViewModeChange($event.value)">
+            <mat-button-toggle value="grid" matTooltip="Grid view">
+              <mat-icon>grid_view</mat-icon>
+            </mat-button-toggle>
+            <mat-button-toggle value="list" matTooltip="List view">
+              <mat-icon>view_list</mat-icon>
+            </mat-button-toggle>
+          </mat-button-toggle-group>
+        </div>
+      </div>
+
+      <!-- Results Info -->
+      <div class="results-info" *ngIf="!isLoading">
+        <span class="results-count">
+          Showing {{ startIndex }}-{{ endIndex }} of {{ totalRecipes }} recipes
+        </span>
+      </div>
+    </mat-card>
+  </div>
+
+  <!-- Loading State -->
+  <app-loading *ngIf="isLoading" [message]="'Loading your recipes...'"></app-loading>
+
+  <!-- Recipes Content -->
+  <div *ngIf="!isLoading" class="recipes-content">
+    <!-- No Recipes State -->
+    <div *ngIf="!hasRecipes" class="no-recipes">
+      <mat-card class="no-recipes-card">
+        <mat-icon class="no-recipes-icon">restaurant</mat-icon>
+        <h3>No recipes found</h3>
+        <p *ngIf="searchTerm || statusFilter !== 'all'">
+          Try adjusting your search or filters to find recipes.
+        </p>
+        <p *ngIf="!searchTerm && statusFilter === 'all'">
+          You haven't created any recipes yet. Start by creating your first recipe!
+        </p>
+        <div class="no-recipes-actions">
+          <button 
+            mat-raised-button 
+            color="primary" 
+            (click)="onCreateRecipe()">
+            <mat-icon>add</mat-icon>
+            Create Your First Recipe
+          </button>
+          <button 
+            mat-stroked-button 
+            *ngIf="searchTerm || statusFilter !== 'all'"
+            (click)="searchTerm = ''; statusFilter = 'all'; onFilterChange()">
+            Clear Filters
+          </button>
+        </div>
+      </mat-card>
+    </div>
+
+    <!-- Grid View -->
+    <div *ngIf="hasRecipes && viewMode === 'grid'" class="recipes-grid">
+      <mat-card 
+        *ngFor="let recipe of userRecipes; trackBy: trackByRecipeId"
+        class="recipe-card"
+        (click)="onViewRecipe(recipe)">
+        
+        <!-- Recipe Image -->
+        <div class="recipe-image-container">
+          <img 
+            [src]="getRecipeImageUrl(recipe)" 
+            [alt]="recipe.title"
+            class="recipe-image"
+            loading="lazy">
+          <div class="recipe-actions">
+            <button 
+              mat-icon-button 
+              (click)="$event.stopPropagation(); onEditRecipe(recipe)"
+              matTooltip="Edit recipe">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button 
+              mat-icon-button 
+              [matMenuTriggerFor]="recipeMenu"
+              (click)="$event.stopPropagation()"
+              matTooltip="More actions">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #recipeMenu="matMenu">
+              <button mat-menu-item (click)="onDuplicateRecipe(recipe)">
+                <mat-icon>content_copy</mat-icon>
+                Duplicate
+              </button>
+              <button mat-menu-item (click)="onToggleStatus(recipe)">
+                <mat-icon>visibility</mat-icon>
+                Toggle Status
+              </button>
+              <mat-divider></mat-divider>
+              <button mat-menu-item (click)="onDeleteRecipe(recipe)" class="delete-action">
+                <mat-icon>delete</mat-icon>
+                Delete
+              </button>
+            </mat-menu>
+          </div>
+        </div>
+
+        <!-- Recipe Info -->
+        <mat-card-content class="recipe-info">
+          <h3 class="recipe-title">{{ recipe.title }}</h3>
+          <p class="recipe-description">{{ recipe.description | slice:0:100 }}{{ recipe.description.length > 100 ? '...' : '' }}</p>
+          
+          <div class="recipe-meta">
+            <div class="meta-item">
+              <mat-icon class="meta-icon">schedule</mat-icon>
+              <span>{{ recipe.total_time }}m</span>
+            </div>
+            <div class="meta-item">
+              <mat-icon class="meta-icon">people</mat-icon>
+              <span>{{ recipe.servings }} servings</span>
+            </div>
+            <div class="meta-item">
+              <mat-icon class="meta-icon">local_fire_department</mat-icon>
+              <span class="difficulty">{{ recipe.difficulty }}</span>
+            </div>
+          </div>
+
+          <div class="recipe-stats">
+            <app-star-rating 
+              [value]="getRecipeRating(recipe)"
+              [interactive]="false"
+              [showValue]="true"
+              [count]="getRecipeRatingCount(recipe)"
+              [showCount]="true"
+              [size]="16">
+            </app-star-rating>
+            <div class="recipe-status">
+              <mat-chip 
+                [color]="getStatusColor('published')"
+                selected>
+                Published
+              </mat-chip>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- List View -->
+    <div *ngIf="hasRecipes && viewMode === 'list'" class="recipes-list">
+      <mat-card class="list-card">
+        <div 
+          *ngFor="let recipe of userRecipes; trackBy: trackByRecipeId"
+          class="recipe-list-item"
+          (click)="onViewRecipe(recipe)">
+          
+          <div class="list-item-content">
+            <img 
+              [src]="getRecipeImageUrl(recipe)" 
+              [alt]="recipe.title"
+              class="list-item-image"
+              loading="lazy">
+            
+            <div class="list-item-info">
+              <h3 class="list-item-title">{{ recipe.title }}</h3>
+              <p class="list-item-description">{{ recipe.description | slice:0:150 }}{{ recipe.description.length > 150 ? '...' : '' }}</p>
+              
+              <div class="list-item-meta">
+                <span class="meta-tag">
+                  <mat-icon>schedule</mat-icon>
+                  {{ recipe.total_time }}m
+                </span>
+                <span class="meta-tag">
+                  <mat-icon>people</mat-icon>
+                  {{ recipe.servings }} servings
+                </span>
+                <span class="meta-tag difficulty-{{ recipe.difficulty }}">
+                  {{ recipe.difficulty }}
+                </span>
+                <app-star-rating 
+                  [value]="getRecipeRating(recipe)"
+                  [interactive]="false"
+                  [showValue]="true"
+                  [size]="14">
+                </app-star-rating>
+              </div>
+            </div>
+
+            <div class="list-item-actions">
+              <button 
+                mat-button 
+                (click)="$event.stopPropagation(); onEditRecipe(recipe)">
+                <mat-icon>edit</mat-icon>
+                Edit
+              </button>
+              <button 
+                mat-icon-button 
+                [matMenuTriggerFor]="listRecipeMenu"
+                (click)="$event.stopPropagation()">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #listRecipeMenu="matMenu">
+                <button mat-menu-item (click)="onDuplicateRecipe(recipe)">
+                  <mat-icon>content_copy</mat-icon>
+                  Duplicate
+                </button>
+                <button mat-menu-item (click)="onToggleStatus(recipe)">
+                  <mat-icon>visibility</mat-icon>
+                  Toggle Status
+                </button>
+                <mat-divider></mat-divider>
+                <button mat-menu-item (click)="onDeleteRecipe(recipe)" class="delete-action">
+                  <mat-icon>delete</mat-icon>
+                  Delete
+                </button>
+              </mat-menu>
+            </div>
+          </div>
+        </div>
+      </mat-card>
+    </div>
+
+    <!-- Pagination -->
+    <div *ngIf="hasRecipes && totalPages > 1" class="pagination-section">
+      <mat-paginator
+        [length]="totalRecipes"
+        [pageSize]="pageSize"
+        [pageIndex]="currentPage - 1"
+        [pageSizeOptions]="[6, 12, 24, 48]"
+        (page)="onPageChange($event.pageIndex + 1)"
+        showFirstLastButtons>
+      </mat-paginator>
+    </div>
+  </div>
+</div>

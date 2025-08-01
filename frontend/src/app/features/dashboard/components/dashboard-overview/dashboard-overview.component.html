@@ -1,0 +1,272 @@
+<div class="dashboard-overview">
+  <!-- Loading State -->
+  <app-loading *ngIf="isLoading" [message]="'Loading your dashboard...'"></app-loading>
+
+  <!-- Dashboard Content -->
+  <div *ngIf="!isLoading" class="dashboard-content">
+    <!-- Welcome Header -->
+    <div class="welcome-header">
+      <h1 class="welcome-title">
+        Welcome back, {{ authService.getCurrentUser()?.first_name || authService.getCurrentUser()?.username }}!
+      </h1>
+      <p class="welcome-subtitle">Here's what's cooking in your kitchen</p>
+      
+      <!-- Quick Actions -->
+      <div class="quick-actions">
+        <button 
+          mat-raised-button 
+          color="primary" 
+          (click)="onQuickAction('create-recipe')"
+          class="action-btn">
+          <mat-icon>add</mat-icon>
+          Create Recipe
+        </button>
+        <button 
+          mat-stroked-button 
+          (click)="onQuickAction('browse-recipes')"
+          class="action-btn">
+          <mat-icon>search</mat-icon>
+          Browse Recipes
+        </button>
+        <button 
+          mat-stroked-button 
+          (click)="onQuickAction('my-recipes')"
+          class="action-btn">
+          <mat-icon>restaurant</mat-icon>
+          My Recipes
+        </button>
+        <button 
+          mat-stroked-button 
+          (click)="onQuickAction('statistics')"
+          class="action-btn">
+          <mat-icon>analytics</mat-icon>
+          Statistics
+        </button>
+      </div>
+    </div>
+
+    <!-- Dashboard Grid -->
+    <div class="dashboard-grid">
+      <!-- Stats Overview Widget -->
+      <mat-card class="stats-widget">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>analytics</mat-icon>
+            Your Cooking Stats
+          </mat-card-title>
+          <button 
+            mat-icon-button 
+            (click)="refreshDashboard()" 
+            matTooltip="Refresh dashboard">
+            <mat-icon>refresh</mat-icon>
+          </button>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="stats-grid" *ngIf="userStats">
+            <div class="stat-item">
+              <div class="stat-value">{{ userStats.total_recipes }}</div>
+              <div class="stat-label">Recipes Created</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">{{ userStats.total_favorites }}</div>
+              <div class="stat-label">Favorites</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">{{ userStats.average_rating | number:'1.1-1' }}</div>
+              <div class="stat-label">Avg Rating</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">{{ userStats.total_views }}</div>
+              <div class="stat-label">Recipe Views</div>
+            </div>
+          </div>
+          <div *ngIf="!userStats" class="no-stats">
+            <mat-icon>trending_up</mat-icon>
+            <p>Start cooking to see your stats!</p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+      
+      <!-- Recent Activity Widget -->
+      <mat-card class="activity-widget">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>history</mat-icon>
+            Recent Activity
+          </mat-card-title>
+          <button 
+            mat-button 
+            (click)="onViewAllActivity()"
+            *ngIf="hasRecentActivity">
+            View All
+          </button>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="activity-list" *ngIf="hasRecentActivity">
+            <div 
+              *ngFor="let activity of recentActivity" 
+              class="activity-item">
+              <div class="activity-icon" [ngClass]="'activity-' + getActivityColor(activity.type)">
+                <mat-icon>{{ getActivityIcon(activity.type) }}</mat-icon>
+              </div>
+              <div class="activity-content">
+                <p class="activity-text">{{ activity.description }}</p>
+                <small class="activity-time">{{ formatActivityTime(activity.created_at) }}</small>
+              </div>
+            </div>
+          </div>
+          <div class="no-activity" *ngIf="!hasRecentActivity">
+            <mat-icon>history</mat-icon>
+            <p>No recent activity</p>
+            <button 
+              mat-button 
+              color="primary" 
+              (click)="onQuickAction('create-recipe')">
+              Create Your First Recipe
+            </button>
+          </div>
+        </mat-card-content>
+      </mat-card>
+      
+      <!-- Favorite Recipes Widget -->
+      <mat-card class="favorites-widget">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>favorite</mat-icon>
+            Your Favorites
+          </mat-card-title>
+          <button 
+            mat-button 
+            (click)="onQuickAction('view-favorites')"
+            *ngIf="hasFavorites">
+            View All
+          </button>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="recipe-grid" *ngIf="hasFavorites">
+            <div 
+              *ngFor="let recipe of favoriteRecipes"
+              class="recipe-item"
+              (click)="onRecipeClick(recipe)">
+              <img 
+                [src]="recipe.thumbnail_url || recipe.main_image_url || '/assets/images/recipe-placeholder.jpg'" 
+                [alt]="recipe.title"
+                class="recipe-image"
+                loading="lazy">
+              <div class="recipe-info">
+                <h4 class="recipe-title">{{ recipe.title }}</h4>
+                <div class="recipe-meta">
+                  <app-star-rating 
+                    [value]="recipe.rating_stats?.average_rating || 0"
+                    [interactive]="false"
+                    [showValue]="false"
+                    [size]="16">
+                  </app-star-rating>
+                  <span class="cook-time" *ngIf="recipe.total_time">{{ recipe.total_time }}m</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="no-favorites" *ngIf="!hasFavorites">
+            <mat-icon>favorite_border</mat-icon>
+            <p>No favorites yet</p>
+            <button 
+              mat-button 
+              color="primary" 
+              (click)="onQuickAction('browse-recipes')">
+              Browse Recipes
+            </button>
+          </div>
+        </mat-card-content>
+      </mat-card>
+      
+      <!-- Collections Widget -->
+      <mat-card class="collections-widget" *ngIf="hasCollections">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>folder</mat-icon>
+            Your Collections
+          </mat-card-title>
+          <button 
+            mat-button 
+            routerLink="/dashboard/collections">
+            Manage
+          </button>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="collections-list">
+            <div 
+              *ngFor="let collection of collections"
+              class="collection-item"
+              (click)="onCollectionClick(collection)">
+              <div class="collection-icon">
+                <mat-icon>{{ collection.is_public ? 'public' : 'folder' }}</mat-icon>
+              </div>
+              <div class="collection-info">
+                <h4 class="collection-title">{{ collection.name }}</h4>
+                <p class="collection-count">
+                  {{ collection.recipe_count }} recipe{{ collection.recipe_count !== 1 ? 's' : '' }}
+                </p>
+                <p class="collection-visibility" *ngIf="collection.is_public">
+                  <mat-icon class="visibility-icon">public</mat-icon>
+                  Public
+                </p>
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+
+
+      <!-- Getting Started Widget (shown when user has no data) -->
+      <mat-card 
+        class="getting-started-widget"
+        *ngIf="!hasRecentActivity && !hasFavorites && !hasCollections && userStats?.total_recipes === 0">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>emoji_events</mat-icon>
+            Getting Started
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="getting-started-content">
+            <h3>Welcome to your Recipe Dashboard!</h3>
+            <p>Here are some things you can do to get started:</p>
+            <ul class="getting-started-list">
+              <li>
+                <mat-icon>restaurant</mat-icon>
+                <span>Create your first recipe</span>
+              </li>
+              <li>
+                <mat-icon>search</mat-icon>
+                <span>Browse and discover new recipes</span>
+              </li>
+              <li>
+                <mat-icon>favorite</mat-icon>
+                <span>Save recipes to your favorites</span>
+              </li>
+              <li>
+                <mat-icon>folder</mat-icon>
+                <span>Organize recipes in collections</span>
+              </li>
+            </ul>
+            <div class="getting-started-actions">
+              <button 
+                mat-raised-button 
+                color="primary" 
+                (click)="onQuickAction('create-recipe')">
+                Create Your First Recipe
+              </button>
+              <button 
+                mat-stroked-button 
+                (click)="onQuickAction('browse-recipes')">
+                Explore Recipes
+              </button>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>

@@ -185,6 +185,13 @@ export interface RecipeListResponse {
   results: RecipeListItem[];
 }
 
+export interface PaginatedResponse<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}
+
 export interface FilterOption {
   value: string;
   label: string;

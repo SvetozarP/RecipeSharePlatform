@@ -1,0 +1,378 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+.dashboard-overview {
+  @apply max-w-7xl mx-auto px-4 py-6;
+}
+
+.welcome-header {
+  @apply mb-8 text-center;
+  
+  .welcome-title {
+    @apply text-3xl font-bold text-gray-900 mb-2;
+  }
+  
+  .welcome-subtitle {
+    @apply text-lg text-gray-600 mb-6;
+  }
+  
+  .quick-actions {
+    @apply flex flex-wrap justify-center gap-3;
+    
+    .action-btn {
+      @apply min-w-[140px];
+      
+      mat-icon {
+        @apply mr-2;
+      }
+    }
+  }
+}
+
+.dashboard-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
+  
+  // Stats widget spans 2 columns on larger screens
+  .stats-widget {
+    @apply lg:col-span-2;
+    
+    .stats-grid {
+      @apply grid grid-cols-2 md:grid-cols-4 gap-4;
+      
+      .stat-item {
+        @apply text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg;
+        
+        .stat-value {
+          @apply text-2xl font-bold text-blue-600 mb-1;
+        }
+        
+        .stat-label {
+          @apply text-sm text-gray-600;
+        }
+      }
+    }
+    
+    .no-stats {
+      @apply text-center py-8 text-gray-500;
+      
+      mat-icon {
+        @apply text-4xl mb-2 text-gray-400;
+      }
+    }
+  }
+  
+  // Activity widget is full height
+  .activity-widget {
+    @apply row-span-2;
+    
+    .activity-list {
+      @apply space-y-3 max-h-96 overflow-y-auto pr-2;
+      
+      // Custom scrollbar
+      scrollbar-width: thin;
+      scrollbar-color: #cbd5e0 transparent;
+      
+      &::-webkit-scrollbar {
+        width: 4px;
+      }
+      
+      &::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      
+      &::-webkit-scrollbar-thumb {
+        background-color: #cbd5e0;
+        border-radius: 2px;
+      }
+      
+      .activity-item {
+        @apply flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer;
+        
+        .activity-icon {
+          @apply flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-white text-sm;
+          
+          &.activity-blue {
+            @apply bg-blue-500;
+          }
+          
+          &.activity-green {
+            @apply bg-green-500;
+          }
+          
+          &.activity-yellow {
+            @apply bg-yellow-500;
+          }
+          
+          &.activity-red {
+            @apply bg-red-500;
+          }
+          
+          &.activity-purple {
+            @apply bg-purple-500;
+          }
+          
+          &.activity-gray {
+            @apply bg-gray-500;
+          }
+          
+          mat-icon {
+            @apply text-base;
+          }
+        }
+        
+        .activity-content {
+          @apply flex-1 min-w-0;
+          
+          .activity-text {
+            @apply text-sm text-gray-900 mb-1 line-clamp-2;
+          }
+          
+          .activity-time {
+            @apply text-xs text-gray-500;
+          }
+        }
+      }
+    }
+    
+    .no-activity {
+      @apply text-center py-8 text-gray-500;
+      
+      mat-icon {
+        @apply text-4xl mb-2 text-gray-400;
+      }
+      
+      p {
+        @apply mb-4;
+      }
+    }
+  }
+  
+  // Favorites widget
+  .favorites-widget {
+    .recipe-grid {
+      @apply grid grid-cols-1 sm:grid-cols-2 gap-3;
+      
+      .recipe-item {
+        @apply cursor-pointer hover:shadow-md transition-all duration-200 rounded-lg overflow-hidden bg-white border border-gray-200 transform hover:scale-105;
+        
+        .recipe-image {
+          @apply w-full h-24 object-cover;
+        }
+        
+        .recipe-info {
+          @apply p-3;
+          
+          .recipe-title {
+            @apply text-sm font-medium text-gray-900 mb-2 line-clamp-2;
+          }
+          
+          .recipe-meta {
+            @apply flex items-center justify-between text-xs;
+            
+            .cook-time {
+              @apply text-gray-500;
+            }
+          }
+        }
+      }
+    }
+    
+    .no-favorites {
+      @apply text-center py-8 text-gray-500;
+      
+      mat-icon {
+        @apply text-4xl mb-2 text-gray-400;
+      }
+      
+      p {
+        @apply mb-4;
+      }
+    }
+  }
+  
+  // Collections widget
+  .collections-widget {
+    .collections-list {
+      @apply space-y-3;
+      
+      .collection-item {
+        @apply flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors;
+        
+        .collection-icon {
+          @apply flex-shrink-0 w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center;
+          
+          mat-icon {
+            @apply text-blue-600;
+          }
+        }
+        
+        .collection-info {
+          @apply flex-1 min-w-0;
+          
+          .collection-title {
+            @apply text-sm font-medium text-gray-900 mb-1 line-clamp-1;
+          }
+          
+          .collection-count {
+            @apply text-xs text-gray-500 mb-1;
+          }
+          
+          .collection-visibility {
+            @apply flex items-center text-xs text-green-600;
+            
+            .visibility-icon {
+              @apply w-3 h-3 mr-1;
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  // Mobile actions widget
+  .mobile-actions-widget {
+    .mobile-actions-grid {
+      @apply grid grid-cols-2 gap-3;
+      
+      .mobile-action-btn {
+        @apply flex flex-col items-center p-4 text-center;
+        
+        mat-icon {
+          @apply mb-2;
+        }
+      }
+    }
+  }
+  
+  // Getting started widget
+  .getting-started-widget {
+    @apply md:col-span-2 lg:col-span-3;
+    
+    .getting-started-content {
+      @apply text-center;
+      
+      h3 {
+        @apply text-xl font-semibold text-gray-900 mb-3;
+      }
+      
+      p {
+        @apply text-gray-600 mb-4;
+      }
+      
+      .getting-started-list {
+        @apply text-left max-w-md mx-auto mb-6;
+        
+        li {
+          @apply flex items-center space-x-3 mb-3 text-gray-700;
+          
+          mat-icon {
+            @apply text-blue-600 flex-shrink-0;
+          }
+        }
+      }
+      
+      .getting-started-actions {
+        @apply flex flex-col sm:flex-row gap-3 justify-center;
+      }
+    }
+  }
+}
+
+// Card header styling
+::ng-deep {
+  mat-card-header {
+    @apply flex items-center justify-between pb-4;
+    
+    mat-card-title {
+      @apply flex items-center gap-2 text-lg font-semibold;
+      
+      mat-icon {
+        @apply text-gray-600;
+      }
+    }
+  }
+  
+  mat-card-content {
+    @apply pt-0;
+  }
+  
+  .mat-mdc-card {
+    @apply shadow-sm hover:shadow-md transition-shadow duration-200;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .dashboard-overview {
+    @apply px-2 py-4;
+  }
+  
+  .welcome-header {
+    @apply mb-6;
+    
+    .welcome-title {
+      @apply text-2xl;
+    }
+    
+    .welcome-subtitle {
+      @apply text-base mb-4;
+    }
+    
+    .quick-actions {
+      @apply grid grid-cols-2 gap-2;
+      
+      .action-btn {
+        @apply min-w-0 text-sm;
+        
+        mat-icon {
+          @apply mr-1;
+        }
+      }
+    }
+  }
+  
+  .dashboard-grid {
+    @apply grid-cols-1 gap-4;
+    
+    .stats-widget {
+      .stats-grid {
+        @apply grid-cols-2 gap-3;
+        
+        .stat-item {
+          @apply p-3;
+          
+          .stat-value {
+            @apply text-xl;
+          }
+        }
+      }
+    }
+    
+    .activity-widget {
+      @apply row-span-1;
+      
+      .activity-list {
+        @apply max-h-60;
+      }
+    }
+    
+    .favorites-widget {
+      .recipe-grid {
+        @apply grid-cols-1 gap-2;
+      }
+    }
+  }
+}
+
+// Print styles
+@media print {
+  .quick-actions,
+  button {
+    @apply hidden;
+  }
+  
+  .dashboard-grid {
+    @apply grid-cols-1 gap-4;
+  }
+}

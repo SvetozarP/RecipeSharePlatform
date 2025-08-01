@@ -1,0 +1,322 @@
+<div class="favorites-management">
+  <!-- Header Section -->
+  <div class="dashboard-header">
+    <div class="title-section">
+      <h1 class="page-title">
+        <mat-icon>favorite</mat-icon>
+        My Favorites
+      </h1>
+      <p class="page-subtitle">Manage your favorite recipes and collections</p>
+    </div>
+    
+    <div class="header-actions">
+      <button 
+        mat-stroked-button 
+        (click)="onCreateCollection()"
+        class="create-collection-btn">
+        <mat-icon>folder_open</mat-icon>
+        New Collection
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters and Controls -->
+  <div class="filters-section">
+    <mat-card class="filters-card">
+      <div class="filters-content">
+        <!-- Collection Filter -->
+        <mat-form-field appearance="outline" *ngIf="hasCollections">
+          <mat-label>Collection</mat-label>
+          <mat-select 
+            [(value)]="selectedCollection" 
+            (selectionChange)="onCollectionSelect($event.value)">
+            <mat-option [value]="null">All Favorites</mat-option>
+            <mat-option 
+              *ngFor="let collection of collections" 
+              [value]="collection">
+              {{ collection.name }} ({{ collection.recipe_count }})
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Sort Order -->
+        <mat-form-field appearance="outline">
+          <mat-label>Sort by</mat-label>
+          <mat-select [(value)]="sortOrder" (selectionChange)="onSortChange()">
+            <mat-option 
+              *ngFor="let option of sortOptions" 
+              [value]="option.value">
+              {{ option.label }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- View Mode Toggle -->
+        <div class="view-mode-toggle">
+          <mat-button-toggle-group 
+            [(value)]="viewMode" 
+            (change)="onViewModeChange($event.value)">
+            <mat-button-toggle value="grid" matTooltip="Grid view">
+              <mat-icon>grid_view</mat-icon>
+            </mat-button-toggle>
+            <mat-button-toggle value="list" matTooltip="List view">
+              <mat-icon>view_list</mat-icon>
+            </mat-button-toggle>
+          </mat-button-toggle-group>
+        </div>
+      </div>
+
+      <!-- Results Info -->
+      <div class="results-info" *ngIf="!isLoading">
+        <span class="results-count">
+          {{ totalFavorites }} favorite recipe{{ totalFavorites !== 1 ? 's' : '' }}
+          <span *ngIf="selectedCollection"> in "{{ selectedCollection.name }}"</span>
+        </span>
+      </div>
+    </mat-card>
+  </div>
+
+  <!-- Loading State -->
+  <app-loading *ngIf="isLoading" [message]="'Loading your favorites...'"></app-loading>
+
+  <!-- Favorites Content -->
+  <div *ngIf="!isLoading" class="favorites-content">
+    <!-- No Favorites State -->
+    <div *ngIf="!hasFavorites" class="no-favorites">
+      <mat-card class="no-favorites-card">
+        <mat-icon class="no-favorites-icon">favorite_border</mat-icon>
+        <h3>No favorites yet</h3>
+        <p *ngIf="selectedCollection">
+          No recipes in "{{ selectedCollection.name }}" collection.
+        </p>
+        <p *ngIf="!selectedCollection">
+          You haven't added any recipes to your favorites yet. 
+          Start exploring recipes and add them to your favorites!
+        </p>
+        <div class="no-favorites-actions">
+          <button 
+            mat-raised-button 
+            color="primary" 
+            routerLink="/recipes">
+            <mat-icon>search</mat-icon>
+            Browse Recipes
+          </button>
+          <button 
+            mat-stroked-button 
+            *ngIf="selectedCollection"
+            (click)="onCollectionSelect(null)">
+            View All Favorites
+          </button>
+        </div>
+      </mat-card>
+    </div>
+
+    <!-- Grid View -->
+    <div *ngIf="hasFavorites && viewMode === 'grid'" class="favorites-grid">
+      <mat-card 
+        *ngFor="let recipe of favoriteRecipes; trackBy: trackByRecipeId"
+        class="favorite-card"
+        (click)="onViewRecipe(recipe)">
+        
+        <!-- Recipe Image -->
+        <div class="recipe-image-container">
+          <img 
+            [src]="getRecipeImageUrl(recipe)" 
+            [alt]="recipe.title"
+            class="recipe-image"
+            loading="lazy">
+          <div class="recipe-actions">
+            <button 
+              mat-icon-button 
+              (click)="$event.stopPropagation(); onRemoveFromFavorites(recipe)"
+              matTooltip="Remove from favorites"
+              class="remove-favorite">
+              <mat-icon>favorite</mat-icon>
+            </button>
+            <button 
+              mat-icon-button 
+              [matMenuTriggerFor]="recipeMenu"
+              (click)="$event.stopPropagation()"
+              matTooltip="More actions">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #recipeMenu="matMenu">
+              <button mat-menu-item (click)="onAddToCollection(recipe)">
+                <mat-icon>folder_open</mat-icon>
+                Add to Collection
+              </button>
+              <button mat-menu-item routerLink="/recipes/{{recipe.id}}">
+                <mat-icon>visibility</mat-icon>
+                View Recipe
+              </button>
+              <mat-divider></mat-divider>
+              <button mat-menu-item (click)="onRemoveFromFavorites(recipe)" class="remove-action">
+                <mat-icon>heart_broken</mat-icon>
+                Remove from Favorites
+              </button>
+            </mat-menu>
+          </div>
+        </div>
+
+        <!-- Recipe Info -->
+        <mat-card-content class="recipe-info">
+          <h3 class="recipe-title">{{ recipe.title }}</h3>
+          <p class="recipe-description">{{ recipe.description | slice:0:100 }}{{ recipe.description.length > 100 ? '...' : '' }}</p>
+          
+          <div class="recipe-meta">
+            <div class="meta-item">
+              <mat-icon class="meta-icon">schedule</mat-icon>
+              <span>{{ recipe.total_time }}m</span>
+            </div>
+            <div class="meta-item">
+              <mat-icon class="meta-icon">people</mat-icon>
+              <span>{{ recipe.servings }} servings</span>
+            </div>
+            <div class="meta-item">
+              <mat-icon class="meta-icon">local_fire_department</mat-icon>
+              <span class="difficulty">{{ recipe.difficulty }}</span>
+            </div>
+          </div>
+
+          <div class="recipe-stats">
+            <app-star-rating 
+              [value]="getRecipeRating(recipe)"
+              [interactive]="false"
+              [showValue]="true"
+              [count]="getRecipeRatingCount(recipe)"
+              [showCount]="true"
+              [size]="16">
+            </app-star-rating>
+            <div class="recipe-author">
+              by {{ recipe.author.firstName }} {{ recipe.author.lastName }}
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- List View -->
+    <div *ngIf="hasFavorites && viewMode === 'list'" class="favorites-list">
+      <mat-card class="list-card">
+        <div 
+          *ngFor="let recipe of favoriteRecipes; trackBy: trackByRecipeId"
+          class="favorite-list-item"
+          (click)="onViewRecipe(recipe)">
+          
+          <div class="list-item-content">
+            <img 
+              [src]="getRecipeImageUrl(recipe)" 
+              [alt]="recipe.title"
+              class="list-item-image"
+              loading="lazy">
+            
+            <div class="list-item-info">
+              <h3 class="list-item-title">{{ recipe.title }}</h3>
+              <p class="list-item-description">{{ recipe.description | slice:0:150 }}{{ recipe.description.length > 150 ? '...' : '' }}</p>
+              <p class="list-item-author">by {{ recipe.author.firstName }} {{ recipe.author.lastName }}</p>
+              
+              <div class="list-item-meta">
+                <span class="meta-tag">
+                  <mat-icon>schedule</mat-icon>
+                  {{ recipe.total_time }}m
+                </span>
+                <span class="meta-tag">
+                  <mat-icon>people</mat-icon>
+                  {{ recipe.servings }} servings
+                </span>
+                <span class="meta-tag difficulty-{{ recipe.difficulty }}">
+                  {{ recipe.difficulty }}
+                </span>
+                <app-star-rating 
+                  [value]="getRecipeRating(recipe)"
+                  [interactive]="false"
+                  [showValue]="true"
+                  [size]="14">
+                </app-star-rating>
+              </div>
+            </div>
+
+            <div class="list-item-actions">
+              <button 
+                mat-icon-button 
+                (click)="$event.stopPropagation(); onRemoveFromFavorites(recipe)"
+                matTooltip="Remove from favorites"
+                class="remove-favorite">
+                <mat-icon>favorite</mat-icon>
+              </button>
+              <button 
+                mat-button 
+                (click)="$event.stopPropagation(); onAddToCollection(recipe)">
+                <mat-icon>folder_open</mat-icon>
+                Add to Collection
+              </button>
+              <button 
+                mat-icon-button 
+                [matMenuTriggerFor]="listRecipeMenu"
+                (click)="$event.stopPropagation()">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #listRecipeMenu="matMenu">
+                <button mat-menu-item routerLink="/recipes/{{recipe.id}}">
+                  <mat-icon>visibility</mat-icon>
+                  View Recipe
+                </button>
+                <mat-divider></mat-divider>
+                <button mat-menu-item (click)="onRemoveFromFavorites(recipe)" class="remove-action">
+                  <mat-icon>heart_broken</mat-icon>
+                  Remove from Favorites
+                </button>
+              </mat-menu>
+            </div>
+          </div>
+        </div>
+      </mat-card>
+    </div>
+
+    <!-- Pagination -->
+    <div *ngIf="hasFavorites && totalPages > 1" class="pagination-section">
+      <mat-paginator
+        [length]="totalFavorites"
+        [pageSize]="pageSize"
+        [pageIndex]="currentPage - 1"
+        [pageSizeOptions]="[10, 20, 50]"
+        (page)="onPageChange($event.pageIndex + 1)"
+        showFirstLastButtons>
+      </mat-paginator>
+    </div>
+  </div>
+
+  <!-- Collection Management Section -->
+  <div *ngIf="hasCollections" class="collections-section">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>folder</mat-icon>
+          Your Collections
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="collections-grid">
+          <div 
+            *ngFor="let collection of collections"
+            class="collection-item"
+            (click)="onCollectionSelect(collection)">
+            <div class="collection-icon">
+              <mat-icon>{{ collection.is_public ? 'public' : 'folder' }}</mat-icon>
+            </div>
+            <div class="collection-info">
+              <h4 class="collection-title">{{ collection.name }}</h4>
+              <p class="collection-count">
+                {{ collection.recipe_count }} recipe{{ collection.recipe_count !== 1 ? 's' : '' }}
+              </p>
+              <p class="collection-visibility" *ngIf="collection.is_public">
+                <mat-icon class="visibility-icon">public</mat-icon>
+                Public Collection
+              </p>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

@@ -1,0 +1,442 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+.collections-detail {
+  @apply max-w-7xl mx-auto px-4 py-6;
+}
+
+.collections-header {
+  @apply flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4;
+  
+  .title-section {
+    .page-title {
+      @apply text-2xl md:text-3xl font-bold text-gray-900 mb-2 flex items-center gap-2;
+      
+      mat-icon {
+        @apply text-purple-600;
+      }
+    }
+    
+    .page-subtitle {
+      @apply text-gray-600;
+    }
+  }
+  
+  .header-actions {
+    .mat-mdc-raised-button {
+      @apply flex items-center gap-2;
+    }
+  }
+}
+
+.collections-content {
+  .no-collections {
+    @apply flex justify-center;
+    
+    .no-collections-card {
+      @apply text-center p-8 max-w-md;
+      
+      .no-collections-icon {
+        @apply text-6xl text-gray-400 mb-4;
+      }
+      
+      h3 {
+        @apply text-xl font-semibold text-gray-900 mb-2;
+      }
+      
+      p {
+        @apply text-gray-600 mb-6;
+      }
+      
+      .no-collections-actions {
+        @apply flex justify-center;
+      }
+    }
+  }
+  
+  .collections-layout {
+    @apply grid lg:grid-cols-4 gap-6;
+    
+    .collections-sidebar {
+      @apply lg:col-span-1;
+      
+      .sidebar-card {
+        @apply sticky top-6;
+        
+        .collections-list {
+          @apply space-y-2 max-h-96 overflow-y-auto;
+          
+          .collection-item {
+            @apply flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-all duration-200 hover:bg-gray-50;
+            
+            &.selected {
+              @apply bg-purple-50 border border-purple-200;
+              
+              .collection-name {
+                @apply text-purple-800;
+              }
+              
+              .collection-icon {
+                @apply bg-purple-500 text-white;
+              }
+            }
+            
+            .collection-icon {
+              @apply flex-shrink-0 w-10 h-10 bg-gray-100 text-gray-600 rounded-lg flex items-center justify-center;
+            }
+            
+            .collection-info {
+              @apply flex-1 min-w-0;
+              
+              .collection-name {
+                @apply font-medium text-gray-900 mb-1 line-clamp-1;
+              }
+              
+              .collection-description {
+                @apply text-sm text-gray-600 mb-2 line-clamp-2;
+              }
+              
+              .collection-meta {
+                @apply flex items-center gap-3 text-xs text-gray-500;
+                
+                .recipe-count {
+                  @apply font-medium;
+                }
+                
+                .visibility {
+                  @apply flex items-center gap-1 text-green-600;
+                  
+                  .visibility-icon {
+                    @apply w-3 h-3;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    .collection-detail {
+      @apply lg:col-span-3 space-y-6;
+      
+      .collection-header-card {
+        .collection-title-section {
+          @apply flex-1;
+          
+          .collection-title {
+            @apply flex items-center gap-2 text-xl font-semibold;
+          }
+        }
+        
+        .collection-actions {
+          @apply flex items-center gap-2;
+        }
+        
+        .collection-stats {
+          @apply flex flex-wrap gap-4 mb-4;
+          
+          .stat-item {
+            @apply flex items-center gap-2 text-sm text-gray-600;
+            
+            mat-icon {
+              @apply w-4 h-4;
+            }
+          }
+        }
+        
+        .view-controls {
+          @apply flex justify-end;
+        }
+      }
+      
+      .collection-recipes {
+        .no-recipes {
+          @apply flex justify-center;
+          
+          .no-recipes-card {
+            @apply text-center p-8 max-w-md;
+            
+            .no-recipes-icon {
+              @apply text-6xl text-gray-400 mb-4;
+            }
+            
+            h3 {
+              @apply text-xl font-semibold text-gray-900 mb-2;
+            }
+            
+            p {
+              @apply text-gray-600 mb-6;
+            }
+            
+            .no-recipes-actions {
+              @apply flex flex-col sm:flex-row gap-3 justify-center;
+            }
+          }
+        }
+        
+        .recipes-grid {
+          @apply grid md:grid-cols-2 lg:grid-cols-3 gap-4;
+          
+          .recipe-card {
+            @apply cursor-pointer hover:shadow-lg transition-all duration-200 transform hover:scale-105;
+            
+            .recipe-image-container {
+              @apply relative overflow-hidden;
+              
+              .recipe-image {
+                @apply w-full h-40 object-cover;
+              }
+              
+              .recipe-actions {
+                @apply absolute top-2 right-2 opacity-0 transition-opacity;
+                
+                .remove-action {
+                  @apply bg-white bg-opacity-90 hover:bg-opacity-100 text-red-600;
+                }
+              }
+              
+              &:hover .recipe-actions {
+                @apply opacity-100;
+              }
+            }
+            
+            .recipe-info {
+              @apply p-4;
+              
+              .recipe-title {
+                @apply text-lg font-semibold text-gray-900 mb-2 line-clamp-1;
+              }
+              
+              .recipe-description {
+                @apply text-sm text-gray-600 mb-3 line-clamp-2;
+              }
+              
+              .recipe-meta {
+                @apply flex gap-4 mb-3 text-xs text-gray-500;
+                
+                .meta-item {
+                  @apply flex items-center gap-1;
+                  
+                  .meta-icon {
+                    @apply w-4 h-4;
+                  }
+                }
+              }
+              
+              .recipe-rating {
+                @apply pt-2 border-t border-gray-100;
+              }
+            }
+          }
+        }
+        
+        .recipes-list {
+          .list-card {
+            @apply divide-y divide-gray-200;
+            
+            .recipe-list-item {
+              @apply flex gap-4 p-4 hover:bg-gray-50 cursor-pointer transition-colors;
+              
+              .list-item-image {
+                @apply w-20 h-20 md:w-24 md:h-24 object-cover rounded-lg flex-shrink-0;
+              }
+              
+              .list-item-info {
+                @apply flex-1 min-w-0;
+                
+                .list-item-title {
+                  @apply text-lg font-semibold text-gray-900 mb-1;
+                }
+                
+                .list-item-description {
+                  @apply text-sm text-gray-600 mb-2 line-clamp-2;
+                }
+                
+                .list-item-meta {
+                  @apply flex flex-wrap gap-3 items-center text-xs text-gray-500;
+                  
+                  .meta-tag {
+                    @apply flex items-center gap-1;
+                    
+                    mat-icon {
+                      @apply w-3 h-3;
+                    }
+                    
+                    &.difficulty-easy {
+                      @apply text-green-600;
+                    }
+                    
+                    &.difficulty-medium {
+                      @apply text-yellow-600;
+                    }
+                    
+                    &.difficulty-hard {
+                      @apply text-red-600;
+                    }
+                  }
+                }
+              }
+              
+              .list-item-actions {
+                @apply flex items-center flex-shrink-0;
+                
+                .remove-action {
+                  @apply text-red-600;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+.collection-form-overlay {
+  @apply fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4;
+  
+  .collection-form-card {
+    @apply w-full max-w-md;
+    
+    .full-width {
+      @apply w-full mb-4;
+    }
+    
+    .checkbox-hint {
+      @apply block text-gray-500 text-xs mt-1;
+    }
+  }
+}
+
+// Material Design overrides
+::ng-deep {
+  .delete-action {
+    color: #ef4444 !important;
+    
+    mat-icon {
+      color: #ef4444 !important;
+    }
+  }
+  
+  .remove-action {
+    mat-icon {
+      color: #ef4444 !important;
+    }
+  }
+  
+  .mat-mdc-card {
+    @apply shadow-sm hover:shadow-md transition-shadow duration-200;
+  }
+  
+  .mat-mdc-card-header {
+    @apply flex items-center justify-between;
+    
+    .mat-mdc-card-title {
+      @apply flex items-center gap-2;
+    }
+  }
+  
+  .mat-mdc-menu-panel {
+    @apply shadow-lg;
+  }
+  
+  .mat-mdc-button-toggle-group {
+    @apply shadow-sm;
+  }
+  
+  .mat-mdc-form-field {
+    .mat-mdc-text-field-wrapper {
+      @apply bg-white;
+    }
+  }
+  
+  .mat-mdc-checkbox {
+    .mat-mdc-checkbox-label {
+      @apply flex flex-col items-start;
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 1024px) {
+  .collections-layout {
+    @apply grid-cols-1 gap-4;
+    
+    .collections-sidebar {
+      .sidebar-card {
+        @apply relative;
+        
+        .collections-list {
+          @apply max-h-none;
+          @apply grid grid-cols-1 sm:grid-cols-2 gap-2;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .collections-detail {
+    @apply px-2;
+  }
+  
+  .collections-header {
+    @apply items-stretch;
+    
+    .header-actions {
+      @apply w-full;
+      
+      button {
+        @apply w-full justify-center;
+      }
+    }
+  }
+  
+  .collections-sidebar {
+    .collections-list {
+      @apply grid-cols-1 gap-3;
+      
+      .collection-item {
+        @apply p-4;
+      }
+    }
+  }
+  
+  .recipes-grid {
+    @apply grid-cols-1 gap-3;
+  }
+  
+  .recipe-list-item {
+    @apply flex-col gap-3;
+    
+    .list-item-image {
+      @apply w-full h-32 self-center;
+    }
+    
+    .list-item-actions {
+      @apply justify-center;
+    }
+  }
+  
+  .collection-form-overlay {
+    @apply p-2;
+    
+    .collection-form-card {
+      @apply max-w-none;
+    }
+  }
+}
+
+// Print styles
+@media print {
+  .collection-actions,
+  .recipe-actions,
+  .list-item-actions,
+  .header-actions,
+  .view-controls,
+  button {
+    @apply hidden;
+  }
+}

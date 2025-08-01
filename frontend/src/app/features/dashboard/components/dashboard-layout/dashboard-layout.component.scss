@@ -1,0 +1,199 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+.dashboard-layout {
+  @apply min-h-screen bg-gray-50;
+}
+
+.dashboard-toolbar {
+  @apply relative z-20 shadow-md;
+  
+  .toolbar-title {
+    @apply text-xl font-semibold;
+  }
+  
+  .spacer {
+    @apply flex-1;
+  }
+  
+  .quick-actions {
+    @apply space-x-2;
+    
+    .action-button {
+      @apply text-white;
+      
+      mat-icon {
+        @apply mr-1;
+      }
+    }
+  }
+  
+  .user-menu-trigger {
+    @apply ml-2;
+  }
+}
+
+.user-info {
+  @apply px-4 py-2;
+  
+  .user-name {
+    @apply font-medium text-gray-900;
+  }
+  
+  .user-email {
+    @apply text-sm text-gray-500;
+  }
+}
+
+.dashboard-container {
+  @apply flex h-full;
+}
+
+.dashboard-sidenav {
+  @apply fixed inset-y-0 left-0 z-10 w-80 bg-white shadow-lg transform transition-transform duration-300 ease-in-out;
+  @apply md:relative md:translate-x-0 md:inset-auto md:h-auto md:shadow-none md:border-r md:border-gray-200;
+  top: 64px; // Account for toolbar height
+  
+  @apply -translate-x-full;
+  
+  &.mobile-open {
+    @apply translate-x-0;
+  }
+  
+  @screen md {
+    @apply translate-x-0 w-72;
+  }
+}
+
+.welcome-section {
+  @apply p-6 border-b border-gray-200;
+  
+  .welcome-title {
+    @apply text-lg font-semibold text-gray-900 mb-1;
+  }
+  
+  .welcome-subtitle {
+    @apply text-sm text-gray-600;
+  }
+}
+
+.navigation-list {
+  @apply py-4;
+  
+  .nav-item {
+    @apply mx-2 mb-1 rounded-lg transition-colors duration-200;
+    @apply hover:bg-blue-50;
+    
+    &.active {
+      @apply bg-blue-100 text-blue-700;
+      
+      mat-icon {
+        @apply text-blue-700;
+      }
+    }
+    
+    mat-icon {
+      @apply text-gray-500;
+    }
+  }
+  
+  .nav-description {
+    @apply text-xs text-gray-500 mt-1;
+  }
+}
+
+.mobile-quick-actions {
+  @apply p-4 border-t border-gray-200 mt-auto;
+}
+
+.mobile-overlay {
+  @apply fixed inset-0 bg-black bg-opacity-50 z-[5] opacity-0 pointer-events-none transition-opacity duration-300;
+  top: 64px; // Account for toolbar height
+  
+  &.visible {
+    @apply opacity-100 pointer-events-auto;
+  }
+}
+
+.dashboard-content {
+  @apply flex-1 overflow-hidden;
+  @apply md:ml-0; // No left margin on desktop since sidenav is relative
+  
+  // Ensure content is below toolbar
+  margin-top: 0;
+  min-height: calc(100vh - 64px);
+  
+  // On mobile, add left margin when sidenav is open
+  @media (max-width: 768px) {
+    transition: margin-left 0.3s ease-in-out;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .dashboard-sidenav {
+    @apply w-72;
+  }
+  
+  .navigation-list {
+    .nav-item {
+      @apply text-sm;
+    }
+  }
+  
+  .welcome-section {
+    @apply p-4;
+    
+    .welcome-title {
+      @apply text-base;
+    }
+  }
+}
+
+// Custom scrollbar for sidenav
+.navigation-list {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e0 transparent;
+  
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background-color: #cbd5e0;
+    border-radius: 2px;
+  }
+  
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: #a0aec0;
+  }
+}
+
+// Material Design overrides
+::ng-deep {
+  .mat-toolbar {
+    height: 64px;
+  }
+  
+  .mat-list-item {
+    height: auto !important;
+    padding: 12px 16px !important;
+  }
+  
+  .mat-list-item-content {
+    padding: 0 !important;
+  }
+  
+  .mat-nav-list .mat-list-item {
+    color: inherit;
+  }
+  
+  .mat-menu-panel {
+    min-width: 200px;
+  }
+}

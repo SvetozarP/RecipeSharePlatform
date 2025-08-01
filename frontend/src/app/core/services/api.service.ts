@@ -48,6 +48,10 @@ export class ApiService {
     return this.http.delete<T>(`${this.baseUrl}${endpoint}`);
   }
 
+  buildParams(params: any): any {
+    return params;
+  }
+
   upload<T>(endpoint: string, formData: FormData): Observable<T> {
     return this.http.post<T>(`${this.baseUrl}${endpoint}`, formData);
   }
