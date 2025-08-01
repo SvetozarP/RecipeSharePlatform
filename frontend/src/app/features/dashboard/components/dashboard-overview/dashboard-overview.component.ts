@@ -9,9 +9,7 @@ import { DashboardService } from '../../services/dashboard.service';
 import { UserStatisticsService } from '../../services/user-statistics.service';
 import { ActivityService } from '../../services/activity.service';
 import { FavoritesService } from '../../services/favorites.service';
-import { CollectionsService } from '../../services/collections.service';
-
-import { DashboardData, UserStatistics, Activity, Collection } from '../../models/dashboard-data.model';
+import { DashboardData, UserStatistics, Activity } from '../../models/dashboard-data.model';
 import { Recipe } from '../../../../shared/models/recipe.models';
 import { AuthService } from '../../../../core/services/auth.service';
 
@@ -35,7 +33,7 @@ export class DashboardOverviewComponent implements OnInit, OnDestroy {
   recentActivity: Activity[] = [];
   favoriteRecipes: Recipe[] = [];
   recommendedRecipes: Recipe[] = [];
-  collections: Collection[] = [];
+  currentUser: any = null;
   
   isLoading = true;
   dashboardData: DashboardData | null = null;
@@ -47,12 +45,12 @@ export class DashboardOverviewComponent implements OnInit, OnDestroy {
     private userStatsService: UserStatisticsService,
     private activityService: ActivityService,
     private favoritesService: FavoritesService,
-    private collectionsService: CollectionsService,
     public authService: AuthService,
     private router: Router
   ) {}
   
   async ngOnInit(): Promise<void> {
+    this.currentUser = this.authService.getCurrentUser();
     await this.loadDashboardData();
     this.subscribeToRealTimeUpdates();
   }
@@ -70,8 +68,7 @@ export class DashboardOverviewComponent implements OnInit, OnDestroy {
       const [
         userStats,
         recentActivity,
-        favoriteRecipes,
-        collections
+        favoriteRecipes
       ] = await Promise.all([
         this.userStatsService.getUserStatistics().catch(() => ({
           total_recipes: 0,
@@ -92,14 +89,12 @@ export class DashboardOverviewComponent implements OnInit, OnDestroy {
           preferred_difficulty: ''
         })),
         this.activityService.getRecentActivity(10).catch(() => []),
-        this.favoritesService.getFavoriteRecipes({ page_size: 6 }).then(response => response.results).catch(() => []),
-        this.collectionsService.getUserCollections(5).catch(() => [])
+        this.favoritesService.getFavoriteRecipes({ page_size: 6 }).then(response => response.results).catch(() => [])
       ]);
       
       this.userStats = userStats;
       this.recentActivity = recentActivity;
       this.favoriteRecipes = favoriteRecipes;
-      this.collections = collections;
       
       // Mock recommended recipes for now (will be replaced with actual API)
       this.recommendedRecipes = [];
@@ -160,9 +155,7 @@ export class DashboardOverviewComponent implements OnInit, OnDestroy {
     this.router.navigate(['/recipes', recipe.id]);
   }
   
-  onCollectionClick(collection: Collection): void {
-    this.router.navigate(['/dashboard/collections', collection.id]);
-  }
+
   
   onViewAllActivity(): void {
     this.router.navigate(['/dashboard/activity']);
@@ -203,7 +196,5 @@ export class DashboardOverviewComponent implements OnInit, OnDestroy {
     return this.favoriteRecipes && this.favoriteRecipes.length > 0;
   }
 
-  get hasCollections(): boolean {
-    return this.collections && this.collections.length > 0;
-  }
+
 }

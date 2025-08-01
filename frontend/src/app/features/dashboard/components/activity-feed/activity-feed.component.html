@@ -124,10 +124,7 @@
                     <mat-icon class="metadata-icon">restaurant</mat-icon>
                     <span class="metadata-text">{{ activity.metadata.recipe_title }}</span>
                   </div>
-                  <div class="metadata-item" *ngIf="activity.metadata.collection_name">
-                    <mat-icon class="metadata-icon">folder</mat-icon>
-                    <span class="metadata-text">{{ activity.metadata.collection_name }}</span>
-                  </div>
+
                   <div class="metadata-item" *ngIf="activity.metadata.rating">
                     <mat-icon class="metadata-icon">star</mat-icon>
                     <span class="metadata-text">{{ activity.metadata.rating }} star{{ activity.metadata.rating !== 1 ? 's' : '' }}</span>
@@ -152,13 +149,7 @@
                   <mat-icon>favorite</mat-icon>
                   View Favorites
                 </button>
-                <button 
-                  mat-button
-                  *ngIf="activity.type === 'collection_created'"
-                  routerLink="/dashboard/collections">
-                  <mat-icon>folder</mat-icon>
-                  View Collections
-                </button>
+
               </div>
             </div>
           </div>

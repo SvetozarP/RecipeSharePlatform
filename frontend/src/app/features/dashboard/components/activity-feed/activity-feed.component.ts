@@ -108,13 +108,7 @@ export class ActivityFeedComponent implements OnInit, OnDestroy {
         created_at: new Date(Date.now() - 1000 * 60 * 60 * 6).toISOString(), // 6 hours ago
         metadata: { recipe_title: 'Italian Pasta Salad', rating: 5 }
       },
-      {
-        id: 4,
-        type: 'collection_created',
-        description: 'Created a new collection "Summer Favorites"',
-        created_at: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
-        metadata: { collection_name: 'Summer Favorites' }
-      },
+
       {
         id: 5,
         type: 'recipe_published',
@@ -174,8 +168,7 @@ export class ActivityFeedComponent implements OnInit, OnDestroy {
         return 'Comment Added';
       case 'rating_given':
         return 'Rating Given';
-      case 'collection_created':
-        return 'Collection Created';
+
       default:
         return 'Activity';
     }

@@ -5,14 +5,12 @@ export interface DashboardData {
   recent_activity: Activity[];
   favorite_recipes: Recipe[];
   recommended_recipes: Recipe[];
-  collections: Collection[];
   user_stats: UserStatistics;
 }
 
 export interface DashboardSummary {
   total_recipes: number;
   total_favorites: number;
-  total_collections: number;
   recent_activity_count: number;
   new_recommendations: number;
 }
@@ -35,7 +33,7 @@ export interface UserStatistics {
 
 export interface Activity {
   id: number;
-  type: 'recipe_created' | 'recipe_published' | 'comment_added' | 'rating_given' | 'favorite_added' | 'collection_created';
+  type: 'recipe_created' | 'recipe_published' | 'comment_added' | 'rating_given' | 'favorite_added';
   description: string;
   recipe?: Recipe;
   user?: any;
@@ -43,16 +41,7 @@ export interface Activity {
   metadata?: any;
 }
 
-export interface Collection {
-  id: number;
-  name: string;
-  description: string;
-  recipe_count: number;
-  is_public: boolean;
-  created_at: string;
-  updated_at: string;
-  recipes?: Recipe[];
-}
+
 
 
 

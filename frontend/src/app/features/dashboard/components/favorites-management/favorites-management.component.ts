@@ -7,9 +7,7 @@ import { LoadingComponent } from '../../../../shared/components/loading/loading.
 import { StarRatingComponent } from '../../../../shared/components/star-rating/star-rating.component';
 
 import { FavoritesService } from '../../services/favorites.service';
-import { CollectionsService } from '../../services/collections.service';
 import { Recipe, PaginatedResponse } from '../../../../shared/models/recipe.models';
-import { Collection } from '../../models/dashboard-data.model';
 
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -30,8 +28,6 @@ import { takeUntil } from 'rxjs/operators';
 })
 export class FavoritesManagementComponent implements OnInit, OnDestroy {
   favoriteRecipes: Recipe[] = [];
-  collections: Collection[] = [];
-  selectedCollection: Collection | null = null;
   
   isLoading = false;
   viewMode: 'grid' | 'list' = 'grid';
@@ -52,15 +48,11 @@ export class FavoritesManagementComponent implements OnInit, OnDestroy {
   
   constructor(
     private favoritesService: FavoritesService,
-    private collectionsService: CollectionsService,
     private router: Router
   ) {}
   
   async ngOnInit(): Promise<void> {
-    await Promise.all([
-      this.loadFavoriteRecipes(),
-      this.loadCollections()
-    ]);
+    await this.loadFavoriteRecipes();
   }
 
   ngOnDestroy(): void {
@@ -73,7 +65,6 @@ export class FavoritesManagementComponent implements OnInit, OnDestroy {
     
     try {
       const params = {
-        collection_id: this.selectedCollection?.id,
         ordering: this.getSortOrderValue(),
         page: this.currentPage,
         page_size: this.pageSize
@@ -98,13 +89,7 @@ export class FavoritesManagementComponent implements OnInit, OnDestroy {
     }
   }
   
-  private async loadCollections(): Promise<void> {
-    try {
-      this.collections = await this.collectionsService.getUserCollections();
-    } catch (error) {
-      console.error('Failed to load collections:', error);
-    }
-  }
+
 
   private getSortOrderValue(): string {
     switch (this.sortOrder) {
@@ -117,11 +102,7 @@ export class FavoritesManagementComponent implements OnInit, OnDestroy {
     }
   }
   
-  onCollectionSelect(collection: Collection | null): void {
-    this.selectedCollection = collection;
-    this.currentPage = 1;
-    this.loadFavoriteRecipes();
-  }
+
   
   onSortChange(): void {
     this.currentPage = 1;
@@ -137,10 +118,7 @@ export class FavoritesManagementComponent implements OnInit, OnDestroy {
     this.viewMode = mode;
   }
   
-  onCreateCollection(): void {
-    // TODO: Implement collection creation dialog
-    console.log('Create collection');
-  }
+
   
   async onRemoveFromFavorites(recipe: Recipe): Promise<void> {
     try {
@@ -152,10 +130,7 @@ export class FavoritesManagementComponent implements OnInit, OnDestroy {
     }
   }
   
-  onAddToCollection(recipe: Recipe): void {
-    // TODO: Implement add to collection dialog
-    console.log('Add to collection:', recipe.id);
-  }
+
   
   onViewRecipe(recipe: Recipe): void {
     this.router.navigate(['/recipes', recipe.id]);
@@ -170,9 +145,7 @@ export class FavoritesManagementComponent implements OnInit, OnDestroy {
       case 'remove-favorites':
         this.bulkRemoveFromFavorites(selectedRecipes);
         break;
-      case 'add-to-collection':
-        this.bulkAddToCollection(selectedRecipes);
-        break;
+
       default:
         console.log('Unknown bulk action:', action);
     }
@@ -188,10 +161,7 @@ export class FavoritesManagementComponent implements OnInit, OnDestroy {
     }
   }
   
-  private bulkAddToCollection(recipes: Recipe[]): void {
-    // TODO: Implement bulk add to collection
-    console.log('Bulk add to collection:', recipes.length, 'recipes');
-  }
+
 
   getRecipeImageUrl(recipe: Recipe): string {
     return recipe.thumbnail_url || recipe.main_image_url || '/assets/images/recipe-placeholder.jpg';
@@ -213,9 +183,7 @@ export class FavoritesManagementComponent implements OnInit, OnDestroy {
     return this.favoriteRecipes && this.favoriteRecipes.length > 0;
   }
 
-  get hasCollections(): boolean {
-    return this.collections && this.collections.length > 0;
-  }
+
 
   // Pagination helpers
   get totalPages(): number {

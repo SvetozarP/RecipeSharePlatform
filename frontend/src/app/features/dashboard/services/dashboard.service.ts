@@ -33,7 +33,7 @@ export class DashboardService {
         recent_activity: this.generateMockActivity(),
         favorite_recipes: [], // Will be populated by FavoritesService
         recommended_recipes: allRecipes.slice(0, 6),
-        collections: [], // Will be populated by CollectionsService
+
         user_stats: this.calculateUserStatistics(userRecipes)
       };
 
@@ -46,14 +46,13 @@ export class DashboardService {
         summary: {
           total_recipes: 0,
           total_favorites: 0,
-          total_collections: 0,
           recent_activity_count: 0,
           new_recommendations: 0
         },
         recent_activity: [],
         favorite_recipes: [],
         recommended_recipes: [],
-        collections: [],
+
         user_stats: this.getDefaultStatistics()
       };
       this.dashboardDataSubject.next(defaultData);
@@ -69,7 +68,7 @@ export class DashboardService {
       return {
         total_recipes: stats.total_recipes,
         total_favorites: 0, // Will be updated by components
-        total_collections: 0, // Will be updated by components
+
         recent_activity_count: 1,
         new_recommendations: 6
       };
@@ -78,7 +77,6 @@ export class DashboardService {
       return {
         total_recipes: 0,
         total_favorites: 0,
-        total_collections: 0,
         recent_activity_count: 0,
         new_recommendations: 0
       };

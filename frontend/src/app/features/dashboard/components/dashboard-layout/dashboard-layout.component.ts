@@ -39,12 +39,7 @@ export class DashboardLayoutComponent implements OnInit, OnDestroy {
       icon: 'favorite',
       description: 'Your favorite recipes'
     },
-    {
-      label: 'Collections',
-      route: '/dashboard/collections',
-      icon: 'folder',
-      description: 'Recipe collections'
-    },
+
     {
       label: 'Statistics',
       route: '/dashboard/statistics',

@@ -19,14 +19,7 @@ export const dashboardRoutes: Routes = [
         path: 'favorites',
         loadComponent: () => import('./components/favorites-management/favorites-management.component').then(m => m.FavoritesManagementComponent)
       },
-      {
-        path: 'collections',
-        loadComponent: () => import('./components/collections-detail/collections-detail.component').then(m => m.CollectionsDetailComponent)
-      },
-      {
-        path: 'collections/:id',
-        loadComponent: () => import('./components/collections-detail/collections-detail.component').then(m => m.CollectionsDetailComponent)
-      },
+
       {
         path: 'statistics',
         loadComponent: () => import('./components/basic-statistics/basic-statistics.component').then(m => m.BasicStatisticsComponent)
