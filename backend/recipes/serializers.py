@@ -444,13 +444,16 @@ class RecipeListSerializer(serializers.ModelSerializer):
     categories = CategoryListSerializer(many=True, read_only=True)
     category_names = serializers.ListField(read_only=True)
     
+    # Rating information
+    rating_stats = serializers.SerializerMethodField()
+    
     class Meta:
         model = Recipe
         fields = [
             'id', 'title', 'description', 'prep_time', 'cook_time', 'total_time',
             'servings', 'difficulty', 'cooking_method', 'thumbnail_url',
             'author', 'author_name', 'images', 'categories', 'category_names', 'is_published', 
-            'tags', 'created_at'
+            'tags', 'created_at', 'rating_stats'
         ]
 
     def get_author(self, obj):
@@ -489,6 +492,14 @@ class RecipeListSerializer(serializers.ModelSerializer):
                 })
             return images
         return [] 
+
+    def get_rating_stats(self, obj):
+        """Get rating statistics for the recipe."""
+        return {
+            'average_rating': obj.average_rating or 0.0,
+            'total_ratings': obj.rating_count or 0,
+            'rating_distribution': obj.rating_distribution
+        }
 
 
 class RatingSerializer(serializers.ModelSerializer):
@@ -665,13 +676,21 @@ class SearchResultSerializer(serializers.ModelSerializer):
     
     def get_average_rating(self, obj):
         """Get average rating for the recipe."""
-        if hasattr(obj, 'avg_rating') and obj.avg_rating:
-            return round(obj.avg_rating, 1)
-        return None
+        # Check for annotation from ordering (from advanced search)
+        if hasattr(obj, '_avg_rating_sort') and obj._avg_rating_sort:
+            return round(obj._avg_rating_sort, 1)
+        # Check for model property
+        elif hasattr(obj, 'average_rating') and obj.average_rating:
+            return round(obj.average_rating, 1)
+        return 0.0
     
     def get_rating_count(self, obj):
         """Get rating count for the recipe."""
-        if hasattr(obj, 'rating_count'):
+        # Check for annotation from ordering (from advanced search)
+        if hasattr(obj, '_rating_count_sort'):
+            return obj._rating_count_sort
+        # Check for model property
+        elif hasattr(obj, 'rating_count'):
             return obj.rating_count
         return 0
 
