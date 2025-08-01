@@ -80,10 +80,19 @@ export class FavoritesManagementComponent implements OnInit, OnDestroy {
       };
       
       const response = await this.favoritesService.getFavoriteRecipes(params);
-      this.favoriteRecipes = response.results;
-      this.totalFavorites = response.count;
+      
+      // Ensure we have a valid response with results array
+      if (response && response.results && Array.isArray(response.results)) {
+        this.favoriteRecipes = response.results;
+        this.totalFavorites = response.count || 0;
+      } else {
+        this.favoriteRecipes = [];
+        this.totalFavorites = 0;
+      }
     } catch (error) {
       console.error('Failed to load favorite recipes:', error);
+      this.favoriteRecipes = [];
+      this.totalFavorites = 0;
     } finally {
       this.isLoading = false;
     }

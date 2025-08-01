@@ -7,8 +7,9 @@ import { RecipeCardComponent } from '../../../shared/components/recipe-card/reci
 import { RecipeSkeletonComponent } from '../../../shared/components/recipe-skeleton/recipe-skeleton.component';
 import { RecipeService } from '../../../core/services/recipe.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { FavoritesService } from '../../dashboard/services/favorites.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Subject, BehaviorSubject, Observable, of } from 'rxjs';
+import { Subject, BehaviorSubject, Observable, of, forkJoin } from 'rxjs';
 import { takeUntil, debounceTime, distinctUntilChanged, switchMap, catchError } from 'rxjs/operators';
 import { 
   RecipeListItem, 
@@ -574,6 +575,7 @@ export class RecipeListComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private recipeService: RecipeService,
     public authService: AuthService,
+    private favoritesService: FavoritesService,
     private router: Router,
     private route: ActivatedRoute,
     private snackBar: MatSnackBar,
@@ -863,6 +865,12 @@ export class RecipeListComponent implements OnInit, OnDestroy {
         this.totalRecipes = response.count || 0;
         this.hasMoreData = newRecipes.length === this.pageSize;
         this.loading = false;
+        
+        // Check favorite status for recipes if user is authenticated
+        if (this.authService.isAuthenticated()) {
+          this.checkFavoriteStatusForRecipes(newRecipes);
+        }
+        
         this.cdr.markForCheck();
       },
       error: (error) => {
@@ -872,6 +880,23 @@ export class RecipeListComponent implements OnInit, OnDestroy {
         console.error('Error loading recipes:', error);
       }
     });
+  }
+
+  private async checkFavoriteStatusForRecipes(recipes: RecipeListItem[]): Promise<void> {
+    try {
+      // Get all favorite recipe IDs from the favorites service
+      const favoriteRecipes = await this.favoritesService.getFavoriteRecipes();
+      const favoriteIds = new Set(favoriteRecipes.results.map(recipe => recipe.id));
+      
+      // Update the is_favorited property for each recipe
+      recipes.forEach(recipe => {
+        recipe.is_favorited = favoriteIds.has(recipe.id);
+      });
+      
+      this.cdr.markForCheck();
+    } catch (error) {
+      console.error('Failed to check favorite status:', error);
+    }
   }
 
   private buildSearchParams(): RecipeSearchParams {
@@ -971,7 +996,7 @@ export class RecipeListComponent implements OnInit, OnDestroy {
     this.updateUrlAndLoadRecipes();
   }
 
-  onFavoriteToggle(recipeId: string): void {
+  async onFavoriteToggle(recipeId: string): Promise<void> {
     // Check authentication state synchronously
     if (!this.authService.isAuthenticated()) {
       this.router.navigate(['/auth/login']);
@@ -979,24 +1004,23 @@ export class RecipeListComponent implements OnInit, OnDestroy {
     }
 
     this.favoriteLoadingIds.add(recipeId);
-    this.recipeService.toggleFavorite(recipeId).pipe(
-      takeUntil(this.destroy$)
-    ).subscribe({
-      next: (result) => {
-        // Update the recipe in the list
-        const recipe = this.recipes.find(r => r.id === recipeId);
-        if (recipe) {
-          recipe.is_favorited = result.is_favorited;
-        }
-        this.favoriteLoadingIds.delete(recipeId);
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.favoriteLoadingIds.delete(recipeId);
-        this.snackBar.open('Failed to update favorite status', 'Close', { duration: 3000 });
-        this.cdr.markForCheck();
+    
+    try {
+      const result = await this.favoritesService.toggleFavorite(recipeId);
+      
+      // Update the recipe in the list
+      const recipe = this.recipes.find(r => r.id === recipeId);
+      if (recipe) {
+        recipe.is_favorited = result.is_favorite;
       }
-    });
+      
+      this.favoriteLoadingIds.delete(recipeId);
+      this.cdr.markForCheck();
+    } catch (error) {
+      this.favoriteLoadingIds.delete(recipeId);
+      this.snackBar.open('Failed to update favorite status', 'Close', { duration: 3000 });
+      this.cdr.markForCheck();
+    }
   }
 
   onShareRecipe(recipe: RecipeListItem): void {

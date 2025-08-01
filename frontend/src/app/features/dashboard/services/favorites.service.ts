@@ -34,15 +34,26 @@ export class FavoritesService {
   async getFavoriteRecipes(params?: FavoriteParams): Promise<PaginatedResponse<Recipe>> {
     try {
       // Use backend API to get favorites
-      const response = await this.apiService.get<PaginatedResponse<Recipe>>('/recipes/favorites/', { params }).toPromise();
+      const response = await this.apiService.get<any>('/recipes/favorites/', { params }).toPromise();
       
-      // Update cache with recipe IDs
-      if (response && response.results) {
-        this.favoritesCache = response.results.map(recipe => recipe.id);
+      // The backend returns UserFavorite objects with a 'recipe' property
+      // We need to extract the recipe objects from the results
+      if (response && response.results && Array.isArray(response.results)) {
+        // Extract recipe objects from UserFavorite objects
+        const recipes = response.results.map((favorite: any) => favorite.recipe);
+        this.favoritesCache = recipes.map((recipe: Recipe) => recipe.id);
         this.favoriteRecipesSubject.next([...this.favoritesCache]);
+        
+        // Return the response with extracted recipes
+        return {
+          count: response.count || 0,
+          next: response.next,
+          previous: response.previous,
+          results: recipes
+        };
       }
       
-      return response || {
+      return {
         count: 0,
         next: null,
         previous: null,

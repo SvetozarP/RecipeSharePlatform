@@ -211,8 +211,8 @@ export class RecipeService extends ApiService {
    */
   toggleFavorite(recipeId: string): Observable<{ is_favorited: boolean }> {
     // Use backend API for favorites management
-    return this.post<{ is_favorited: boolean; message: string }>('/recipes/favorites/toggle/', { recipe_id: recipeId }).pipe(
-      map(response => ({ is_favorited: response.is_favorited })),
+    return this.post<{ is_favorite: boolean; message: string }>('/recipes/favorites/toggle/', { recipe_id: recipeId }).pipe(
+      map(response => ({ is_favorited: response.is_favorite })),
       catchError(error => {
         console.error('Failed to toggle favorite:', error);
         return of({ is_favorited: false });
