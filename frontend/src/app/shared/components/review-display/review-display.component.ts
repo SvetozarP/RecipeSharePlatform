@@ -95,22 +95,22 @@ import { MatSnackBar } from '@angular/material/snack-bar';
                 </mat-icon>
               </button>
 
-              <!-- Edit/Delete buttons for own reviews -->
-              <div *ngIf="currentUserReview && currentUserReview.id === review.id" class="own-review-actions">
-                <button 
-                  mat-icon-button
-                  (click)="onEditReview(review)"
-                  matTooltip="Edit your review">
-                  <mat-icon>edit</mat-icon>
-                </button>
-                <button 
-                  mat-icon-button
-                  color="warn"
-                  (click)="onDeleteReview(review)"
-                  matTooltip="Delete your review">
-                  <mat-icon>delete</mat-icon>
-                </button>
-              </div>
+                             <!-- Edit/Delete buttons for own reviews (not shown to recipe authors) -->
+               <div *ngIf="!isRecipeAuthor && currentUserReview && currentUserReview.id === review.id" class="own-review-actions">
+                 <button 
+                   mat-icon-button
+                   (click)="onEditReview(review)"
+                   matTooltip="Edit your review">
+                   <mat-icon>edit</mat-icon>
+                 </button>
+                 <button 
+                   mat-icon-button
+                   color="warn"
+                   (click)="onDeleteReview(review)"
+                   matTooltip="Delete your review">
+                   <mat-icon>delete</mat-icon>
+                 </button>
+               </div>
             </div>
           </div>
 
@@ -377,6 +377,7 @@ export class ReviewDisplayComponent implements OnInit {
   @Input() showHeader = true;
   @Input() highlightedReviewId?: string;
   @Input() currentUserReview?: RatingListItem;
+  @Input() isRecipeAuthor = false;
 
   @Output() sortChange = new EventEmitter<string>();
   @Output() loadMore = new EventEmitter<void>();

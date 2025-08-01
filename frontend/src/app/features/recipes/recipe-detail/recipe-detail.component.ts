@@ -384,6 +384,7 @@ import { RecipeViewsService } from '../../dashboard/services/recipe-views.servic
               [totalCount]="reviewsTotalCount()"
               [sortBy]="reviewsSortBy()"
               [currentUserReview]="currentUserRatingListItem()"
+              [isRecipeAuthor]="isOwnRecipe()"
               (sortChange)="onReviewsSortChange($event)"
               (loadMore)="onLoadMoreReviews()"
               (markHelpful)="onMarkReviewHelpful($event)"
