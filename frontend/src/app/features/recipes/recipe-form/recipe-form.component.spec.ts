@@ -52,8 +52,8 @@ describe('RecipeFormComponent', () => {
     author: {
       id: '1',
       username: 'testuser',
-      firstName: 'Test',
-      lastName: 'User'
+      first_name: 'Test',
+      last_name: 'User'
     },
     rating_stats: {
       average_rating: 4.5,

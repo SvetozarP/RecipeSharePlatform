@@ -109,8 +109,8 @@ export interface Recipe {
   author: {
     id: string; // Backend returns string UUID for user ID
     username: string;
-    firstName: string;
-    lastName: string;
+    first_name: string;
+    last_name: string;
   };
   rating_stats: RatingStats;
   current_user_rating?: Rating;

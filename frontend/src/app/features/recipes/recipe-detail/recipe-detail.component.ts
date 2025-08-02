@@ -59,7 +59,7 @@ import { RecipeViewsService } from '../../dashboard/services/recipe-views.servic
               <div class="flex flex-wrap items-center gap-4 text-sm text-gray-600">
                 <div class="flex items-center gap-2">
                   <mat-icon class="text-lg flex-shrink-0">person</mat-icon>
-                  <span>{{ recipe()?.author?.firstName }} {{ recipe()?.author?.lastName }}</span>
+                  <span>{{ recipe()?.author?.first_name }} {{ recipe()?.author?.last_name }}</span>
                 </div>
                 <div class="flex items-center gap-2">
                   <mat-icon class="text-lg flex-shrink-0">schedule</mat-icon>
@@ -596,7 +596,7 @@ export class RecipeDetailComponent implements OnInit, OnDestroy {
       id: rating.id,
       rating: rating.rating,
       review: rating.review,
-      user_name: currentUser?.firstName + ' ' + currentUser?.lastName || 'You',
+              user_name: currentUser?.first_name + ' ' + currentUser?.last_name || 'You',
       star_display: rating.star_display || '',
       helpful_count: rating.helpful_count,
       is_verified_purchase: rating.is_verified_purchase,
