@@ -61,6 +61,13 @@
       
       .no-activities-icon {
         @apply text-6xl text-gray-400 mb-4;
+        font-size: 4rem !important;
+        width: 4rem !important;
+        height: 4rem !important;
+        line-height: 1 !important;
+        display: block !important;
+        margin: 0 auto !important;
+        opacity: 0.7 !important;
       }
       
       h3 {

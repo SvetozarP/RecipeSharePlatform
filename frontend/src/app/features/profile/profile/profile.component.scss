@@ -102,6 +102,13 @@
   
   .error-icon {
     @apply text-6xl text-red-500 mb-4;
+    font-size: 4rem !important;
+    width: 4rem !important;
+    height: 4rem !important;
+    line-height: 1 !important;
+    display: block !important;
+    margin: 0 auto !important;
+    opacity: 0.8 !important;
   }
   
   h3 {

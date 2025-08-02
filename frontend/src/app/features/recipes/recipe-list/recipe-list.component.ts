@@ -432,15 +432,18 @@ import { MatTooltip } from '@angular/material/tooltip';
 
     .empty-icon,
     .error-icon {
-      font-size: 64px;
-      width: 64px;
-      height: 64px;
-      margin-bottom: 16px;
-      color: #ccc;
+      font-size: 4rem !important;
+      width: 4rem !important;
+      height: 4rem !important;
+      line-height: 1 !important;
+      display: block !important;
+      margin: 0 auto 16px auto !important;
+      opacity: 0.7 !important;
     }
 
     .error-icon {
-      color: #f44336;
+      color: #f44336 !important;
+      opacity: 0.8 !important;
     }
 
     .empty-state h3,
