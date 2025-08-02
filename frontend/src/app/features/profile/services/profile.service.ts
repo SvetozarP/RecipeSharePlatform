@@ -159,41 +159,7 @@ export class ProfileService {
     }
   }
 
-  // Account Management
-  async deactivateAccount(): Promise<void> {
-    try {
-      await this.apiService.post<void>('/users/deactivate/', {}).toPromise();
-    } catch (error) {
-      console.error('Failed to deactivate account:', error);
-      // For now, just log the error since this endpoint might not exist yet
-      throw new Error('Account deactivation not available yet');
-    }
-  }
 
-  async deleteAccount(): Promise<void> {
-    try {
-      await this.apiService.delete<void>('/users/delete/').toPromise();
-    } catch (error) {
-      console.error('Failed to delete account:', error);
-      // For now, just log the error since this endpoint might not exist yet
-      throw new Error('Account deletion not available yet');
-    }
-  }
-
-  async exportUserData(): Promise<Blob> {
-    try {
-      const response = await this.apiService.get<Blob>('/users/export/', { responseType: 'blob' }).toPromise();
-      if (response) {
-        return response;
-      } else {
-        throw new Error('Failed to export user data');
-      }
-    } catch (error) {
-      console.error('Failed to export user data:', error);
-      // For now, just log the error since this endpoint might not exist yet
-      throw new Error('Data export not available yet');
-    }
-  }
 
   // Utility Methods
   getCurrentProfile(): UserProfile | null {

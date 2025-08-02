@@ -43,15 +43,7 @@ class UserRepository(UserRepositoryInterface):
         except ObjectDoesNotExist:
             return None
     
-    def deactivate_user(self, user_id: int) -> bool:
-        """Soft delete user account"""
-        try:
-            user = User.objects.get(id=user_id)
-            user.is_active = False
-            user.save()
-            return True
-        except ObjectDoesNotExist:
-            return False
+
     
     def create_profile(self, user: User) -> UserProfile:
         """Create user profile"""

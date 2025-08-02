@@ -48,13 +48,7 @@ class TestUserService:
         assert updated_profile.phone == profile_data['phone']
         assert str(updated_profile.birth_date) == profile_data['birth_date']
 
-    def test_deactivate_account(self, user_service, user):
-        """Test account deactivation."""
-        result = user_service.deactivate_account(user.id)
-        
-        assert result is True
-        user.refresh_from_db()
-        assert user.is_active is False
+
 
 
 class TestAuthService:

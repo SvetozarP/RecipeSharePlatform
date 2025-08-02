@@ -185,31 +185,7 @@
   }
 }
 
-.account-actions {
-  @apply space-y-6;
-  
-  .action-item {
-    @apply flex items-center justify-between p-4 border border-gray-200 rounded-lg;
-    
-    .action-info {
-      @apply flex-1;
-      
-      h4 {
-        @apply text-lg font-semibold text-gray-900 mb-2;
-      }
-      
-      p {
-        @apply text-gray-600;
-      }
-    }
-    
-    .export-btn,
-    .deactivate-btn,
-    .delete-btn {
-      @apply flex items-center gap-2;
-    }
-  }
-}
+
 
 .form-actions {
   @apply pt-6 border-t border-gray-200;

@@ -116,20 +116,7 @@ export class ProfileSecurityComponent implements OnInit {
 
 
 
-  onDeleteAccount(): void {
-    // Show confirmation dialog
-    const confirmed = confirm('Are you sure you want to permanently delete your account? This action cannot be undone and all your data will be lost.');
-    if (confirmed) {
-      this.profileService.deleteAccount().then(() => {
-        this.snackBar.open('Account deleted successfully!', 'Close', { duration: 3000 });
-        // Redirect to logout
-        window.location.href = '/auth/logout';
-      }).catch(error => {
-        console.error('Failed to delete account:', error);
-        this.error.emit('Failed to delete account. Please try again.');
-      });
-    }
-  }
+
 
 
 

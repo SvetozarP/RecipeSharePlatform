@@ -70,21 +70,7 @@
       }
     }
     
-    .social-links-grid {
-      @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4;
-      
-      .social-field {
-        @apply w-full;
-        
-        mat-label {
-          @apply flex items-center gap-2;
-          
-          mat-icon {
-            @apply text-lg;
-          }
-        }
-      }
-    }
+
   }
   
   .form-actions {
@@ -150,36 +136,7 @@
   }
 }
 
-// Social media icons
-::ng-deep .social-field {
-  mat-label {
-    mat-icon {
-      &.facebook {
-        @apply text-blue-600;
-      }
-      
-      &.twitter {
-        @apply text-blue-400;
-      }
-      
-      &.instagram {
-        @apply text-pink-500;
-      }
-      
-      &.youtube {
-        @apply text-red-600;
-      }
-      
-      &.pinterest {
-        @apply text-red-500;
-      }
-      
-      &.linkedin {
-        @apply text-blue-700;
-      }
-    }
-  }
-}
+
 
 // Responsive adjustments
 @media (max-width: 768px) {
@@ -208,9 +165,7 @@
         @apply grid-cols-1;
       }
       
-      .social-links-grid {
-        @apply grid-cols-1;
-      }
+
     }
     
     .form-actions {

@@ -99,6 +99,4 @@ class UserService(BaseService):
         """Update user profile information."""
         return self.update(user_id, **profile_data)
     
-    def deactivate_account(self, user_id: int) -> bool:
-        """Soft delete user account."""
-        return self.delete(user_id) 
+ 
