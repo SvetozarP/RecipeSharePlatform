@@ -24,6 +24,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatDividerModule } from '@angular/material/divider';
 
 const MaterialComponents = [
   MatButtonModule,
@@ -50,7 +51,8 @@ const MaterialComponents = [
   MatDatepickerModule,
   MatNativeDateModule,
   MatAutocompleteModule,
-  MatButtonToggleModule
+  MatButtonToggleModule,
+  MatDividerModule
 ];
 
 @NgModule({
