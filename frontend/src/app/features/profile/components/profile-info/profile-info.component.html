@@ -19,7 +19,7 @@
       <div class="form-row">
         <mat-form-field appearance="fill" class="form-field">
           <mat-label>First Name</mat-label>
-          <input matInput formControlName="first_name" [readonly]="!isEditing">
+          <input matInput formControlName="first_name">
           <mat-error *ngIf="getFieldError('first_name')">
             {{ getFieldError('first_name') }}
           </mat-error>
@@ -27,7 +27,7 @@
         
         <mat-form-field appearance="fill" class="form-field">
           <mat-label>Last Name</mat-label>
-          <input matInput formControlName="last_name" [readonly]="!isEditing">
+          <input matInput formControlName="last_name">
           <mat-error *ngIf="getFieldError('last_name')">
             {{ getFieldError('last_name') }}
           </mat-error>
@@ -39,7 +39,6 @@
         <textarea 
           matInput 
           formControlName="bio" 
-          [readonly]="!isEditing"
           rows="3"
           placeholder="Tell us about yourself...">
         </textarea>
@@ -52,7 +51,7 @@
       <div class="form-row">
         <mat-form-field appearance="fill" class="form-field">
           <mat-label>Location</mat-label>
-          <input matInput formControlName="location" [readonly]="!isEditing" placeholder="City, Country">
+          <input matInput formControlName="location" placeholder="City, Country">
           <mat-error *ngIf="getFieldError('location')">
             {{ getFieldError('location') }}
           </mat-error>
@@ -60,7 +59,7 @@
         
         <mat-form-field appearance="fill" class="form-field">
           <mat-label>Website</mat-label>
-          <input matInput formControlName="website" [readonly]="!isEditing" placeholder="https://yourwebsite.com">
+          <input matInput formControlName="website" placeholder="https://yourwebsite.com">
           <mat-error *ngIf="getFieldError('website')">
             {{ getFieldError('website') }}
           </mat-error>

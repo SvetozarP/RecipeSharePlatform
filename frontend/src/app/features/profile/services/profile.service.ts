@@ -61,39 +61,12 @@ export class ProfileService {
       location: backendProfile.location || '',
       website: backendProfile.website || '',
       preferences: {
-        display_name: `${backendProfile.first_name || ''} ${backendProfile.last_name || ''}`.trim() || 'User',
-        show_email: backendProfile.show_email || false,
-        show_location: backendProfile.show_location || false,
-        email_notifications: {
-          new_followers: true,
-          recipe_comments: true,
-          recipe_ratings: true,
-          recipe_favorites: true,
-          weekly_digest: true,
-          security_alerts: true
-        },
-        push_notifications: {
-          new_followers: true,
-          recipe_comments: true,
-          recipe_ratings: true,
-          recipe_favorites: true,
-          weekly_digest: true,
-          security_alerts: true
-        },
-        default_servings: 4,
-        preferred_units: 'metric',
-        dietary_restrictions: [],
-        favorite_cuisines: [],
-        cooking_skill_level: 'intermediate',
-        profile_visibility: backendProfile.is_public_profile ? 'public' : 'private',
-        recipe_visibility: 'public',
-        allow_comments: true,
-        allow_ratings: true,
-        show_activity: true,
-        language: backendProfile.language || 'en',
+        email_notifications: backendProfile.email_notifications ?? true,
+        public_profile: backendProfile.public_profile ?? true,
+        show_email: backendProfile.show_email ?? false,
         timezone: backendProfile.timezone || 'UTC',
-        date_format: 'MM/DD/YYYY',
-        time_format: '12h'
+        language: backendProfile.language || 'en',
+        theme: backendProfile.theme || 'light'
       },
       security_settings: {
         password_last_changed: new Date().toISOString(),

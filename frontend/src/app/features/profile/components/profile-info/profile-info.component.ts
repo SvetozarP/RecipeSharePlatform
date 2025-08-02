@@ -76,16 +76,29 @@ export class ProfileInfoComponent implements OnInit {
         location: this.userProfile.location || '',
         website: this.userProfile.website || ''
       });
+      
+      // Disable form when not in editing mode to prevent validation
+      this.updateFormState();
+    }
+  }
+
+  private updateFormState(): void {
+    if (this.isEditing) {
+      this.profileForm.enable();
+    } else {
+      this.profileForm.disable();
     }
   }
 
   onEdit(): void {
     this.isEditing = true;
+    this.updateFormState();
   }
 
   onCancel(): void {
     this.isEditing = false;
     this.loadProfileData();
+    this.updateFormState();
   }
 
   async onSave(): Promise<void> {
@@ -110,6 +123,7 @@ export class ProfileInfoComponent implements OnInit {
       
       this.profileUpdated.emit(updatedProfile);
       this.isEditing = false;
+      this.updateFormState();
       
       this.snackBar.open('Profile updated successfully!', 'Close', { duration: 3000 });
     } catch (error) {
@@ -134,6 +148,11 @@ export class ProfileInfoComponent implements OnInit {
   }
 
   getFieldError(fieldName: string): string {
+    // Only show errors when in editing mode
+    if (!this.isEditing) {
+      return '';
+    }
+    
     const field = this.profileForm.get(fieldName);
     if (field?.errors && field.touched) {
       if (field.errors['required']) {

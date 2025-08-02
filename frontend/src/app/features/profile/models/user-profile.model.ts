@@ -25,53 +25,16 @@ export interface User {
 
 
 export interface UserPreferences {
-  // Display preferences
-  display_name: string;
+  // Backend-supported preferences
+  email_notifications: boolean;
+  public_profile: boolean;
   show_email: boolean;
-  show_location: boolean;
-  
-  // Notification preferences
-  email_notifications: EmailNotifications;
-  push_notifications: PushNotifications;
-  
-  // Recipe preferences
-  default_servings: number;
-  preferred_units: 'metric' | 'imperial';
-  dietary_restrictions: string[];
-  favorite_cuisines: string[];
-  cooking_skill_level: 'beginner' | 'intermediate' | 'advanced' | 'expert';
-  
-  // Privacy preferences
-  profile_visibility: 'public' | 'private' | 'friends';
-  recipe_visibility: 'public' | 'private' | 'friends';
-  allow_comments: boolean;
-  allow_ratings: boolean;
-  show_activity: boolean;
-  
-  // Language and region
-  language: string;
   timezone: string;
-  date_format: string;
-  time_format: '12h' | '24h';
+  language: string;
+  theme: 'light' | 'dark' | 'auto';
 }
 
-export interface EmailNotifications {
-  new_followers: boolean;
-  recipe_comments: boolean;
-  recipe_ratings: boolean;
-  recipe_favorites: boolean;
-  weekly_digest: boolean;
-  security_alerts: boolean;
-}
 
-export interface PushNotifications {
-  new_followers: boolean;
-  recipe_comments: boolean;
-  recipe_ratings: boolean;
-  recipe_favorites: boolean;
-  weekly_digest: boolean;
-  security_alerts: boolean;
-}
 
 export interface SecuritySettings {
   password_last_changed: string;
@@ -90,25 +53,12 @@ export interface ProfileUpdateRequest {
 }
 
 export interface PreferencesUpdateRequest {
-  display_name?: string;
+  email_notifications?: boolean;
+  public_profile?: boolean;
   show_email?: boolean;
-  show_location?: boolean;
-  email_notifications?: Partial<EmailNotifications>;
-  push_notifications?: Partial<PushNotifications>;
-  default_servings?: number;
-  preferred_units?: 'metric' | 'imperial';
-  dietary_restrictions?: string[];
-  favorite_cuisines?: string[];
-  cooking_skill_level?: 'beginner' | 'intermediate' | 'advanced' | 'expert';
-  profile_visibility?: 'public' | 'private' | 'friends';
-  recipe_visibility?: 'public' | 'private' | 'friends';
-  allow_comments?: boolean;
-  allow_ratings?: boolean;
-  show_activity?: boolean;
-  language?: string;
   timezone?: string;
-  date_format?: string;
-  time_format?: '12h' | '24h';
+  language?: string;
+  theme?: 'light' | 'dark' | 'auto';
 }
 
 export interface SecurityUpdateRequest {
