@@ -22,6 +22,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { SelectionModel } from '@angular/cdk/collections';
 import { AdminService } from '../../services/admin.service';
 import { AdminRecipe, AdminFilters } from '../../models/admin.models';
+import { RecipeDetailDialogComponent } from '../recipe-detail-dialog/recipe-detail-dialog.component';
 
 @Component({
   selector: 'app-recipe-moderation',
@@ -618,13 +619,31 @@ export class RecipeModerationComponent implements OnInit {
 
   // Recipe actions
   viewRecipe(recipe: AdminRecipe): void {
-    // TODO: Implement recipe detail view dialog
-    console.log('View recipe:', recipe);
+    const dialogRef = this.dialog.open(RecipeDetailDialogComponent, {
+      width: '700px',
+      data: { recipe, mode: 'view' }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        // Refresh the recipe data if any changes were made
+        this.loadRecipes();
+      }
+    });
   }
 
   editRecipe(recipe: AdminRecipe): void {
-    // TODO: Implement recipe edit dialog
-    console.log('Edit recipe:', recipe);
+    const dialogRef = this.dialog.open(RecipeDetailDialogComponent, {
+      width: '700px',
+      data: { recipe, mode: 'edit' }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        // Refresh the recipe data if any changes were made
+        this.loadRecipes();
+      }
+    });
   }
 
   approveRecipe(recipe: AdminRecipe): void {

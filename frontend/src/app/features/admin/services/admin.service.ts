@@ -111,6 +111,10 @@ export class AdminService {
     return this.http.post<AdminRecipe>(`${this.apiUrl}/recipes/${recipeId}/flag/`, { reason });
   }
 
+  updateRecipe(recipeId: string, recipeData: Partial<AdminRecipe>): Observable<AdminRecipe> {
+    return this.http.patch<AdminRecipe>(`${this.apiUrl}/recipes/${recipeId}/`, recipeData);
+  }
+
   deleteRecipe(recipeId: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/recipes/${recipeId}/`);
   }
