@@ -209,7 +209,7 @@ class AdminCategoryViewSet(viewsets.ModelViewSet):
         if parent:
             queryset = queryset.filter(parent__id=parent)
         
-        return queryset.order_by('parent__name', 'ordering', 'name')
+        return queryset.order_by('parent__name', 'order', 'name')
     
     @action(detail=False, methods=['post'])
     def reorder(self, request):
@@ -221,7 +221,7 @@ class AdminCategoryViewSet(viewsets.ModelViewSet):
             new_order = item.get('order')
             
             if category_id and new_order is not None:
-                Category.objects.filter(id=category_id).update(ordering=new_order)
+                Category.objects.filter(id=category_id).update(order=new_order)
         
         return Response({'message': 'Categories reordered successfully'})
 

@@ -44,12 +44,13 @@ class AdminUserSerializer(serializers.ModelSerializer):
         """Get user statistics."""
         recipes = Recipe.objects.filter(author=obj)
         ratings = Rating.objects.filter(user=obj)
+        from recipes.models import UserFavorite
         
         return {
             'total_recipes': recipes.count(),
             'published_recipes': recipes.filter(is_published=True).count(),
             'total_ratings': ratings.count(),
-            'total_favorites': obj.favorites.count(),
+            'total_favorites': UserFavorite.objects.filter(user=obj).count(),
         }
 
 
@@ -58,6 +59,8 @@ class AdminRecipeSerializer(serializers.ModelSerializer):
     author = serializers.SerializerMethodField()
     categories = serializers.SerializerMethodField()
     rating_stats = serializers.SerializerMethodField()
+    view_count = serializers.SerializerMethodField()
+    favorite_count = serializers.SerializerMethodField()
     moderation_status = serializers.CharField(default='approved')  # Placeholder
     
     class Meta:
@@ -96,6 +99,16 @@ class AdminRecipeSerializer(serializers.ModelSerializer):
             'average_rating': round(avg_rating, 2),
             'total_ratings': ratings.count(),
         }
+    
+    def get_view_count(self, obj):
+        """Get recipe view count."""
+        from recipes.models import RecipeView
+        return RecipeView.objects.filter(recipe=obj).count()
+    
+    def get_favorite_count(self, obj):
+        """Get recipe favorite count."""
+        from recipes.models import UserFavorite
+        return UserFavorite.objects.filter(recipe=obj).count()
 
 
 class AdminCategorySerializer(serializers.ModelSerializer):
@@ -107,7 +120,7 @@ class AdminCategorySerializer(serializers.ModelSerializer):
         model = Category
         fields = [
             'id', 'name', 'slug', 'description', 'icon', 'color',
-            'parent', 'children', 'is_active', 'ordering', 'recipe_count',
+            'parent', 'children', 'is_active', 'order', 'recipe_count',
             'created_at', 'updated_at'
         ]
     
@@ -184,8 +197,10 @@ class PlatformStatisticsSerializer(serializers.Serializer):
         flagged_ratings = ratings.none()  # Placeholder
         
         # Engagement statistics
-        total_views = sum(recipe.view_count for recipe in recipes)
-        total_favorites = sum(recipe.favorite_count for recipe in recipes)
+        from recipes.models import RecipeView, UserFavorite
+        
+        total_views = RecipeView.objects.count()
+        total_favorites = UserFavorite.objects.count()
         avg_views_per_recipe = total_views / recipes.count() if recipes.count() > 0 else 0
         avg_favorites_per_recipe = total_favorites / recipes.count() if recipes.count() > 0 else 0
         
