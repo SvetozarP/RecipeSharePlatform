@@ -14,8 +14,10 @@ export interface User {
   firstName?: string;  // For backward compatibility
   lastName?: string;   // For backward compatibility
   is_email_verified?: boolean;
-  isAdmin?: boolean;
-  isStaff?: boolean;   // For staff access control
+  is_staff?: boolean;
+  is_superuser?: boolean;
+  isAdmin?: boolean;   // For backward compatibility
+  isStaff?: boolean;   // For backward compatibility
 }
 
 export interface LoginRequest {
@@ -243,7 +245,11 @@ export class AuthService {
       firstName: user.first_name || user.firstName,
       lastName: user.last_name || user.lastName,
       first_name: user.first_name || user.firstName,
-      last_name: user.last_name || user.lastName
+      last_name: user.last_name || user.lastName,
+      is_staff: user.is_staff || user.isStaff || false,
+      is_superuser: user.is_superuser || user.isAdmin || false,
+      isAdmin: user.is_superuser || user.isAdmin || false,
+      isStaff: user.is_staff || user.isStaff || false
     };
   }
 

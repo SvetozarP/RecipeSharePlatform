@@ -18,7 +18,8 @@ export class AuthGuard implements CanActivate, CanActivateChild {
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
   ): Observable<boolean> | Promise<boolean> | boolean {
-    return this.checkAuth(state.url);
+    const requiresAdmin = route.data['requiresAdmin'] === true;
+    return this.checkAuth(state.url, requiresAdmin);
   }
 
   canActivateChild(
@@ -28,15 +29,23 @@ export class AuthGuard implements CanActivate, CanActivateChild {
     return this.canActivate(route, state);
   }
 
-  private checkAuth(url: string): Observable<boolean> {
+  private checkAuth(url: string, requiresAdmin: boolean = false): Observable<boolean> {
     return this.authService.isAuthenticated$.pipe(
       map(isAuthenticated => {
-        if (isAuthenticated) {
-          return true;
-        } else {
+        if (!isAuthenticated) {
           this.router.navigate(['/auth/login'], { queryParams: { returnUrl: url } });
           return false;
         }
+        
+        if (requiresAdmin) {
+          const currentUser = this.authService.getCurrentUser();
+          if (!currentUser || (!currentUser.is_staff && !currentUser.is_superuser)) {
+            this.router.navigate(['/recipes']);
+            return false;
+          }
+        }
+        
+        return true;
       }),
       catchError(() => {
         this.router.navigate(['/auth/login']);
