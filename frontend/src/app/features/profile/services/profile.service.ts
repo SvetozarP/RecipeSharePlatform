@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
+import { AuthService } from '../../../core/services/auth.service';
 import {
   UserProfile,
   ProfileUpdateRequest,
@@ -17,13 +18,18 @@ export class ProfileService {
   private profileSubject = new BehaviorSubject<UserProfile | null>(null);
   public profile$ = this.profileSubject.asObservable();
 
-  constructor(private apiService: ApiService) {}
+  constructor(
+    private apiService: ApiService,
+    private authService: AuthService
+  ) {}
 
   // Profile Management
   async getUserProfile(): Promise<UserProfile> {
     try {
-      const profile = await this.apiService.get<UserProfile>('/users/profile/').toPromise();
-      if (profile) {
+      const backendProfile = await this.apiService.get<any>('/users/profile/').toPromise();
+      if (backendProfile) {
+        // Transform backend response to frontend expected structure
+        const profile: UserProfile = this.transformBackendProfile(backendProfile);
         this.profileSubject.next(profile);
         return profile;
       } else {
@@ -35,10 +41,80 @@ export class ProfileService {
     }
   }
 
+  private transformBackendProfile(backendProfile: any): UserProfile {
+    // Get current user from auth service for additional data
+    const currentUser = this.authService.getCurrentUser();
+    
+    return {
+      id: currentUser?.id || '1',
+      user: {
+        id: currentUser?.id || '1',
+        username: currentUser?.username || 'user',
+        email: currentUser?.email || 'user@example.com',
+        first_name: backendProfile.first_name || '',
+        last_name: backendProfile.last_name || '',
+        is_active: true,
+        date_joined: new Date().toISOString(),
+        last_login: new Date().toISOString()
+      },
+      avatar_url: undefined,
+      bio: backendProfile.bio || '',
+      location: backendProfile.location || '',
+      website: backendProfile.website || '',
+      social_links: {},
+      preferences: {
+        display_name: `${backendProfile.first_name || ''} ${backendProfile.last_name || ''}`.trim() || 'User',
+        show_email: backendProfile.show_email || false,
+        show_location: backendProfile.show_location || false,
+        show_social_links: true,
+        email_notifications: {
+          new_followers: true,
+          recipe_comments: true,
+          recipe_ratings: true,
+          recipe_favorites: true,
+          weekly_digest: true,
+          marketing_emails: backendProfile.marketing_emails || false,
+          security_alerts: true
+        },
+        push_notifications: {
+          new_followers: true,
+          recipe_comments: true,
+          recipe_ratings: true,
+          recipe_favorites: true,
+          weekly_digest: true,
+          security_alerts: true
+        },
+        default_servings: 4,
+        preferred_units: 'metric',
+        dietary_restrictions: [],
+        favorite_cuisines: [],
+        cooking_skill_level: 'intermediate',
+        profile_visibility: backendProfile.is_public_profile ? 'public' : 'private',
+        recipe_visibility: 'public',
+        allow_comments: true,
+        allow_ratings: true,
+        show_activity: true,
+        language: backendProfile.language || 'en',
+        timezone: backendProfile.timezone || 'UTC',
+        date_format: 'MM/DD/YYYY',
+        time_format: '12h'
+      },
+      security_settings: {
+        password_last_changed: new Date().toISOString(),
+        account_locked: false,
+        failed_login_attempts: 0
+      },
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  }
+
   async updateProfile(updateData: ProfileUpdateRequest): Promise<UserProfile> {
     try {
-      const updatedProfile = await this.apiService.patch<UserProfile>('/users/profile/', updateData).toPromise();
-      if (updatedProfile) {
+      const backendProfile = await this.apiService.patch<any>('/users/profile/', updateData).toPromise();
+      if (backendProfile) {
+        // Transform backend response to frontend expected structure
+        const updatedProfile: UserProfile = this.transformBackendProfile(backendProfile);
         this.profileSubject.next(updatedProfile);
         return updatedProfile;
       } else {
@@ -78,8 +154,10 @@ export class ProfileService {
   // Preferences Management
   async updatePreferences(preferences: PreferencesUpdateRequest): Promise<UserProfile> {
     try {
-      const updatedProfile = await this.apiService.patch<UserProfile>('/users/profile/preferences/', preferences).toPromise();
-      if (updatedProfile) {
+      const backendProfile = await this.apiService.patch<any>('/users/profile/preferences/', preferences).toPromise();
+      if (backendProfile) {
+        // Transform backend response to frontend expected structure
+        const updatedProfile: UserProfile = this.transformBackendProfile(backendProfile);
         this.profileSubject.next(updatedProfile);
         return updatedProfile;
       } else {
