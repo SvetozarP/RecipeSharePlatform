@@ -58,16 +58,26 @@
     ::ng-deep .mat-mdc-tab-group {
       .mat-mdc-tab-header {
         @apply border-b border-gray-200;
+        overflow-x: auto;
+        overflow-y: hidden;
         
-        .mat-mdc-tab-label-container {
-          .mat-mdc-tab-label {
-            @apply text-gray-600 font-medium py-4 px-6;
-            
-            &.mat-mdc-tab-label-active {
-              @apply text-blue-600;
-            }
+        .mat-mdc-tab-header-pagination {
+          display: none;
+        }
+        
+              .mat-mdc-tab-label-container {
+        .mat-mdc-tab-label {
+          @apply text-gray-600 font-medium py-4 px-6;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-width: 200px;
+          
+          &.mat-mdc-tab-label-active {
+            @apply text-blue-600;
           }
         }
+      }
         
         .mat-mdc-ink-bar {
           @apply bg-blue-600;
@@ -121,6 +131,22 @@
 }
 
 // Responsive adjustments
+@media (max-width: 1024px) {
+  .profile-content {
+    .profile-card {
+      ::ng-deep .mat-mdc-tab-group {
+        .mat-mdc-tab-header {
+          .mat-mdc-tab-label-container {
+            .mat-mdc-tab-label {
+              max-width: 150px;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 @media (max-width: 768px) {
   .profile-container {
     @apply px-2 py-4;
@@ -156,9 +182,38 @@
     .profile-card {
       ::ng-deep .mat-mdc-tab-group {
         .mat-mdc-tab-header {
+                  .mat-mdc-tab-label-container {
+          .mat-mdc-tab-label {
+            @apply px-3 py-3 text-sm;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 120px;
+          }
+        }
+        }
+        
+        .mat-mdc-tab-body-wrapper {
+          .mat-mdc-tab-body {
+            .mat-mdc-tab-body-content {
+              @apply p-4;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-content {
+    .profile-card {
+      ::ng-deep .mat-mdc-tab-group {
+        .mat-mdc-tab-header {
           .mat-mdc-tab-label-container {
             .mat-mdc-tab-label {
-              @apply px-3 py-3 text-sm;
+              @apply px-2 py-2 text-xs;
+              max-width: 100px;
             }
           }
         }
@@ -166,7 +221,7 @@
         .mat-mdc-tab-body-wrapper {
           .mat-mdc-tab-body {
             .mat-mdc-tab-body-content {
-              @apply p-4;
+              @apply p-3;
             }
           }
         }
@@ -209,15 +264,19 @@
         .mat-mdc-tab-header {
           @apply border-gray-700;
           
-          .mat-mdc-tab-label-container {
-            .mat-mdc-tab-label {
-              @apply text-gray-300;
-              
-              &.mat-mdc-tab-label-active {
-                @apply text-blue-400;
-              }
+                  .mat-mdc-tab-label-container {
+          .mat-mdc-tab-label {
+            @apply text-gray-300;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px;
+            
+            &.mat-mdc-tab-label-active {
+              @apply text-blue-400;
             }
           }
+        }
           
           .mat-mdc-ink-bar {
             @apply bg-blue-400;
