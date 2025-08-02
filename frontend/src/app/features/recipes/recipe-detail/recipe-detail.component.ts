@@ -191,7 +191,7 @@ import { RecipeViewsService } from '../../dashboard/services/recipe-views.servic
             <mat-card>
               <mat-card-header>
                 <mat-card-title class="flex items-center gap-2">
-                  <mat-icon>shopping_list</mat-icon>
+                  <!-- <mat-icon>shopping_list</mat-icon> -->
                   Ingredients
                 </mat-card-title>
               </mat-card-header>
