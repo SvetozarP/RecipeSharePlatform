@@ -292,7 +292,9 @@ body, input, textarea, select, button {
   line-height: 1 !important;
   letter-spacing: normal !important;
   text-transform: none !important;
-  display: inline-block !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   white-space: nowrap !important;
   word-wrap: normal !important;
   direction: ltr !important;
@@ -300,6 +302,10 @@ body, input, textarea, select, button {
   -webkit-font-smoothing: antialiased !important;
   text-rendering: optimizeLegibility !important;
   speak: none !important;
+  width: 24px !important;
+  height: 24px !important;
+  overflow: visible !important;
+  vertical-align: middle !important;
 }
 
 /* Fallback for when Material Icons don't load */
@@ -313,6 +319,24 @@ body, input, textarea, select, button {
 /* Ensure icons are visible */
 .mat-icon[class*="material-icons"] {
   font-family: 'Material Icons' !important;
+}
+
+/* Specific styling for toolbar icons */
+.mat-toolbar .mat-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: visible !important;
+  vertical-align: middle !important;
+}
+
+/* Fix for Material Design button icons */
+.mat-button .mat-icon,
+.mat-icon-button .mat-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: visible !important;
 }
 
 /* Specific icon fallbacks */

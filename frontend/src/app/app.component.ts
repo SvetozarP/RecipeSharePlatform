@@ -149,6 +149,47 @@ import { Observable } from 'rxjs';
       color: white;
       z-index: 1000;
       position: relative;
+      min-height: 64px !important;
+      height: 64px !important;
+      padding: 0 16px;
+    }
+    
+    /* Fix toolbar button styling for proper icon display */
+    .mat-toolbar .mat-button {
+      height: 48px !important;
+      min-height: 48px !important;
+      line-height: 48px !important;
+      padding: 0 16px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+    
+    .mat-toolbar .mat-icon-button {
+      height: 48px !important;
+      width: 48px !important;
+      min-height: 48px !important;
+      min-width: 48px !important;
+      line-height: 48px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+    
+    /* Ensure icons have proper spacing in toolbar buttons */
+    .mat-toolbar .mat-button .mat-icon {
+      margin-right: 8px;
+      font-size: 20px !important;
+      width: 20px !important;
+      height: 20px !important;
+      line-height: 20px !important;
+    }
+    
+    .mat-toolbar .mat-icon-button .mat-icon {
+      font-size: 24px !important;
+      width: 24px !important;
+      height: 24px !important;
+      line-height: 24px !important;
     }
     
     .sidenav-container {
