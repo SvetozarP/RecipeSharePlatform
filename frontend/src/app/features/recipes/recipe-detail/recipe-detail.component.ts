@@ -57,20 +57,20 @@ import { RecipeViewsService } from '../../dashboard/services/recipe-views.servic
               
               <!-- Author and Meta Info -->
               <div class="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-                <div class="flex items-center gap-1">
-                  <mat-icon class="text-lg">person</mat-icon>
+                <div class="flex items-center gap-2">
+                  <mat-icon class="text-lg flex-shrink-0">person</mat-icon>
                   <span>{{ recipe()?.author?.firstName }} {{ recipe()?.author?.lastName }}</span>
                 </div>
-                <div class="flex items-center gap-1">
-                  <mat-icon class="text-lg">schedule</mat-icon>
+                <div class="flex items-center gap-2">
+                  <mat-icon class="text-lg flex-shrink-0">schedule</mat-icon>
                   <span>{{ recipe()?.total_time }} minutes</span>
                 </div>
-                <div class="flex items-center gap-1">
-                  <mat-icon class="text-lg">restaurant</mat-icon>
+                <div class="flex items-center gap-2">
+                  <mat-icon class="text-lg flex-shrink-0">restaurant</mat-icon>
                   <span>{{ recipe()?.servings }} servings</span>
                 </div>
-                <div class="flex items-center gap-1">
-                  <mat-icon class="text-lg">trending_up</mat-icon>
+                <div class="flex items-center gap-2">
+                  <mat-icon class="text-lg flex-shrink-0">trending_up</mat-icon>
                   <span class="capitalize">{{ recipe()?.difficulty }}</span>
                 </div>
               </div>
@@ -82,14 +82,17 @@ import { RecipeViewsService } from '../../dashboard/services/recipe-views.servic
               <div class="flex gap-2">
                 <button *ngIf="isAuthenticated$ | async" mat-icon-button (click)="toggleFavorite()" 
                         [class.text-red-500]="recipe()?.is_favorited"
-                        matTooltip="{{ recipe()?.is_favorited ? 'Remove from favorites' : 'Add to favorites' }}">
-                  <mat-icon>{{ recipe()?.is_favorited ? 'favorite' : 'favorite_border' }}</mat-icon>
+                        matTooltip="{{ recipe()?.is_favorited ? 'Remove from favorites' : 'Add to favorites' }}"
+                        class="w-10 h-10 flex items-center justify-center">
+                  <mat-icon class="text-xl">{{ recipe()?.is_favorited ? 'favorite' : 'favorite_border' }}</mat-icon>
                 </button>
-                <button mat-icon-button (click)="shareRecipe()" matTooltip="Share recipe">
-                  <mat-icon>share</mat-icon>
+                <button mat-icon-button (click)="shareRecipe()" matTooltip="Share recipe"
+                        class="w-10 h-10 flex items-center justify-center">
+                  <mat-icon class="text-xl">share</mat-icon>
                 </button>
-                <button mat-icon-button (click)="printRecipe()" matTooltip="Print recipe">
-                  <mat-icon>print</mat-icon>
+                <button mat-icon-button (click)="printRecipe()" matTooltip="Print recipe"
+                        class="w-10 h-10 flex items-center justify-center">
+                  <mat-icon class="text-xl">print</mat-icon>
                 </button>
               </div>
               
@@ -97,13 +100,13 @@ import { RecipeViewsService } from '../../dashboard/services/recipe-views.servic
               <div *ngIf="canEditRecipe() || canDeleteRecipe()" class="flex gap-2 border-t pt-3">
                 <button *ngIf="canEditRecipe()" mat-raised-button color="primary" (click)="editRecipe()" 
                         class="flex items-center gap-2 px-4 py-2">
-                  <mat-icon>edit</mat-icon>
+                  <mat-icon class="text-lg">edit</mat-icon>
                   <span>Edit Recipe</span>
                 </button>
                 <button *ngIf="canDeleteRecipe()" mat-raised-button color="warn" (click)="deleteRecipe()" 
                         class="flex items-center gap-2 px-4 py-2"
                         matTooltip="Delete this recipe permanently">
-                  <mat-icon>delete</mat-icon>
+                  <mat-icon class="text-lg">delete</mat-icon>
                   <span>Delete</span>
                 </button>
               </div>
@@ -112,10 +115,10 @@ import { RecipeViewsService } from '../../dashboard/services/recipe-views.servic
 
           <!-- Rating Display -->
           <div *ngIf="recipe()?.rating_stats" class="flex items-center gap-2 mb-4">
-            <div class="flex items-center gap-1">
+            <div class="flex items-center gap-2">
               <div class="flex">
                 <mat-icon *ngFor="let star of getStarArray(recipe()?.rating_stats?.average_rating || 0)" 
-                         class="text-yellow-400 text-lg">{{ star }}</mat-icon>
+                         class="text-yellow-400 text-lg flex-shrink-0">{{ star }}</mat-icon>
               </div>
               <span class="font-semibold">{{ recipe()?.rating_stats?.average_rating | number:'1.1-1' }}</span>
               <span class="text-gray-500">({{ recipe()?.rating_stats?.total_ratings }} reviews)</span>
@@ -195,10 +198,11 @@ import { RecipeViewsService } from '../../dashboard/services/recipe-views.servic
               <mat-card-content>
                 <div class="space-y-2">
                   <div *ngFor="let ingredient of recipeIngredients(); let i = index" 
-                       class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded">
-                    <mat-checkbox [(ngModel)]="checkedIngredients[i]"></mat-checkbox>
+                       class="flex items-start gap-3 p-2 hover:bg-gray-50 rounded ingredient-item">
+                    <mat-checkbox [(ngModel)]="checkedIngredients[i]" class="mt-0.5 flex-shrink-0"></mat-checkbox>
                     <span [class.line-through]="checkedIngredients[i]" 
-                          [class.text-gray-500]="checkedIngredients[i]">
+                          [class.text-gray-500]="checkedIngredients[i]"
+                          class="flex-1 leading-relaxed recipe-text">
                       {{ ingredient }}
                     </span>
                   </div>
@@ -210,7 +214,7 @@ import { RecipeViewsService } from '../../dashboard/services/recipe-views.servic
             <mat-card>
               <mat-card-header>
                 <mat-card-title class="flex items-center gap-2">
-                  <mat-icon>list_alt</mat-icon>
+                  <mat-icon class="flex-shrink-0">list_alt</mat-icon>
                   Instructions
                 </mat-card-title>
               </mat-card-header>
@@ -221,7 +225,7 @@ import { RecipeViewsService } from '../../dashboard/services/recipe-views.servic
                     <div class="flex-shrink-0 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center text-sm font-semibold">
                       {{ i + 1 }}
                     </div>
-                    <p class="flex-1 pt-1">{{ instruction }}</p>
+                    <p class="flex-1 pt-1 leading-relaxed recipe-text">{{ instruction }}</p>
                   </div>
                 </div>
               </mat-card-content>
@@ -234,7 +238,7 @@ import { RecipeViewsService } from '../../dashboard/services/recipe-views.servic
             <mat-card>
               <mat-card-header>
                 <mat-card-title class="flex items-center gap-2">
-                  <mat-icon>schedule</mat-icon>
+                  <mat-icon class="flex-shrink-0">schedule</mat-icon>
                   Timing
                 </mat-card-title>
               </mat-card-header>
@@ -260,7 +264,7 @@ import { RecipeViewsService } from '../../dashboard/services/recipe-views.servic
       <mat-card>
         <mat-card-header>
                 <mat-card-title class="flex items-center gap-2">
-                  <mat-icon>info</mat-icon>
+                  <mat-icon class="flex-shrink-0">info</mat-icon>
                   Details
                 </mat-card-title>
               </mat-card-header>
@@ -292,7 +296,7 @@ import { RecipeViewsService } from '../../dashboard/services/recipe-views.servic
             <mat-card *ngIf="recipe()?.nutrition_info">
               <mat-card-header>
                 <mat-card-title class="flex items-center gap-2">
-                  <mat-icon>nutrition</mat-icon>
+                  <mat-icon class="flex-shrink-0">nutrition</mat-icon>
                   Nutrition (per serving)
                 </mat-card-title>
         </mat-card-header>
@@ -324,7 +328,7 @@ import { RecipeViewsService } from '../../dashboard/services/recipe-views.servic
         <div class="bg-white rounded-lg shadow-sm p-6">
           <div class="mb-6">
             <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <mat-icon>star</mat-icon>
+              <mat-icon class="flex-shrink-0">star</mat-icon>
               Ratings & Reviews
             </h2>
             
@@ -346,15 +350,15 @@ import { RecipeViewsService } from '../../dashboard/services/recipe-views.servic
                 <!-- Rating Distribution -->
                 <div class="flex-1 max-w-md ml-8">
                   <div *ngFor="let star of [5,4,3,2,1]" class="flex items-center gap-2 mb-1">
-                    <span class="text-sm w-6">{{ star }}</span>
-                    <mat-icon class="text-yellow-400 text-sm">star</mat-icon>
+                    <span class="text-sm w-6 flex-shrink-0">{{ star }}</span>
+                    <mat-icon class="text-yellow-400 text-sm flex-shrink-0">star</mat-icon>
                     <div class="flex-1 bg-gray-200 rounded-full h-2">
                       <div 
                         class="bg-yellow-400 h-2 rounded-full transition-all duration-300"
                         [style.width.%]="getRatingPercentage(star)">
                       </div>
                     </div>
-                    <span class="text-sm text-gray-600 w-8">{{ getRatingCount(star) }}</span>
+                    <span class="text-sm text-gray-600 w-8 flex-shrink-0">{{ getRatingCount(star) }}</span>
                   </div>
                 </div>
               </div>
@@ -398,7 +402,7 @@ import { RecipeViewsService } from '../../dashboard/services/recipe-views.servic
         <div class="bg-white rounded-lg shadow-sm p-6">
           <div class="flex justify-center">
             <a routerLink="/recipes" mat-raised-button color="primary">
-              <mat-icon>view_list</mat-icon>
+              <mat-icon class="flex-shrink-0">view_list</mat-icon>
               Browse More Recipes
             </a>
           </div>
@@ -459,6 +463,30 @@ import { RecipeViewsService } from '../../dashboard/services/recipe-views.servic
 
     .star-rating {
       color: #ffd700;
+    }
+
+    /* Fix icon spacing and prevent overlapping */
+    mat-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Ensure proper spacing for action buttons */
+    .mat-mdc-icon-button {
+      min-width: 40px;
+      min-height: 40px;
+    }
+
+    /* Improve ingredient list spacing */
+    .ingredient-item {
+      min-height: 24px;
+    }
+
+    /* Ensure proper text wrapping */
+    .recipe-text {
+      word-wrap: break-word;
+      overflow-wrap: break-word;
     }
   `]
 })
