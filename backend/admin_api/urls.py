@@ -19,15 +19,9 @@ router.register(r'settings', views.AdminSettingsView, basename='admin-settings')
 router.register(r'bulk-operations', views.AdminBulkOperationsView, basename='admin-bulk-operations')
 router.register(r'audit-log', views.AdminAuditLogView, basename='admin-audit-log')
 
-# Export URLs
-export_patterns = [
-    path('users/', views.AdminExportView.as_view({'get': 'list'}), {'data_type': 'users'}, name='export-users'),
-    path('recipes/', views.AdminExportView.as_view({'get': 'list'}), {'data_type': 'recipes'}, name='export-recipes'),
-    path('ratings/', views.AdminExportView.as_view({'get': 'list'}), {'data_type': 'ratings'}, name='export-ratings'),
-    path('categories/', views.AdminExportView.as_view({'get': 'list'}), {'data_type': 'categories'}, name='export-categories'),
-]
-
 urlpatterns = [
     path('', include(router.urls)),
-    path('export/', include(export_patterns)),
+    # Export URLs - using separate paths for each format
+    path('download/<str:data_type>/csv/', views.AdminExportView.as_view({'get': 'list'}), {'format_type': 'csv'}, name='export-csv'),
+    path('download/<str:data_type>/json/', views.AdminExportView.as_view({'get': 'list'}), {'format_type': 'json'}, name='export-json'),
 ] 

@@ -229,9 +229,7 @@ export class AdminService {
 
   // Data Export
   exportData(dataType: 'users' | 'recipes' | 'ratings' | 'categories', format: 'csv' | 'json' = 'csv'): Observable<Blob> {
-    const params = new HttpParams().set('format', format);
-    return this.http.get(`${this.apiUrl}/export/${dataType}/`, { 
-      params, 
+    return this.http.get(`${this.apiUrl}/download/${dataType}/${format}/`, { 
       responseType: 'blob' 
     });
   }

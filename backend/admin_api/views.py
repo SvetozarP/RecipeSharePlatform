@@ -627,11 +627,10 @@ class AdminExportView(viewsets.ViewSet):
     """ViewSet for data export."""
     permission_classes = [permissions.IsAdminUser]
     
-    def list(self, request, **kwargs):
+    def list(self, request, data_type=None, **kwargs):
         """Export data."""
         try:
-            format_type = request.query_params.get('format', 'csv')
-            data_type = kwargs.get('data_type')
+            format_type = kwargs.get('format_type', 'csv')
             
             if not data_type:
                 return Response({'error': 'Data type is required'}, status=status.HTTP_400_BAD_REQUEST)
