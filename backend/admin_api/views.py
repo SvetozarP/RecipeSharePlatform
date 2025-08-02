@@ -421,11 +421,11 @@ class AdminAnalyticsView(viewsets.ViewSet):
         
         # Top recipes (by rating count and average rating)
         top_recipes = Recipe.objects.annotate(
-            avg_rating=Avg('ratings__rating'),
-            rating_count=Count('ratings')
+            calculated_avg_rating=Avg('ratings__rating'),
+            calculated_rating_count=Count('ratings')
         ).filter(
-            rating_count__gt=0
-        ).order_by('-rating_count', '-avg_rating')[:10]
+            calculated_rating_count__gt=0
+        ).order_by('-calculated_rating_count', '-calculated_avg_rating')[:10]
         
         top_recipes_data = []
         for recipe in top_recipes:
@@ -434,58 +434,58 @@ class AdminAnalyticsView(viewsets.ViewSet):
                 'title': recipe.title,
                 'views': 0,  # Placeholder for views
                 'favorites': 0,  # Placeholder for favorites
-                'average_rating': float(recipe.avg_rating or 0)
+                'average_rating': float(recipe.calculated_avg_rating or 0)
             })
         
         # Top categories (by recipe count and average rating)
         from recipes.models import Category
         top_categories = Category.objects.annotate(
-            recipe_count=Count('recipes'),
-            avg_rating=Avg('recipes__ratings__rating')
+            calculated_recipe_count=Count('recipes'),
+            calculated_avg_rating=Avg('recipes__ratings__rating')
         ).filter(
-            recipe_count__gt=0
-        ).order_by('-recipe_count', '-avg_rating')[:10]
+            calculated_recipe_count__gt=0
+        ).order_by('-calculated_recipe_count', '-calculated_avg_rating')[:10]
         
         top_categories_data = []
         for category in top_categories:
             top_categories_data.append({
                 'id': category.id,
                 'name': category.name,
-                'recipe_count': category.recipe_count,
-                'average_rating': float(category.avg_rating or 0)
+                'recipe_count': category.calculated_recipe_count,
+                'average_rating': float(category.calculated_avg_rating or 0)
             })
         
         # Top users (by recipe count)
         top_users = User.objects.annotate(
-            recipe_count=Count('recipes'),
-            avg_rating=Avg('recipes__ratings__rating')
+            calculated_recipe_count=Count('recipes'),
+            calculated_avg_rating=Avg('recipes__ratings__rating')
         ).filter(
-            recipe_count__gt=0
-        ).order_by('-recipe_count')[:10]
+            calculated_recipe_count__gt=0
+        ).order_by('-calculated_recipe_count')[:10]
         
         top_users_data = []
         for user in top_users:
             top_users_data.append({
                 'id': str(user.id),
                 'username': user.username,
-                'recipe_count': user.recipe_count,
+                'recipe_count': user.calculated_recipe_count,
                 'total_views': 0,  # Placeholder for views
-                'average_rating': float(user.avg_rating or 0)
+                'average_rating': float(user.calculated_avg_rating or 0)
             })
         
         # Category distribution
         category_distribution = Category.objects.annotate(
-            recipe_count=Count('recipes')
+            calculated_recipe_count=Count('recipes')
         ).filter(
-            recipe_count__gt=0
-        ).order_by('-recipe_count')
+            calculated_recipe_count__gt=0
+        ).order_by('-calculated_recipe_count')
         
         category_labels = []
         category_values = []
         
         for category in category_distribution[:10]:  # Top 10 categories
             category_labels.append(category.name)
-            category_values.append(category.recipe_count)
+            category_values.append(category.calculated_recipe_count)
         
         analytics_data = {
             'user_growth': {
