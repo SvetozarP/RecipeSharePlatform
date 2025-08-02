@@ -121,6 +121,7 @@ export class BasicStatisticsComponent implements OnInit {
         difficulty: 'easy',
         cooking_method: 'baking',
         tags: [],
+        is_published: true,
         created_at: '2024-01-15',
         updated_at: '2024-01-15'
       },
@@ -142,6 +143,7 @@ export class BasicStatisticsComponent implements OnInit {
         difficulty: 'medium',
         cooking_method: 'stovetop',
         tags: [],
+        is_published: true,
         created_at: '2024-02-10',
         updated_at: '2024-02-10'
       }

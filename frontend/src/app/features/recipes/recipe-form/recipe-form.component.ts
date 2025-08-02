@@ -377,7 +377,8 @@ interface RecipeFormData {
           </mat-card>
 
           <!-- Publication Settings -->
-          <mat-card>
+          <!-- Publication Settings - Only visible to staff users -->
+          <mat-card *ngIf="isStaff()">
             <mat-card-header>
               <mat-card-title class="flex items-center gap-2">
                 <mat-icon>visibility</mat-icon>
@@ -390,6 +391,21 @@ interface RecipeFormData {
               </mat-checkbox>
               <p class="text-sm text-gray-600">
                 Published recipes are visible to all users. Unpublished recipes are only visible to you.
+              </p>
+            </mat-card-content>
+          </mat-card>
+
+          <!-- Publication Notice for non-staff users -->
+          <mat-card *ngIf="!isStaff()" class="bg-blue-50 border-blue-200">
+            <mat-card-header>
+              <mat-card-title class="flex items-center gap-2 text-blue-800">
+                <mat-icon>info</mat-icon>
+                Publication Status
+              </mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <p class="text-sm text-blue-700">
+                Your recipe will be submitted for moderation. Once approved by our team, it will be published and visible to all users.
               </p>
             </mat-card-content>
           </mat-card>
@@ -487,7 +503,7 @@ export class RecipeFormComponent implements OnInit {
       fiber: [null],
       sugar: [null]
     }),
-    is_published: [true]
+    is_published: [false] // Default to false for non-staff users
   });
 
   // Form array getters
@@ -501,6 +517,13 @@ export class RecipeFormComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadCategories();
+    
+    // Set default publication status based on user permissions
+    if (this.isStaff()) {
+      this.recipeForm.patchValue({ is_published: true });
+    } else {
+      this.recipeForm.patchValue({ is_published: false });
+    }
     
     this.route.params.subscribe(params => {
       this.recipeId = params['id'] || null;
@@ -579,7 +602,7 @@ export class RecipeFormComponent implements OnInit {
       categories: recipe.categories.map(cat => cat.id),
 
       nutrition_info: recipe.nutrition_info || {},
-      is_published: true // Assuming we can edit published recipes
+      is_published: this.isStaff() ? recipe.is_published : false // Non-staff users cannot publish recipes
     });
   }
 
@@ -739,7 +762,7 @@ export class RecipeFormComponent implements OnInit {
       servings: formValue.servings || 1,
       difficulty: formValue.difficulty || 'easy',
       cooking_method: formValue.cooking_method || 'other',
-      is_published: formValue.is_published !== undefined ? formValue.is_published : true
+      is_published: this.isStaff() ? (formValue.is_published !== undefined ? formValue.is_published : true) : false
     };
 
     // Add required fields
@@ -810,5 +833,9 @@ export class RecipeFormComponent implements OnInit {
     } else {
       this.router.navigate(['/recipes']);
     }
+  }
+
+  isStaff(): boolean {
+    return this.authService.isStaff();
   }
 }

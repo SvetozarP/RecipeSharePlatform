@@ -114,6 +114,7 @@ export interface Recipe {
   };
   rating_stats: RatingStats;
   current_user_rating?: Rating;
+  is_published: boolean;
   is_favorited?: boolean;
   created_at: string;
   updated_at: string;

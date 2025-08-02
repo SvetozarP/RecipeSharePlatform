@@ -48,10 +48,13 @@ class RecipeSearchService:
         if not query:
             return Recipe.objects.none()
         
-        # Base queryset with published recipes
+        # Base queryset with published recipes that have approved moderation status
         queryset = Recipe.objects.select_related('author').prefetch_related(
             'categories', 'ratings'
-        ).filter(is_published=True)
+        ).filter(
+            is_published=True,
+            moderation_status=Recipe.ModerationStatus.APPROVED
+        )
         
         # Use PostgreSQL full-text search if available, otherwise fallback to basic search
         if HAS_POSTGRES_SEARCH and connection.vendor == 'postgresql':
@@ -140,10 +143,13 @@ class RecipeSearchService:
         Returns:
             QuerySet of filtered recipes
         """
-        # Start with published recipes
+        # Start with published recipes that have approved moderation status
         queryset = Recipe.objects.select_related('author').prefetch_related(
             'categories', 'ratings'
-        ).filter(is_published=True)
+        ).filter(
+            is_published=True,
+            moderation_status=Recipe.ModerationStatus.APPROVED
+        )
         
         # Text search
         if query:

@@ -170,21 +170,27 @@ class RecipeViewSet(viewsets.ViewSet):
     search_fields = ['title', 'description', 'tags', 'categories__name']
 
     def get_queryset(self):
-        """Get queryset for recipes."""
+        """Get queryset for recipes with moderation status visibility restrictions."""
         queryset = Recipe.objects.select_related('author').prefetch_related('categories', 'ratings')
         
-        # Filter by published status for non-owners
         # Safely get user, defaulting to anonymous if not available
         user = getattr(self.request, 'user', None)
         
         if not user or not user.is_authenticated:
-            # Anonymous users can only see published recipes
-            queryset = queryset.filter(is_published=True)
-        elif not user.is_staff:
-            # Authenticated non-staff users can see published recipes and their own
+            # Anonymous users can only see published recipes with approved moderation status
             queryset = queryset.filter(
-                Q(is_published=True) | Q(author=user)
+                is_published=True,
+                moderation_status=Recipe.ModerationStatus.APPROVED
             )
+        elif not user.is_staff:
+            # Authenticated non-staff users can see:
+            # 1. Published recipes with approved moderation status
+            # 2. Their own recipes with draft status
+            queryset = queryset.filter(
+                Q(is_published=True, moderation_status=Recipe.ModerationStatus.APPROVED) |
+                Q(author=user, moderation_status=Recipe.ModerationStatus.DRAFT)
+            )
+        # Staff users can see all recipes regardless of moderation status
         
         return queryset
 
@@ -295,21 +301,17 @@ class RecipeViewSet(viewsets.ViewSet):
         })
 
     def retrieve(self, request, pk=None):
-        """Retrieve a single recipe."""
+        """Retrieve a single recipe with moderation status visibility restrictions."""
         try:
             recipe = self.get_queryset().get(pk=pk)
             
-            # Check permissions
+            # Additional permission checks for moderation status
             user = request.user
-            if not recipe.is_published:
-                if not user.is_authenticated:
-                    # Anonymous users cannot see unpublished recipes
-                    return Response(
-                        {'error': 'Recipe not found'},
-                        status=status.HTTP_404_NOT_FOUND
-                    )
-                elif recipe.author != user and not user.is_staff:
-                    # Authenticated users can only see their own unpublished recipes or if they're staff
+            
+            # Check if user can access this recipe based on moderation status
+            if recipe.moderation_status in [Recipe.ModerationStatus.PENDING, Recipe.ModerationStatus.REJECTED, Recipe.ModerationStatus.FLAGGED]:
+                # Only staff users can see recipes with these moderation statuses
+                if not user.is_authenticated or not user.is_staff:
                     return Response(
                         {'error': 'Recipe not found'},
                         status=status.HTTP_404_NOT_FOUND

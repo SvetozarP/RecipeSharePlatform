@@ -161,6 +161,11 @@ export class AuthService {
     return this.hasToken() && this.getCurrentUser() !== null;
   }
 
+  isStaff(): boolean {
+    const user = this.getCurrentUser();
+    return !!(user?.is_staff || user?.isStaff);
+  }
+
   refreshToken(): Observable<{ access: string }> {
     const refreshToken = this.getRefreshToken();
     if (!refreshToken) {
