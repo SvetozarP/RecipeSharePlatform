@@ -627,66 +627,84 @@ class AdminExportView(viewsets.ViewSet):
     """ViewSet for data export."""
     permission_classes = [permissions.IsAdminUser]
     
-    def list(self, request, data_type=None):
+    def list(self, request, **kwargs):
         """Export data."""
-        format_type = request.query_params.get('format', 'csv')
-        
-        if data_type == 'users':
-            queryset = User.objects.all()
-            fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_active', 'date_joined']
-        elif data_type == 'recipes':
-            queryset = Recipe.objects.all()
-            fields = ['id', 'title', 'slug', 'author__username', 'is_published', 'created_at']
-        elif data_type == 'ratings':
-            queryset = Rating.objects.all()
-            fields = ['id', 'rating', 'review', 'user__username', 'recipe__title', 'created_at']
-        elif data_type == 'categories':
-            queryset = Category.objects.all()
-            fields = ['id', 'name', 'slug', 'description', 'is_active', 'created_at']
-        else:
-            return Response({'error': 'Invalid data type'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        if format_type == 'csv':
-            response = HttpResponse(content_type='text/csv')
-            response['Content-Disposition'] = f'attachment; filename="{data_type}_{timezone.now().date()}.csv"'
+        try:
+            format_type = request.query_params.get('format', 'csv')
+            data_type = kwargs.get('data_type')
             
-            writer = csv.writer(response)
-            writer.writerow(fields)
+            if not data_type:
+                return Response({'error': 'Data type is required'}, status=status.HTTP_400_BAD_REQUEST)
             
-            for obj in queryset:
-                row = []
-                for field in fields:
-                    if '__' in field:
-                        # Handle related fields
-                        parts = field.split('__')
-                        value = obj
-                        for part in parts:
-                            value = getattr(value, part, '')
-                        row.append(str(value))
-                    else:
-                        row.append(str(getattr(obj, field, '')))
-                writer.writerow(row)
+            if data_type == 'users':
+                queryset = User.objects.all().order_by('-date_joined')
+                fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_active', 'is_staff', 'date_joined', 'last_login']
+            elif data_type == 'recipes':
+                queryset = Recipe.objects.all().order_by('-created_at')
+                fields = ['id', 'title', 'description', 'author__username', 'is_published', 'created_at', 'updated_at', 'prep_time', 'cook_time', 'servings']
+            elif data_type == 'ratings':
+                queryset = Rating.objects.all().order_by('-created_at')
+                fields = ['id', 'rating', 'review', 'user__username', 'recipe__title', 'created_at', 'updated_at', 'helpful_count']
+            elif data_type == 'categories':
+                queryset = Category.objects.all().order_by('name')
+                fields = ['id', 'name', 'slug', 'description', 'is_active', 'created_at', 'updated_at', 'parent__name']
+            else:
+                return Response({'error': f'Invalid data type: {data_type}'}, status=status.HTTP_400_BAD_REQUEST)
             
-            return response
-        else:
-            # JSON export
-            data = []
-            for obj in queryset:
-                item = {}
-                for field in fields:
-                    if '__' in field:
-                        parts = field.split('__')
-                        value = obj
-                        for part in parts:
-                            value = getattr(value, part, '')
-                        item[field] = str(value)
-                    else:
-                        item[field] = str(getattr(obj, field, ''))
-                data.append(item)
-            
-            response = HttpResponse(json.dumps(data, indent=2), content_type='application/json')
-            response['Content-Disposition'] = f'attachment; filename="{data_type}_{timezone.now().date()}.json"'
-            return response
+            if format_type == 'csv':
+                response = HttpResponse(content_type='text/csv; charset=utf-8')
+                response['Content-Disposition'] = f'attachment; filename="{data_type}_{timezone.now().date()}.csv"'
+                
+                writer = csv.writer(response)
+                writer.writerow(fields)
+                
+                for obj in queryset:
+                    row = []
+                    for field in fields:
+                        try:
+                            if '__' in field:
+                                # Handle related fields
+                                parts = field.split('__')
+                                value = obj
+                                for part in parts:
+                                    value = getattr(value, part, '')
+                                row.append(str(value) if value else '')
+                            else:
+                                value = getattr(obj, field, '')
+                                row.append(str(value) if value else '')
+                        except Exception as e:
+                            row.append('')
+                    writer.writerow(row)
+                
+                return response
+            elif format_type == 'json':
+                # JSON export
+                data = []
+                for obj in queryset:
+                    item = {}
+                    for field in fields:
+                        try:
+                            if '__' in field:
+                                parts = field.split('__')
+                                value = obj
+                                for part in parts:
+                                    value = getattr(value, part, '')
+                                item[field] = str(value) if value else ''
+                            else:
+                                value = getattr(obj, field, '')
+                                item[field] = str(value) if value else ''
+                        except Exception as e:
+                            item[field] = ''
+                    data.append(item)
+                
+                response = HttpResponse(json.dumps(data, indent=2, ensure_ascii=False), content_type='application/json; charset=utf-8')
+                response['Content-Disposition'] = f'attachment; filename="{data_type}_{timezone.now().date()}.json"'
+                return response
+            else:
+                return Response({'error': f'Unsupported format: {format_type}'}, status=status.HTTP_400_BAD_REQUEST)
+                
+        except Exception as e:
+            return Response({'error': f'Export failed: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class AdminAuditLogView(viewsets.ViewSet):
