@@ -21,6 +21,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { SelectionModel } from '@angular/cdk/collections';
 import { AdminService } from '../../services/admin.service';
 import { AdminUser, AdminFilters } from '../../models/admin.models';
+import { UserDetailDialogComponent } from '../user-detail-dialog/user-detail-dialog.component';
 
 @Component({
   selector: 'app-user-management',
@@ -44,7 +45,7 @@ import { AdminUser, AdminFilters } from '../../models/admin.models';
     MatDialogModule,
     MatCheckboxModule,
     MatTooltipModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
   ],
   template: `
     <div class="user-management">
@@ -493,13 +494,31 @@ export class UserManagementComponent implements OnInit {
 
   // User actions
   viewUser(user: AdminUser): void {
-    // TODO: Implement user detail view dialog
-    console.log('View user:', user);
+    const dialogRef = this.dialog.open(UserDetailDialogComponent, {
+      width: '600px',
+      data: { user, mode: 'view' }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        // Refresh the user data if any changes were made
+        this.loadUsers();
+      }
+    });
   }
 
   editUser(user: AdminUser): void {
-    // TODO: Implement user edit dialog
-    console.log('Edit user:', user);
+    const dialogRef = this.dialog.open(UserDetailDialogComponent, {
+      width: '600px',
+      data: { user, mode: 'edit' }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        // Refresh the user data if any changes were made
+        this.loadUsers();
+      }
+    });
   }
 
   toggleUserStatus(user: AdminUser): void {
