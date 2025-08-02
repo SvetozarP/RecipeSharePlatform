@@ -65,8 +65,7 @@ export class ProfileService {
         public_profile: backendProfile.public_profile ?? true,
         show_email: backendProfile.show_email ?? false,
         timezone: backendProfile.timezone || 'UTC',
-        language: backendProfile.language || 'en',
-        theme: backendProfile.theme || 'light'
+        language: backendProfile.language || 'en'
       },
       security_settings: {
         password_last_changed: new Date().toISOString(),

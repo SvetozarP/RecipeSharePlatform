@@ -74,11 +74,7 @@ export class ProfilePreferencesComponent implements OnInit {
     { value: 'Australia/Sydney', label: 'Sydney' }
   ];
 
-  themeOptions = [
-    { value: 'light', label: 'Light' },
-    { value: 'dark', label: 'Dark' },
-    { value: 'auto', label: 'Auto' }
-  ];
+
 
   constructor(
     private fb: FormBuilder,
@@ -99,8 +95,7 @@ export class ProfilePreferencesComponent implements OnInit {
       public_profile: [true],
       show_email: [false],
       timezone: ['UTC'],
-      language: ['en'],
-      theme: ['light']
+      language: ['en']
     });
   }
 
@@ -112,8 +107,7 @@ export class ProfilePreferencesComponent implements OnInit {
         public_profile: prefs.public_profile ?? true,
         show_email: prefs.show_email ?? false,
         timezone: prefs.timezone || 'UTC',
-        language: prefs.language || 'en',
-        theme: prefs.theme || 'light'
+        language: prefs.language || 'en'
       });
       
       // Disable form when not in editing mode to prevent validation
@@ -155,8 +149,7 @@ export class ProfilePreferencesComponent implements OnInit {
         public_profile: formValue.public_profile,
         show_email: formValue.show_email,
         timezone: formValue.timezone,
-        language: formValue.language,
-        theme: formValue.theme
+        language: formValue.language
       };
 
       const updatedProfile = await this.profileService.updatePreferences(updateData);

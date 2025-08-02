@@ -31,7 +31,6 @@ export interface UserPreferences {
   show_email: boolean;
   timezone: string;
   language: string;
-  theme: 'light' | 'dark' | 'auto';
 }
 
 
@@ -58,7 +57,6 @@ export interface PreferencesUpdateRequest {
   show_email?: boolean;
   timezone?: string;
   language?: string;
-  theme?: 'light' | 'dark' | 'auto';
 }
 
 export interface SecurityUpdateRequest {
