@@ -292,7 +292,6 @@ export interface RecentActivity {
   recipe?: {
     id: string;
     title: string;
-    slug: string;
   };
   rating?: {
     id: string;

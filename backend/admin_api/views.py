@@ -784,8 +784,7 @@ class AdminRecentActivityView(viewsets.ViewSet):
                 },
                 'recipe': {
                     'id': str(recipe.id),
-                    'title': recipe.title,
-                    'slug': recipe.slug
+                    'title': recipe.title
                 }
             })
         
@@ -805,8 +804,7 @@ class AdminRecentActivityView(viewsets.ViewSet):
                 },
                 'recipe': {
                     'id': str(rating.recipe.id),
-                    'title': rating.recipe.title,
-                    'slug': rating.recipe.slug
+                    'title': rating.recipe.title
                 },
                 'rating': {
                     'id': str(rating.id),
