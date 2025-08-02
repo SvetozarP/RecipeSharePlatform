@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'accounts.apps.AccountsConfig',
     'user_management.apps.UserManagementConfig',
     'recipes.apps.RecipesConfig',
+    'admin_api.apps.AdminApiConfig',
 ]
 
 # Middleware configuration

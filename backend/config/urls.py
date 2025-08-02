@@ -16,6 +16,7 @@ urlpatterns = [
     path('api/v1/auth/', include('accounts.urls')),
     path('api/v1/users/', include('user_management.urls')),
     path('api/v1/recipes/', include('recipes.urls', namespace='recipes')),
+    path('api/v1/admin/', include('admin_api.urls')),
 ]
 
 # Serve media files during development
