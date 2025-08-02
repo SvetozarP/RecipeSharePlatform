@@ -422,8 +422,7 @@ class AdminAnalyticsView(viewsets.ViewSet):
         # Top recipes (by rating count and average rating)
         top_recipes = Recipe.objects.annotate(
             avg_rating=Avg('ratings__rating'),
-            rating_count=Count('ratings'),
-            view_count=Count('id')  # Placeholder for view count
+            rating_count=Count('ratings')
         ).filter(
             rating_count__gt=0
         ).order_by('-rating_count', '-avg_rating')[:10]
@@ -433,7 +432,7 @@ class AdminAnalyticsView(viewsets.ViewSet):
             top_recipes_data.append({
                 'id': str(recipe.id),
                 'title': recipe.title,
-                'views': recipe.view_count or 0,  # Placeholder
+                'views': 0,  # Placeholder for views
                 'favorites': 0,  # Placeholder for favorites
                 'average_rating': float(recipe.avg_rating or 0)
             })
@@ -459,7 +458,6 @@ class AdminAnalyticsView(viewsets.ViewSet):
         # Top users (by recipe count)
         top_users = User.objects.annotate(
             recipe_count=Count('recipes'),
-            total_views=Count('recipes'),  # Placeholder
             avg_rating=Avg('recipes__ratings__rating')
         ).filter(
             recipe_count__gt=0
@@ -471,7 +469,7 @@ class AdminAnalyticsView(viewsets.ViewSet):
                 'id': str(user.id),
                 'username': user.username,
                 'recipe_count': user.recipe_count,
-                'total_views': user.total_views or 0,  # Placeholder
+                'total_views': 0,  # Placeholder for views
                 'average_rating': float(user.avg_rating or 0)
             })
         
