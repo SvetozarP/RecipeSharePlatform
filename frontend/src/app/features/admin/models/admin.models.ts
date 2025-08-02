@@ -87,8 +87,6 @@ export interface AdminRating {
   helpful_count: number;
   created_at: string;
   updated_at: string;
-  moderation_status: 'draft' | 'pending' | 'approved' | 'rejected' | 'flagged';
-  moderation_notes?: string;
 }
 
 export interface PlatformStatistics {
@@ -256,7 +254,6 @@ export interface AdminFilters {
   ratings?: {
     search?: string;
     rating?: number;
-    status?: 'approved' | 'pending' | 'rejected' | 'flagged';
     date_created_after?: string;
     date_created_before?: string;
   };

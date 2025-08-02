@@ -171,7 +171,6 @@ export class AdminService {
     if (filters) {
       if (filters.search) params = params.set('search', filters.search);
       if (filters.rating) params = params.set('rating', filters.rating.toString());
-      if (filters.status) params = params.set('status', filters.status);
       if (filters.date_created_after) params = params.set('date_created_after', filters.date_created_after);
       if (filters.date_created_before) params = params.set('date_created_before', filters.date_created_before);
     }
@@ -181,18 +180,6 @@ export class AdminService {
 
   getRatingById(ratingId: string): Observable<AdminRating> {
     return this.http.get<AdminRating>(`${this.apiUrl}/ratings/${ratingId}/`);
-  }
-
-  approveRating(ratingId: string): Observable<AdminRating> {
-    return this.http.post<AdminRating>(`${this.apiUrl}/ratings/${ratingId}/approve/`, {});
-  }
-
-  rejectRating(ratingId: string, reason?: string): Observable<AdminRating> {
-    return this.http.post<AdminRating>(`${this.apiUrl}/ratings/${ratingId}/reject/`, { reason });
-  }
-
-  flagRating(ratingId: string, reason: string): Observable<AdminRating> {
-    return this.http.post<AdminRating>(`${this.apiUrl}/ratings/${ratingId}/flag/`, { reason });
   }
 
   deleteRating(ratingId: string): Observable<void> {

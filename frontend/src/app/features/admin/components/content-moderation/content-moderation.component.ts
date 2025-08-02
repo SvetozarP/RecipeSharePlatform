@@ -55,7 +55,7 @@ import { ReviewDetailDialogComponent } from '../review-detail-dialog/review-deta
     <div class="content-moderation">
       <div class="page-header">
         <h1>Content Moderation</h1>
-        <p>Review and manage ratings, reviews, and user-generated content</p>
+        <p>Review and manage ratings and user-generated content</p>
       </div>
 
       <!-- Filters -->
@@ -78,17 +78,6 @@ import { ReviewDetailDialogComponent } from '../review-detail-dialog/review-deta
                   <mat-option value="3">3 Stars</mat-option>
                   <mat-option value="2">2 Stars</mat-option>
                   <mat-option value="1">1 Star</mat-option>
-                </mat-select>
-              </mat-form-field>
-
-              <mat-form-field appearance="fill">
-                <mat-label>Status</mat-label>
-                <mat-select formControlName="status">
-                  <mat-option value="">All Statuses</mat-option>
-                  <mat-option value="approved">Approved</mat-option>
-                  <mat-option value="pending">Pending</mat-option>
-                  <mat-option value="rejected">Rejected</mat-option>
-                  <mat-option value="flagged">Flagged</mat-option>
                 </mat-select>
               </mat-form-field>
 
@@ -128,18 +117,6 @@ import { ReviewDetailDialogComponent } from '../review-detail-dialog/review-deta
             <div class="bulk-actions-content">
               <span>{{ selectedRatings.length }} rating(s) selected</span>
               <div class="bulk-buttons">
-                <button mat-button color="primary" (click)="bulkApprove()">
-                  <mat-icon>check_circle</mat-icon>
-                  Approve
-                </button>
-                <button mat-button color="warn" (click)="bulkReject()">
-                  <mat-icon>cancel</mat-icon>
-                  Reject
-                </button>
-                <button mat-button color="accent" (click)="bulkFlag()">
-                  <mat-icon>flag</mat-icon>
-                  Flag
-                </button>
                 <button mat-button color="warn" (click)="bulkDelete()">
                   <mat-icon>delete</mat-icon>
                   Delete
@@ -231,27 +208,6 @@ import { ReviewDetailDialogComponent } from '../review-detail-dialog/review-deta
                 </td>
               </ng-container>
 
-              <!-- Status Column -->
-              <ng-container matColumnDef="status">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
-                <td mat-cell *matCellDef="let rating">
-                  <mat-chip-set>
-                    <mat-chip *ngIf="rating.moderation_status === 'approved'" color="primary" variant="outlined">
-                      Approved
-                    </mat-chip>
-                    <mat-chip *ngIf="rating.moderation_status === 'pending'" color="warn" variant="outlined">
-                      Pending
-                    </mat-chip>
-                    <mat-chip *ngIf="rating.moderation_status === 'rejected'" color="warn">
-                      Rejected
-                    </mat-chip>
-                    <mat-chip *ngIf="rating.moderation_status === 'flagged'" color="accent">
-                      Flagged
-                    </mat-chip>
-                  </mat-chip-set>
-                </td>
-              </ng-container>
-
               <!-- Engagement Column -->
               <ng-container matColumnDef="engagement">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header>Engagement</th>
@@ -290,18 +246,6 @@ import { ReviewDetailDialogComponent } from '../review-detail-dialog/review-deta
                     <button mat-menu-item (click)="editRating(rating)">
                       <mat-icon>edit</mat-icon>
                       <span>Edit Rating</span>
-                    </button>
-                    <button mat-menu-item (click)="approveRating(rating)" *ngIf="rating.moderation_status !== 'approved'">
-                      <mat-icon>check_circle</mat-icon>
-                      <span>Approve</span>
-                    </button>
-                    <button mat-menu-item (click)="rejectRating(rating)" *ngIf="rating.moderation_status !== 'rejected'">
-                      <mat-icon>cancel</mat-icon>
-                      <span>Reject</span>
-                    </button>
-                    <button mat-menu-item (click)="flagRating(rating)" *ngIf="rating.moderation_status !== 'flagged'">
-                      <mat-icon>flag</mat-icon>
-                      <span>Flag for Review</span>
                     </button>
                     <button mat-menu-item (click)="deleteRating(rating)" class="delete-action">
                       <mat-icon>delete</mat-icon>
@@ -547,7 +491,7 @@ export class ContentModerationComponent implements OnInit {
 
   loading = false;
   dataSource = new MatTableDataSource<AdminRating>();
-  displayedColumns: string[] = ['select', 'rating', 'recipe', 'user', 'review', 'status', 'engagement', 'created_at', 'actions'];
+  displayedColumns: string[] = ['select', 'rating', 'recipe', 'user', 'review', 'engagement', 'created_at', 'actions'];
   filtersForm: FormGroup;
   selectedRatings: AdminRating[] = [];
   selection = new SelectionModel<AdminRating>(true, []);
@@ -561,7 +505,6 @@ export class ContentModerationComponent implements OnInit {
     this.filtersForm = this.formBuilder.group({
       search: [''],
       rating: [''],
-      status: [''],
       date_created_after: [''],
       date_created_before: ['']
     });
@@ -606,7 +549,6 @@ export class ContentModerationComponent implements OnInit {
     return {
       search: formValue.search || undefined,
       rating: formValue.rating || undefined,
-      status: formValue.status || undefined,
       date_created_after: formValue.date_created_after ? formValue.date_created_after.toISOString() : undefined,
       date_created_before: formValue.date_created_before ? formValue.date_created_before.toISOString() : undefined
     };
@@ -701,75 +643,6 @@ export class ContentModerationComponent implements OnInit {
     });
   }
 
-  approveRating(rating: AdminRating): void {
-    this.adminService.approveRating(rating.id).subscribe({
-      next: (updatedRating) => {
-        const index = this.dataSource.data.findIndex(r => r.id === rating.id);
-        if (index !== -1) {
-          this.dataSource.data[index] = updatedRating;
-          this.dataSource._updateChangeSubscription();
-        }
-        this.snackBar.open('Rating approved successfully', 'Close', {
-          duration: 3000
-        });
-      },
-      error: (error) => {
-        console.error('Failed to approve rating:', error);
-        this.snackBar.open('Failed to approve rating', 'Close', {
-          duration: 5000
-        });
-      }
-    });
-  }
-
-  rejectRating(rating: AdminRating): void {
-    const reason = prompt('Please provide a reason for rejection:');
-    if (reason !== null) {
-      this.adminService.rejectRating(rating.id, reason).subscribe({
-        next: (updatedRating) => {
-          const index = this.dataSource.data.findIndex(r => r.id === rating.id);
-          if (index !== -1) {
-            this.dataSource.data[index] = updatedRating;
-            this.dataSource._updateChangeSubscription();
-          }
-          this.snackBar.open('Rating rejected successfully', 'Close', {
-            duration: 3000
-          });
-        },
-        error: (error) => {
-          console.error('Failed to reject rating:', error);
-          this.snackBar.open('Failed to reject rating', 'Close', {
-            duration: 5000
-          });
-        }
-      });
-    }
-  }
-
-  flagRating(rating: AdminRating): void {
-    const reason = prompt('Please provide a reason for flagging:');
-    if (reason !== null) {
-      this.adminService.flagRating(rating.id, reason).subscribe({
-        next: (updatedRating) => {
-          const index = this.dataSource.data.findIndex(r => r.id === rating.id);
-          if (index !== -1) {
-            this.dataSource.data[index] = updatedRating;
-            this.dataSource._updateChangeSubscription();
-          }
-          this.snackBar.open('Rating flagged successfully', 'Close', {
-            duration: 3000
-          });
-        },
-        error: (error) => {
-          console.error('Failed to flag rating:', error);
-          this.snackBar.open('Failed to flag rating', 'Close', {
-            duration: 5000
-          });
-        }
-      });
-    }
-  }
-
   deleteRating(rating: AdminRating): void {
     if (confirm(`Are you sure you want to delete this rating?`)) {
       this.adminService.deleteRating(rating.id).subscribe({
@@ -794,93 +667,6 @@ export class ContentModerationComponent implements OnInit {
   }
 
   // Bulk actions
-  bulkApprove(): void {
-    if (this.selectedRatings.length === 0) return;
-    
-    if (confirm(`Approve ${this.selectedRatings.length} rating(s)?`)) {
-      const ratingIds = this.selectedRatings.map(r => r.id);
-      
-      // Process each rating individually since bulk operations might not be implemented yet
-      let completed = 0;
-      let failed = 0;
-      
-      ratingIds.forEach(ratingId => {
-        this.adminService.approveRating(ratingId).subscribe({
-          next: () => {
-            completed++;
-            if (completed + failed === ratingIds.length) {
-              this.handleBulkOperationComplete(completed, failed, 'approved');
-            }
-          },
-          error: () => {
-            failed++;
-            if (completed + failed === ratingIds.length) {
-              this.handleBulkOperationComplete(completed, failed, 'approved');
-            }
-          }
-        });
-      });
-    }
-  }
-
-  bulkReject(): void {
-    if (this.selectedRatings.length === 0) return;
-    
-    const reason = prompt('Please provide a reason for rejection:');
-    if (reason !== null) {
-      const ratingIds = this.selectedRatings.map(r => r.id);
-      
-      let completed = 0;
-      let failed = 0;
-      
-      ratingIds.forEach(ratingId => {
-        this.adminService.rejectRating(ratingId, reason).subscribe({
-          next: () => {
-            completed++;
-            if (completed + failed === ratingIds.length) {
-              this.handleBulkOperationComplete(completed, failed, 'rejected');
-            }
-          },
-          error: () => {
-            failed++;
-            if (completed + failed === ratingIds.length) {
-              this.handleBulkOperationComplete(completed, failed, 'rejected');
-            }
-          }
-        });
-      });
-    }
-  }
-
-  bulkFlag(): void {
-    if (this.selectedRatings.length === 0) return;
-    
-    const reason = prompt('Please provide a reason for flagging:');
-    if (reason !== null) {
-      const ratingIds = this.selectedRatings.map(r => r.id);
-      
-      let completed = 0;
-      let failed = 0;
-      
-      ratingIds.forEach(ratingId => {
-        this.adminService.flagRating(ratingId, reason).subscribe({
-          next: () => {
-            completed++;
-            if (completed + failed === ratingIds.length) {
-              this.handleBulkOperationComplete(completed, failed, 'flagged');
-            }
-          },
-          error: () => {
-            failed++;
-            if (completed + failed === ratingIds.length) {
-              this.handleBulkOperationComplete(completed, failed, 'flagged');
-            }
-          }
-        });
-      });
-    }
-  }
-
   bulkDelete(): void {
     if (this.selectedRatings.length === 0) return;
     

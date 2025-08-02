@@ -107,26 +107,9 @@ interface DialogData {
 
           <mat-divider></mat-divider>
 
-          <!-- Status and Engagement -->
-          <div class="status-section">
-            <h3>Status & Engagement</h3>
-            <div class="status-display">
-              <mat-chip-set>
-                <mat-chip *ngIf="data.rating.moderation_status === 'approved'" color="primary" variant="outlined">
-                  Approved
-                </mat-chip>
-                <mat-chip *ngIf="data.rating.moderation_status === 'pending'" color="warn" variant="outlined">
-                  Pending
-                </mat-chip>
-                <mat-chip *ngIf="data.rating.moderation_status === 'rejected'" color="warn">
-                  Rejected
-                </mat-chip>
-                <mat-chip *ngIf="data.rating.moderation_status === 'flagged'" color="accent">
-                  Flagged
-                </mat-chip>
-              </mat-chip-set>
-            </div>
-            
+          <!-- Engagement -->
+          <div class="engagement-section">
+            <h3>Engagement</h3>
             <div class="engagement-info">
               <div class="engagement-item">
                 <mat-icon>thumb_up</mat-icon>
@@ -151,18 +134,6 @@ interface DialogData {
             <div class="info-item" *ngIf="data.rating.updated_at">
               <label>Last Updated:</label>
               <span>{{ data.rating.updated_at | date:'medium' }}</span>
-            </div>
-          </div>
-
-          <!-- Moderation Notes -->
-          <div *ngIf="data.rating.moderation_notes" class="moderation-notes">
-            <mat-divider></mat-divider>
-            <h3>
-              <mat-icon color="warn">warning</mat-icon>
-              Moderation Notes
-            </h3>
-            <div class="notes-content">
-              {{ data.rating.moderation_notes }}
             </div>
           </div>
         </div>

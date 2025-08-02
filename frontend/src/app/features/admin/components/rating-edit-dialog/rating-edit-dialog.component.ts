@@ -82,33 +82,6 @@ interface DialogData {
                   <mat-label>Review</mat-label>
                   <textarea matInput formControlName="review" rows="4" placeholder="Enter review text (optional)"></textarea>
                 </mat-form-field>
-
-                <div class="checkbox-item">
-                  <mat-checkbox formControlName="is_verified_purchase">
-                    Verified Purchase
-                  </mat-checkbox>
-                </div>
-              </div>
-
-              <!-- Moderation Status -->
-              <div class="form-section">
-                <h3>Moderation Status</h3>
-                
-                <mat-form-field appearance="fill">
-                  <mat-label>Status</mat-label>
-                  <mat-select formControlName="moderation_status">
-                    <mat-option value="pending">Pending</mat-option>
-                    <mat-option value="approved">Approved</mat-option>
-                    <mat-option value="rejected">Rejected</mat-option>
-                    <mat-option value="flagged">Flagged</mat-option>
-                  </mat-select>
-                </mat-form-field>
-
-                <mat-form-field appearance="fill">
-                  <mat-label>Moderation Notes</mat-label>
-                  <textarea matInput formControlName="moderation_notes" rows="3" 
-                           placeholder="Add moderation notes (optional)"></textarea>
-                </mat-form-field>
               </div>
 
               <!-- Current Information (Read-only) -->
@@ -267,9 +240,6 @@ export class RatingEditDialogComponent implements OnInit {
     this.ratingForm = this.formBuilder.group({
       rating: ['', [Validators.required, Validators.min(1), Validators.max(5)]],
       review: [''],
-      is_verified_purchase: [false],
-      moderation_status: ['', Validators.required],
-      moderation_notes: ['']
     });
   }
 
@@ -282,9 +252,6 @@ export class RatingEditDialogComponent implements OnInit {
     this.ratingForm.patchValue({
       rating: rating.rating || 1,
       review: rating.review || '',
-      is_verified_purchase: rating.is_verified_purchase || false,
-      moderation_status: rating.moderation_status || 'pending',
-      moderation_notes: rating.moderation_notes || ''
     });
   }
 
