@@ -275,4 +275,28 @@ export interface AdminListResponse<T> {
   results: T[];
   pagination: AdminPagination;
   filters?: AdminFilters;
+}
+
+export interface RecentActivity {
+  id: string;
+  type: 'user_registered' | 'recipe_created' | 'recipe_approved' | 'recipe_rejected' | 'rating_submitted' | 'user_activated' | 'user_deactivated' | 'recipe_flagged' | 'rating_flagged';
+  icon: string;
+  message: string;
+  timestamp: string;
+  time_ago: string;
+  user?: {
+    id: string;
+    username: string;
+    email: string;
+  };
+  recipe?: {
+    id: string;
+    title: string;
+    slug: string;
+  };
+  rating?: {
+    id: string;
+    rating: number;
+    review?: string;
+  };
 } 

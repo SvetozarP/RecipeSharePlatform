@@ -13,7 +13,8 @@ import {
   BulkOperation,
   ModerationQueue,
   AdminFilters,
-  AdminListResponse
+  AdminListResponse,
+  RecentActivity
 } from '../models/admin.models';
 
 @Injectable({
@@ -258,5 +259,9 @@ export class AdminService {
     }
 
     return this.http.get<AdminListResponse<any>>(`${this.apiUrl}/audit-log/`, { params });
+  }
+
+  getRecentActivity(limit: number = 10): Observable<RecentActivity[]> {
+    return this.http.get<RecentActivity[]>(`${this.apiUrl}/recent-activity/?limit=${limit}`);
   }
 } 

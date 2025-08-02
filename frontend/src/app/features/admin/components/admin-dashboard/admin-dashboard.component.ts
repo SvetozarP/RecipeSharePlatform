@@ -10,7 +10,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AdminService } from '../../services/admin.service';
-import { PlatformStatistics, ModerationQueue } from '../../models/admin.models';
+import { PlatformStatistics, ModerationQueue, RecentActivity } from '../../models/admin.models';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -212,7 +212,7 @@ import { PlatformStatistics, ModerationQueue } from '../../models/admin.models';
                     </div>
                     <div class="activity-content">
                       <p class="activity-text">{{ activity.message }}</p>
-                      <span class="activity-time">{{ activity.time }}</span>
+                      <span class="activity-time">{{ activity.time_ago }}</span>
                     </div>
                   </div>
                 </div>
@@ -493,11 +493,7 @@ export class AdminDashboardComponent implements OnInit {
   loading = true;
   statistics?: PlatformStatistics;
   moderationQueue?: ModerationQueue;
-  recentActivity: Array<{
-    icon: string;
-    message: string;
-    time: string;
-  }> = [];
+  recentActivity: Array<RecentActivity> = [];
 
   // Getter methods for safe access to moderation queue counts
   get pendingRecipesCount(): number {
@@ -587,36 +583,23 @@ export class AdminDashboardComponent implements OnInit {
       },
       complete: () => {
         this.loading = false;
-        this.loadMockRecentActivity();
+        this.loadRecentActivity();
       }
     });
   }
 
-  private loadMockRecentActivity(): void {
-    // Mock recent activity data - in a real app, this would come from an API
-    this.recentActivity = [
-      {
-        icon: 'person_add',
-        message: 'New user registered: john.doe@example.com',
-        time: '2 minutes ago'
+  private loadRecentActivity(): void {
+    this.adminService.getRecentActivity().subscribe({
+      next: (activities) => {
+        this.recentActivity = activities;
       },
-      {
-        icon: 'restaurant',
-        message: 'Recipe "Spaghetti Carbonara" submitted for moderation',
-        time: '5 minutes ago'
-      },
-      {
-        icon: 'star',
-        message: 'New rating submitted for "Chicken Curry"',
-        time: '8 minutes ago'
-      },
-
-      {
-        icon: 'people',
-        message: 'User account activated: jane.smith@example.com',
-        time: '1 hour ago'
+      error: (error) => {
+        console.error('Failed to load recent activity:', error);
+        this.snackBar.open('Failed to load recent activity', 'Close', {
+          duration: 5000
+        });
       }
-    ];
+    });
   }
 
   navigateTo(route: string): void {

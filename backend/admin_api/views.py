@@ -725,3 +725,114 @@ class AdminAuditLogView(viewsets.ViewSet):
                 'total_pages': 1
             }
         })
+
+
+class AdminRecentActivityView(viewsets.ViewSet):
+    """ViewSet for recent activity."""
+    permission_classes = [permissions.IsAdminUser]
+    
+    def list(self, request):
+        """Get recent activity."""
+        limit = int(request.query_params.get('limit', 10))
+        
+        # Get recent user registrations
+        recent_users = User.objects.filter(
+            date_joined__gte=timezone.now() - timedelta(days=7)
+        ).order_by('-date_joined')[:limit//3]
+        
+        # Get recent recipe creations
+        recent_recipes = Recipe.objects.filter(
+            created_at__gte=timezone.now() - timedelta(days=7)
+        ).order_by('-created_at')[:limit//3]
+        
+        # Get recent ratings
+        recent_ratings = Rating.objects.filter(
+            created_at__gte=timezone.now() - timedelta(days=7)
+        ).order_by('-created_at')[:limit//3]
+        
+        activities = []
+        
+        # Add user registrations
+        for user in recent_users:
+            activities.append({
+                'id': str(uuid.uuid4()),
+                'type': 'user_registered',
+                'icon': 'person_add',
+                'message': f'New user registered: {user.email}',
+                'timestamp': user.date_joined.isoformat(),
+                'time_ago': self._get_time_ago(user.date_joined),
+                'user': {
+                    'id': str(user.id),
+                    'username': user.username,
+                    'email': user.email
+                }
+            })
+        
+        # Add recipe creations
+        for recipe in recent_recipes:
+            activities.append({
+                'id': str(uuid.uuid4()),
+                'type': 'recipe_created',
+                'icon': 'restaurant',
+                'message': f'Recipe "{recipe.title}" created by {recipe.author.username}',
+                'timestamp': recipe.created_at.isoformat(),
+                'time_ago': self._get_time_ago(recipe.created_at),
+                'user': {
+                    'id': str(recipe.author.id),
+                    'username': recipe.author.username,
+                    'email': recipe.author.email
+                },
+                'recipe': {
+                    'id': str(recipe.id),
+                    'title': recipe.title,
+                    'slug': recipe.slug
+                }
+            })
+        
+        # Add ratings
+        for rating in recent_ratings:
+            activities.append({
+                'id': str(uuid.uuid4()),
+                'type': 'rating_submitted',
+                'icon': 'star',
+                'message': f'Rating submitted for "{rating.recipe.title}" by {rating.user.username}',
+                'timestamp': rating.created_at.isoformat(),
+                'time_ago': self._get_time_ago(rating.created_at),
+                'user': {
+                    'id': str(rating.user.id),
+                    'username': rating.user.username,
+                    'email': rating.user.email
+                },
+                'recipe': {
+                    'id': str(rating.recipe.id),
+                    'title': rating.recipe.title,
+                    'slug': rating.recipe.slug
+                },
+                'rating': {
+                    'id': str(rating.id),
+                    'rating': rating.rating,
+                    'review': rating.review
+                }
+            })
+        
+        # Sort by timestamp (most recent first) and limit
+        activities.sort(key=lambda x: x['timestamp'], reverse=True)
+        activities = activities[:limit]
+        
+        return Response(activities)
+    
+    def _get_time_ago(self, timestamp):
+        """Calculate time ago string."""
+        now = timezone.now()
+        diff = now - timestamp
+        
+        if diff.days > 0:
+            return f"{diff.days} day{'s' if diff.days != 1 else ''} ago"
+        elif diff.seconds >= 3600:
+            hours = diff.seconds // 3600
+            return f"{hours} hour{'s' if hours != 1 else ''} ago"
+        elif diff.seconds >= 60:
+            minutes = diff.seconds // 60
+            return f"{minutes} minute{'s' if minutes != 1 else ''} ago"
+        else:
+            return "Just now"
