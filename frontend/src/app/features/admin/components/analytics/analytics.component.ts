@@ -298,8 +298,9 @@ Chart.register(...registerables);
   `,
   styles: [`
     .analytics {
-      max-width: 1400px;
-      margin: 0 auto;
+      width: 100%;
+      max-width: none;
+      margin: 0;
     }
 
     .page-header {
@@ -344,6 +345,7 @@ Chart.register(...registerables);
       display: flex;
       flex-direction: column;
       gap: 32px;
+      width: 100%;
     }
 
     .metrics-section h2,
@@ -358,6 +360,7 @@ Chart.register(...registerables);
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       gap: 16px;
+      width: 100%;
     }
 
     .metric-card {
@@ -401,10 +404,12 @@ Chart.register(...registerables);
 
     .charts-section {
       margin-bottom: 32px;
+      width: 100%;
     }
 
     .chart-container {
       padding: 24px;
+      width: 100%;
     }
 
     .chart-container h3 {
@@ -431,6 +436,7 @@ Chart.register(...registerables);
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
       gap: 16px;
+      width: 100%;
     }
 
     .performer-card {
@@ -484,6 +490,7 @@ Chart.register(...registerables);
 
     .export-section {
       margin-top: 32px;
+      width: 100%;
     }
 
     .export-actions {

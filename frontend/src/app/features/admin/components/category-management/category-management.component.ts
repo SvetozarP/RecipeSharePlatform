@@ -279,8 +279,9 @@ import { AdminCategory, AdminFilters } from '../../models/admin.models';
   `,
   styles: [`
     .category-management {
-      max-width: 1400px;
-      margin: 0 auto;
+      width: 100%;
+      max-width: none;
+      margin: 0;
     }
 
     .page-header {

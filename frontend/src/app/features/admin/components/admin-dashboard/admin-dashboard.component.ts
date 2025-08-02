@@ -263,7 +263,7 @@ import { PlatformStatistics, ModerationQueue, RecentActivity } from '../../model
   `,
   styles: [`
     .admin-dashboard {
-      @apply max-w-7xl mx-auto px-4 py-6;
+      @apply w-full px-4 py-6;
     }
 
     /* Welcome Section */

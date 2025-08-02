@@ -273,8 +273,9 @@ import { ReviewDetailDialogComponent } from '../review-detail-dialog/review-deta
   `,
   styles: [`
     .content-moderation {
-      max-width: 1400px;
-      margin: 0 auto;
+      width: 100%;
+      max-width: none;
+      margin: 0;
     }
 
     .page-header {

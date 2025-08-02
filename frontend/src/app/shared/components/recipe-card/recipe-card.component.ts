@@ -402,6 +402,11 @@ import { Observable } from 'rxjs';
       margin: 0 !important;
     }
 
+    .mat-mdc-icon-button .mdc-button__label, .mat-mdc-icon-button .mat-icon {
+      left: -4px !important;
+      top: -10px !important;
+    }
+
     .loading-overlay {
       position: absolute;
       top: 0;

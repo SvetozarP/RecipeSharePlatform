@@ -281,8 +281,9 @@ import { AuthService } from '../../../../core/services/auth.service';
   `,
   styles: [`
     .user-management {
-      max-width: 1400px;
-      margin: 0 auto;
+      width: 100%;
+      max-width: none;
+      margin: 0;
     }
 
     .page-header {

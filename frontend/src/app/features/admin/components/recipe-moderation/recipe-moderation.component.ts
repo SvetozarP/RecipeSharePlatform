@@ -334,8 +334,9 @@ import { RecipeDetailDialogComponent } from '../recipe-detail-dialog/recipe-deta
   `,
   styles: [`
     .recipe-moderation {
-      max-width: 1400px;
-      margin: 0 auto;
+      width: 100%;
+      max-width: none;
+      margin: 0;
     }
 
     .page-header {
