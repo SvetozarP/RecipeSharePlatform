@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -24,446 +24,467 @@ import { PlatformStatistics, ModerationQueue } from '../../models/admin.models';
     MatProgressSpinnerModule,
     MatChipsModule,
     MatDividerModule,
-    RouterLink,
   ],
   template: `
     <div class="admin-dashboard">
-      <div class="dashboard-header">
-        <h1>Admin Dashboard</h1>
-        <p>Platform overview and management tools</p>
-      </div>
-
       <!-- Loading State -->
       <div *ngIf="loading" class="loading-container">
         <mat-spinner></mat-spinner>
-        <p>Loading dashboard data...</p>
+        <p>Loading admin dashboard...</p>
       </div>
 
       <!-- Dashboard Content -->
       <div *ngIf="!loading" class="dashboard-content">
-        <!-- Platform Statistics -->
-        <div class="stats-section">
-          <h2>Platform Statistics</h2>
-          <mat-grid-list cols="4" rowHeight="120px" gutterSize="16px">
-            <!-- Users Stats -->
-            <mat-grid-tile>
-              <mat-card class="stat-card users-card">
-                <mat-card-content>
-                  <div class="stat-icon">
-                    <mat-icon>people</mat-icon>
-                  </div>
-                  <div class="stat-content">
-                    <h3>{{ statistics?.users?.total || 0 }}</h3>
-                    <p>Total Users</p>
-                    <small>{{ statistics?.users?.new_this_month || 0 }} new this month</small>
-                  </div>
-                </mat-card-content>
-              </mat-card>
-            </mat-grid-tile>
-
-            <!-- Recipes Stats -->
-            <mat-grid-tile>
-              <mat-card class="stat-card recipes-card">
-                <mat-card-content>
-                  <div class="stat-icon">
-                    <mat-icon>restaurant</mat-icon>
-                  </div>
-                  <div class="stat-content">
-                    <h3>{{ statistics?.recipes?.total || 0 }}</h3>
-                    <p>Total Recipes</p>
-                    <small>{{ statistics?.recipes?.published || 0 }} published</small>
-                  </div>
-                </mat-card-content>
-              </mat-card>
-            </mat-grid-tile>
-
-
-
-            <!-- Ratings Stats -->
-            <mat-grid-tile>
-              <mat-card class="stat-card ratings-card">
-                <mat-card-content>
-                  <div class="stat-icon">
-                    <mat-icon>star</mat-icon>
-                  </div>
-                  <div class="stat-content">
-                    <h3>{{ statistics?.ratings?.total || 0 }}</h3>
-                    <p>Total Ratings</p>
-                    <small>Avg: {{ statistics?.ratings?.average_rating?.toFixed(1) || '0.0' }}</small>
-                  </div>
-                </mat-card-content>
-              </mat-card>
-            </mat-grid-tile>
-
-            <!-- Views Stats -->
-            <mat-grid-tile>
-              <mat-card class="stat-card views-card">
-                <mat-card-content>
-                  <div class="stat-icon">
-                    <mat-icon>visibility</mat-icon>
-                  </div>
-                  <div class="stat-content">
-                    <h3>{{ statistics?.engagement?.total_views || 0 }}</h3>
-                    <p>Total Views</p>
-                    <small>{{ statistics?.activity?.recipes_created_today || 0 }} created today</small>
-                  </div>
-                </mat-card-content>
-              </mat-card>
-            </mat-grid-tile>
-          </mat-grid-list>
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+          <mat-card class="welcome-card">
+            <div class="welcome-content">
+              <div class="welcome-text">
+                <h2>Admin Dashboard</h2>
+                <p>Platform overview and management tools</p>
+              </div>
+              <div class="welcome-actions">
+                <button 
+                  mat-raised-button 
+                  color="primary" 
+                  (click)="navigateTo('users')">
+                  <mat-icon>people</mat-icon>
+                  Manage Users
+                </button>
+              </div>
+            </div>
+          </mat-card>
         </div>
 
-        <!-- Moderation Queue -->
-        <div class="moderation-section">
-          <h2>Moderation Queue</h2>
-          <mat-grid-list cols="3" rowHeight="100px" gutterSize="16px">
-            <!-- Recipes Pending -->
-            <mat-grid-tile>
-              <mat-card class="moderation-card recipes-pending" 
-                        [class.has-pending]="hasPendingRecipes"
-                        (click)="navigateToModeration('recipes')">
-                <mat-card-content>
-                  <div class="moderation-icon">
-                    <mat-icon>restaurant</mat-icon>
-                  </div>
-                  <div class="moderation-content">
-                    <h3>{{ pendingRecipesCount }}</h3>
-                    <p>Recipes Pending</p>
-                    <mat-chip-set>
+        <!-- Statistics Cards -->
+        <div class="stats-section">
+          <div class="stats-grid">
+            <!-- Total Users -->
+            <mat-card class="stat-card">
+              <div class="stat-content">
+                <div class="stat-icon">
+                  <mat-icon>people</mat-icon>
+                </div>
+                <div class="stat-info">
+                  <h3 class="stat-value">{{ statistics?.users?.total || 0 }}</h3>
+                  <p class="stat-label">Total Users</p>
+                </div>
+              </div>
+            </mat-card>
+
+            <!-- Total Recipes -->
+            <mat-card class="stat-card">
+              <div class="stat-content">
+                <div class="stat-icon">
+                  <mat-icon>restaurant</mat-icon>
+                </div>
+                <div class="stat-info">
+                  <h3 class="stat-value">{{ statistics?.recipes?.total || 0 }}</h3>
+                  <p class="stat-label">Total Recipes</p>
+                </div>
+              </div>
+            </mat-card>
+
+            <!-- Total Ratings -->
+            <mat-card class="stat-card">
+              <div class="stat-content">
+                <div class="stat-icon">
+                  <mat-icon>star</mat-icon>
+                </div>
+                <div class="stat-info">
+                  <h3 class="stat-value">{{ statistics?.ratings?.total || 0 }}</h3>
+                  <p class="stat-label">Total Ratings</p>
+                </div>
+              </div>
+            </mat-card>
+
+            <!-- Total Views -->
+            <mat-card class="stat-card">
+              <div class="stat-content">
+                <div class="stat-icon">
+                  <mat-icon>visibility</mat-icon>
+                </div>
+                <div class="stat-info">
+                  <h3 class="stat-value">{{ statistics?.engagement?.total_views || 0 }}</h3>
+                  <p class="stat-label">Total Views</p>
+                </div>
+              </div>
+            </mat-card>
+          </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="main-content">
+          <!-- Moderation Queue -->
+          <div class="moderation-section">
+            <mat-card class="moderation-card">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon>gavel</mat-icon>
+                  Moderation Queue
+                </mat-card-title>
+                <button 
+                  mat-button 
+                  (click)="navigateTo('recipes')"
+                  class="view-all-btn">
+                  View All
+                </button>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="moderation-grid">
+                  <!-- Recipes Pending -->
+                  <div class="moderation-item" 
+                       [class.has-pending]="hasPendingRecipes"
+                       (click)="navigateToModeration('recipes')">
+                    <div class="moderation-icon">
+                      <mat-icon>restaurant</mat-icon>
+                    </div>
+                    <div class="moderation-info">
+                      <h4 class="moderation-value">{{ pendingRecipesCount }}</h4>
+                      <p class="moderation-label">Recipes Pending</p>
                       <mat-chip *ngIf="hasFlaggedRecipes" 
-                               color="warn" variant="outlined">
+                               color="warn" 
+                               variant="outlined"
+                               class="flag-chip">
                         {{ flaggedRecipesCount }} flagged
                       </mat-chip>
-                    </mat-chip-set>
+                    </div>
                   </div>
-                </mat-card-content>
-              </mat-card>
-            </mat-grid-tile>
 
-            <!-- Ratings Pending -->
-            <mat-grid-tile>
-              <mat-card class="moderation-card ratings-pending"
-                        [class.has-pending]="hasPendingRatings"
-                        (click)="navigateToModeration('content')">
-                <mat-card-content>
-                  <div class="moderation-icon">
-                    <mat-icon>rate_review</mat-icon>
-                  </div>
-                  <div class="moderation-content">
-                    <h3>{{ pendingRatingsCount }}</h3>
-                    <p>Ratings Pending</p>
-                    <mat-chip-set>
+                  <!-- Ratings Pending -->
+                  <div class="moderation-item"
+                       [class.has-pending]="hasPendingRatings"
+                       (click)="navigateToModeration('content')">
+                    <div class="moderation-icon">
+                      <mat-icon>rate_review</mat-icon>
+                    </div>
+                    <div class="moderation-info">
+                      <h4 class="moderation-value">{{ pendingRatingsCount }}</h4>
+                      <p class="moderation-label">Ratings Pending</p>
                       <mat-chip *ngIf="hasFlaggedRatings" 
-                               color="warn" variant="outlined">
+                               color="warn" 
+                               variant="outlined"
+                               class="flag-chip">
                         {{ flaggedRatingsCount }} flagged
                       </mat-chip>
-                    </mat-chip-set>
+                    </div>
                   </div>
-                </mat-card-content>
-              </mat-card>
-            </mat-grid-tile>
 
-            <!-- Users Pending -->
-            <mat-grid-tile>
-              <mat-card class="moderation-card users-pending"
-                        [class.has-pending]="hasPendingUsers"
-                        (click)="navigateToModeration('users')">
-                <mat-card-content>
-                  <div class="moderation-icon">
-                    <mat-icon>person_add</mat-icon>
-                  </div>
-                  <div class="moderation-content">
-                    <h3>{{ pendingUsersCount }}</h3>
-                    <p>Users Pending</p>
-                    <mat-chip-set>
+                  <!-- Users Pending -->
+                  <div class="moderation-item"
+                       [class.has-pending]="hasPendingUsers"
+                       (click)="navigateToModeration('users')">
+                    <div class="moderation-icon">
+                      <mat-icon>person_add</mat-icon>
+                    </div>
+                    <div class="moderation-info">
+                      <h4 class="moderation-value">{{ pendingUsersCount }}</h4>
+                      <p class="moderation-label">Users Pending</p>
                       <mat-chip *ngIf="hasFlaggedUsers" 
-                               color="warn" variant="outlined">
+                               color="warn" 
+                               variant="outlined"
+                               class="flag-chip">
                         {{ flaggedUsersCount }} flagged
                       </mat-chip>
-                    </mat-chip-set>
+                    </div>
                   </div>
-                </mat-card-content>
-              </mat-card>
-            </mat-grid-tile>
-          </mat-grid-list>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </div>
+
+          <!-- Recent Activity -->
+          <div class="activity-section">
+            <mat-card class="activity-card">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon>history</mat-icon>
+                  Recent Activity
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <div *ngIf="recentActivity.length > 0" class="activity-list">
+                  <div 
+                    *ngFor="let activity of recentActivity.slice(0, 5)" 
+                    class="activity-item">
+                    <div class="activity-icon">
+                      <mat-icon>{{ activity.icon }}</mat-icon>
+                    </div>
+                    <div class="activity-content">
+                      <p class="activity-text">{{ activity.message }}</p>
+                      <span class="activity-time">{{ activity.time }}</span>
+                    </div>
+                  </div>
+                </div>
+                <div *ngIf="recentActivity.length === 0" class="no-activity">
+                  <p>No recent activity</p>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </div>
         </div>
 
         <!-- Quick Actions -->
-        <div class="actions-section">
-          <h2>Quick Actions</h2>
-          <mat-grid-list cols="4" rowHeight="80px" gutterSize="16px">
-            <mat-grid-tile>
-              <button mat-raised-button color="primary" (click)="navigateTo('users')">
-                <mat-icon>people</mat-icon>
-                Manage Users
-              </button>
-            </mat-grid-tile>
-
-            <mat-grid-tile>
-              <button mat-raised-button color="accent" (click)="navigateTo('recipes')">
-                <mat-icon>restaurant</mat-icon>
-                Moderate Recipes
-              </button>
-            </mat-grid-tile>
-
-            <mat-grid-tile>
-              <button mat-raised-button color="warn" (click)="navigateTo('content')">
-                <mat-icon>rate_review</mat-icon>
-                Review Content
-              </button>
-            </mat-grid-tile>
-
-            <mat-grid-tile>
-              <button mat-raised-button (click)="navigateTo('analytics')">
-                <mat-icon>analytics</mat-icon>
-                View Analytics
-              </button>
-            </mat-grid-tile>
-          </mat-grid-list>
-        </div>
-
-        <!-- Recent Activity -->
-        <div class="activity-section">
-          <h2>Recent Activity</h2>
-          <mat-card>
-            <mat-card-content>
-              <div class="activity-item" *ngFor="let activity of recentActivity">
-                <div class="activity-icon">
-                  <mat-icon>{{ activity.icon }}</mat-icon>
-                </div>
-                <div class="activity-content">
-                  <p>{{ activity.message }}</p>
-                  <small>{{ activity.time }}</small>
-                </div>
-              </div>
-            </mat-card-content>
-          </mat-card>
+        <div class="quick-actions">
+          <button 
+            mat-raised-button 
+            color="primary" 
+            class="action-button"
+            (click)="navigateTo('users')">
+            <mat-icon>people</mat-icon>
+            Manage Users
+          </button>
+          <button 
+            mat-raised-button 
+            color="accent" 
+            class="action-button"
+            (click)="navigateTo('recipes')">
+            <mat-icon>restaurant</mat-icon>
+            Moderate Recipes
+          </button>
+          <button 
+            mat-raised-button 
+            color="warn" 
+            class="action-button"
+            (click)="navigateTo('content')">
+            <mat-icon>rate_review</mat-icon>
+            Review Content
+          </button>
+          <button 
+            mat-raised-button 
+            class="action-button"
+            (click)="navigateTo('analytics')">
+            <mat-icon>analytics</mat-icon>
+            View Analytics
+          </button>
         </div>
       </div>
     </div>
   `,
   styles: [`
     .admin-dashboard {
-      width: 100%;
-      max-width: none;
-      margin: 0;
-      padding: 0;
+      @apply max-w-7xl mx-auto px-4 py-6;
     }
 
-    .dashboard-header {
-      margin-bottom: 32px;
-      text-align: left;
+    /* Welcome Section */
+    .welcome-section {
+      @apply mb-8;
+    }
+    
+    .welcome-card {
+      @apply bg-gradient-to-r from-blue-50 to-indigo-50 border-0 shadow-sm;
+    }
+    
+    .welcome-content {
+      @apply flex flex-col md:flex-row items-center justify-between p-6;
+    }
+    
+    .welcome-text {
+      @apply text-center md:text-left mb-4 md:mb-0;
+    }
+    
+    .welcome-text h2 {
+      @apply text-2xl font-bold text-gray-900 mb-2;
+    }
+    
+    .welcome-text p {
+      @apply text-gray-600;
+    }
+    
+    .welcome-actions {
+      @apply flex-shrink-0;
     }
 
-    .dashboard-header h1 {
-      margin: 0 0 8px 0;
-      color: #1976d2;
-      font-size: 2rem;
+    /* Statistics Section */
+    .stats-section {
+      @apply mb-8;
     }
-
-    .dashboard-header p {
-      margin: 0;
-      color: #666;
-      font-size: 1.1rem;
+    
+    .stats-grid {
+      @apply grid grid-cols-2 md:grid-cols-4 gap-4;
     }
-
-    .loading-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 64px;
-    }
-
-    .loading-container p {
-      margin-top: 16px;
-      color: #666;
-    }
-
-    .dashboard-content {
-      display: flex;
-      flex-direction: column;
-      gap: 32px;
-    }
-
-    .stats-section h2,
-    .moderation-section h2,
-    .actions-section h2,
-    .activity-section h2 {
-      margin: 0 0 16px 0;
-      color: #333;
-      font-size: 1.5rem;
-    }
-
+    
     .stat-card {
-      width: 100%;
-      height: 100%;
-      cursor: pointer;
-      transition: transform 0.2s ease;
+      @apply border-0 shadow-sm;
     }
-
-    .stat-card:hover {
-      transform: translateY(-2px);
+    
+    .stat-content {
+      @apply flex items-center p-4;
     }
-
-    .stat-card mat-card-content {
-      display: flex;
-      align-items: center;
-      height: 100%;
-      padding: 16px;
-    }
-
+    
     .stat-icon {
-      margin-right: 16px;
+      @apply flex-shrink-0 w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4;
     }
-
+    
     .stat-icon mat-icon {
-      font-size: 2rem;
-      width: 2rem;
-      height: 2rem;
+      @apply text-blue-600 text-xl;
+    }
+    
+    .stat-info {
+      @apply flex-1;
+    }
+    
+    .stat-value {
+      @apply text-2xl font-bold text-gray-900 mb-1;
+    }
+    
+    .stat-label {
+      @apply text-sm text-gray-600;
     }
 
-    .stat-content h3 {
-      margin: 0 0 4px 0;
-      font-size: 1.8rem;
-      font-weight: 600;
+    /* Main Content Grid */
+    .main-content {
+      @apply grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8;
     }
 
-    .stat-content p {
-      margin: 0 0 4px 0;
-      color: #666;
-    }
-
-    .stat-content small {
-      color: #999;
-      font-size: 0.8rem;
-    }
-
-    .users-card .stat-icon mat-icon { color: #1976d2; }
-    .recipes-card .stat-icon mat-icon { color: #388e3c; }
-    .ratings-card .stat-icon mat-icon { color: #ffc107; }
-    .views-card .stat-icon mat-icon { color: #9c27b0; }
-
+    /* Moderation Section */
     .moderation-card {
-      width: 100%;
-      height: 100%;
-      cursor: pointer;
-      transition: all 0.2s ease;
+      @apply border-0 shadow-sm;
     }
-
-    .moderation-card:hover {
-      transform: translateY(-2px);
+    
+    .moderation-card mat-card-header {
+      @apply pb-4;
     }
-
-    .moderation-card.has-pending {
-      border: 2px solid #f44336;
-      background-color: #ffebee;
+    
+    .moderation-card mat-card-title {
+      @apply flex items-center text-lg font-semibold text-gray-900;
     }
-
-    .moderation-card mat-card-content {
-      display: flex;
-      align-items: center;
-      height: 100%;
-      padding: 16px;
+    
+    .moderation-card mat-card-title mat-icon {
+      @apply mr-2 text-orange-600;
     }
-
+    
+    .view-all-btn {
+      @apply ml-auto;
+    }
+    
+    .moderation-grid {
+      @apply space-y-4;
+    }
+    
+    .moderation-item {
+      @apply flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer;
+    }
+    
+    .moderation-item.has-pending {
+      @apply bg-red-50 border-l-4 border-red-500;
+    }
+    
     .moderation-icon {
-      margin-right: 16px;
+      @apply flex-shrink-0 w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center;
     }
-
+    
     .moderation-icon mat-icon {
-      font-size: 1.8rem;
-      width: 1.8rem;
-      height: 1.8rem;
-      color: #666;
+      @apply text-gray-600 text-lg;
+    }
+    
+    .moderation-info {
+      @apply flex-1;
+    }
+    
+    .moderation-value {
+      @apply text-xl font-bold text-gray-900 mb-1;
+    }
+    
+    .moderation-label {
+      @apply text-sm text-gray-600 mb-2;
+    }
+    
+    .flag-chip {
+      @apply text-xs;
     }
 
-    .moderation-content h3 {
-      margin: 0 0 4px 0;
-      font-size: 1.5rem;
-      font-weight: 600;
+    /* Activity Section */
+    .activity-card {
+      @apply border-0 shadow-sm;
     }
-
-    .moderation-content p {
-      margin: 0 0 8px 0;
-      color: #666;
+    
+    .activity-card mat-card-header {
+      @apply pb-4;
     }
-
-    .recipes-pending .moderation-icon mat-icon { color: #388e3c; }
-    .ratings-pending .moderation-icon mat-icon { color: #ffc107; }
-    .users-pending .moderation-icon mat-icon { color: #1976d2; }
-
-    .actions-section button {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
+    
+    .activity-card mat-card-title {
+      @apply flex items-center text-lg font-semibold text-gray-900;
     }
-
-    .actions-section button mat-icon {
-      font-size: 1.5rem;
-      width: 1.5rem;
-      height: 1.5rem;
+    
+    .activity-card mat-card-title mat-icon {
+      @apply mr-2 text-blue-600;
     }
-
+    
+    .activity-list {
+      @apply space-y-4;
+    }
+    
     .activity-item {
-      display: flex;
-      align-items: center;
-      padding: 12px 0;
-      border-bottom: 1px solid #f0f0f0;
+      @apply flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors;
     }
-
-    .activity-item:last-child {
-      border-bottom: none;
-    }
-
+    
     .activity-icon {
-      margin-right: 16px;
+      @apply flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center;
     }
-
+    
     .activity-icon mat-icon {
-      color: #1976d2;
+      @apply text-blue-600 text-sm;
+    }
+    
+    .activity-content {
+      @apply flex-1 min-w-0;
+    }
+    
+    .activity-text {
+      @apply text-sm text-gray-900 mb-1;
+    }
+    
+    .activity-time {
+      @apply text-xs text-gray-500;
+    }
+    
+    .no-activity {
+      @apply text-center py-8 text-gray-500;
+    }
+    
+    .no-activity p {
+      @apply text-gray-600;
     }
 
-    .activity-content p {
-      margin: 0 0 4px 0;
-      color: #333;
+    /* Quick Actions */
+    .quick-actions {
+      @apply flex flex-wrap justify-center gap-3;
+    }
+    
+    .action-button {
+      @apply min-w-[140px];
+    }
+    
+    .action-button mat-icon {
+      @apply mr-2;
     }
 
-    .activity-content small {
-      color: #999;
-      font-size: 0.8rem;
+    /* Loading Container */
+    .loading-container {
+      @apply flex flex-col items-center justify-center py-16;
+    }
+    
+    .loading-container p {
+      @apply mt-4 text-gray-600;
     }
 
-    @media (max-width: 1200px) {
-      mat-grid-list {
-        margin-bottom: 16px;
-      }
-    }
-
+    /* Responsive adjustments */
     @media (max-width: 768px) {
-      .dashboard-content {
-        gap: 24px;
+      .stats-grid {
+        @apply grid-cols-2;
       }
-
-      mat-grid-list {
-        margin-bottom: 16px;
+      
+      .main-content {
+        @apply grid-cols-1;
       }
-
-      .stat-card mat-card-content,
-      .moderation-card mat-card-content {
-        padding: 12px;
+      
+      .quick-actions {
+        @apply flex-col items-center;
       }
-
-      .stat-content h3 {
-        font-size: 1.4rem;
-      }
-
-      .moderation-content h3 {
-        font-size: 1.2rem;
+      
+      .quick-actions .action-button {
+        @apply w-full max-w-xs;
       }
     }
   `]
