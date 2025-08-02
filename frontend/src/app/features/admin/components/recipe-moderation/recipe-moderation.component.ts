@@ -75,6 +75,7 @@ import { RecipeDetailDialogComponent } from '../recipe-detail-dialog/recipe-deta
                   <mat-option value="draft">Draft</mat-option>
                   <mat-option value="pending">Pending</mat-option>
                   <mat-option value="rejected">Rejected</mat-option>
+                  <mat-option value="flagged">Flagged</mat-option>
                 </mat-select>
               </mat-form-field>
 
@@ -220,10 +221,13 @@ import { RecipeDetailDialogComponent } from '../recipe-detail-dialog/recipe-deta
                 <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
                 <td mat-cell *matCellDef="let recipe">
                   <mat-chip-set>
-                    <mat-chip *ngIf="recipe.is_published" color="primary" variant="outlined">
+                    <mat-chip *ngIf="recipe.moderation_status === 'approved' && recipe.is_published" color="primary" variant="outlined">
                       Published
                     </mat-chip>
-                    <mat-chip *ngIf="!recipe.is_published && recipe.moderation_status === 'pending'" color="warn" variant="outlined">
+                    <mat-chip *ngIf="recipe.moderation_status === 'draft'" color="basic" variant="outlined">
+                      Draft
+                    </mat-chip>
+                    <mat-chip *ngIf="recipe.moderation_status === 'pending'" color="warn" variant="outlined">
                       Pending
                     </mat-chip>
                     <mat-chip *ngIf="recipe.moderation_status === 'rejected'" color="warn">
@@ -286,11 +290,11 @@ import { RecipeDetailDialogComponent } from '../recipe-detail-dialog/recipe-deta
                       <mat-icon>edit</mat-icon>
                       <span>Edit Recipe</span>
                     </button>
-                    <button mat-menu-item (click)="approveRecipe(recipe)" *ngIf="!recipe.is_published">
+                    <button mat-menu-item (click)="approveRecipe(recipe)" *ngIf="recipe.moderation_status !== 'approved'">
                       <mat-icon>check_circle</mat-icon>
                       <span>Approve</span>
                     </button>
-                    <button mat-menu-item (click)="rejectRecipe(recipe)" *ngIf="!recipe.is_published">
+                    <button mat-menu-item (click)="rejectRecipe(recipe)" *ngIf="recipe.moderation_status !== 'rejected'">
                       <mat-icon>cancel</mat-icon>
                       <span>Reject</span>
                     </button>

@@ -49,7 +49,7 @@ export interface AdminRecipe {
   };
   view_count: number;
   favorite_count: number;
-  moderation_status: 'pending' | 'approved' | 'rejected' | 'flagged';
+  moderation_status: 'draft' | 'pending' | 'approved' | 'rejected' | 'flagged';
   moderation_notes?: string;
 }
 
@@ -87,7 +87,7 @@ export interface AdminRating {
   helpful_count: number;
   created_at: string;
   updated_at: string;
-  moderation_status: 'pending' | 'approved' | 'rejected' | 'flagged';
+  moderation_status: 'draft' | 'pending' | 'approved' | 'rejected' | 'flagged';
   moderation_notes?: string;
 }
 
@@ -247,7 +247,7 @@ export interface AdminFilters {
   };
   recipes?: {
     search?: string;
-    status?: 'published' | 'draft' | 'pending' | 'rejected';
+    status?: 'published' | 'draft' | 'pending' | 'rejected' | 'flagged';
     author?: string;
     category?: number;
     date_created_after?: string;

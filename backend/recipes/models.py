@@ -270,6 +270,25 @@ class Recipe(BaseModel):
         default=False,
         help_text=_("Whether this recipe is publicly visible")
     )
+    
+    class ModerationStatus(models.TextChoices):
+        DRAFT = 'draft', _('Draft')
+        PENDING = 'pending', _('Pending Review')
+        APPROVED = 'approved', _('Approved')
+        REJECTED = 'rejected', _('Rejected')
+        FLAGGED = 'flagged', _('Flagged for Review')
+    
+    moderation_status = models.CharField(
+        max_length=20,
+        choices=ModerationStatus.choices,
+        default=ModerationStatus.DRAFT,
+        help_text=_("Current moderation status of the recipe")
+    )
+    moderation_notes = models.TextField(
+        blank=True,
+        help_text=_("Notes from moderators about this recipe")
+    )
+    
     tags = models.JSONField(
         default=list,
         help_text=_("List of tags for this recipe"),
@@ -288,6 +307,7 @@ class Recipe(BaseModel):
             models.Index(fields=['title']),
             models.Index(fields=['author']),
             models.Index(fields=['is_published']),
+            models.Index(fields=['moderation_status']),
             models.Index(fields=['difficulty']),
             models.Index(fields=['cooking_method']),
         ]

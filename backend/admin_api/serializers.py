@@ -61,14 +61,13 @@ class AdminRecipeSerializer(serializers.ModelSerializer):
     rating_stats = serializers.SerializerMethodField()
     view_count = serializers.SerializerMethodField()
     favorite_count = serializers.SerializerMethodField()
-    moderation_status = serializers.CharField(default='approved')  # Placeholder
     
     class Meta:
         model = Recipe
         fields = [
             'id', 'title', 'description', 'author', 'is_published',
             'created_at', 'updated_at', 'categories', 'rating_stats',
-            'view_count', 'favorite_count', 'moderation_status'
+            'view_count', 'favorite_count', 'moderation_status', 'moderation_notes'
         ]
     
     def get_author(self, obj):
@@ -183,9 +182,10 @@ class PlatformStatisticsSerializer(serializers.Serializer):
         
         # Recipe statistics
         recipes = Recipe.objects.all()
-        published_recipes = recipes.filter(is_published=True)
-        pending_recipes = recipes.filter(is_published=False)  # Placeholder
-        rejected_recipes = recipes.none()  # Placeholder
+        published_recipes = recipes.filter(is_published=True, moderation_status=Recipe.ModerationStatus.APPROVED)
+        pending_recipes = recipes.filter(moderation_status=Recipe.ModerationStatus.PENDING)
+        rejected_recipes = recipes.filter(moderation_status=Recipe.ModerationStatus.REJECTED)
+        flagged_recipes = recipes.filter(moderation_status=Recipe.ModerationStatus.FLAGGED)
         new_recipes_month = recipes.filter(created_at__gte=month_ago)
         new_recipes_week = recipes.filter(created_at__gte=week_ago)
         
@@ -252,11 +252,10 @@ class ModerationQueueSerializer(serializers.Serializer):
     
     def to_representation(self, instance):
         """Generate moderation queue data."""
-        # Placeholder data - in a real implementation, you'd have moderation status fields
-        pending_recipes = Recipe.objects.filter(is_published=False)
-        flagged_recipes = Recipe.objects.none()  # Placeholder
+        pending_recipes = Recipe.objects.filter(moderation_status=Recipe.ModerationStatus.PENDING)
+        flagged_recipes = Recipe.objects.filter(moderation_status=Recipe.ModerationStatus.FLAGGED)
         
-        pending_ratings = Rating.objects.none()  # Placeholder
+        pending_ratings = Rating.objects.none()  # Placeholder - Rating model doesn't have moderation status yet
         flagged_ratings = Rating.objects.none()  # Placeholder
         
         pending_users = User.objects.filter(is_active=False)

@@ -125,9 +125,15 @@ class AdminRecipeViewSet(viewsets.ModelViewSet):
         status_filter = self.request.query_params.get('status', None)
         if status_filter:
             if status_filter == 'published':
-                queryset = queryset.filter(is_published=True)
+                queryset = queryset.filter(is_published=True, moderation_status=Recipe.ModerationStatus.APPROVED)
             elif status_filter == 'draft':
-                queryset = queryset.filter(is_published=False)
+                queryset = queryset.filter(moderation_status=Recipe.ModerationStatus.DRAFT)
+            elif status_filter == 'pending':
+                queryset = queryset.filter(moderation_status=Recipe.ModerationStatus.PENDING)
+            elif status_filter == 'rejected':
+                queryset = queryset.filter(moderation_status=Recipe.ModerationStatus.REJECTED)
+            elif status_filter == 'flagged':
+                queryset = queryset.filter(moderation_status=Recipe.ModerationStatus.FLAGGED)
         
         # Author filter
         author = self.request.query_params.get('author', None)
@@ -154,6 +160,7 @@ class AdminRecipeViewSet(viewsets.ModelViewSet):
     def approve(self, request, id=None):
         """Approve a recipe."""
         recipe = self.get_object()
+        recipe.moderation_status = Recipe.ModerationStatus.APPROVED
         recipe.is_published = True
         recipe.save()
         serializer = self.get_serializer(recipe)
@@ -163,7 +170,9 @@ class AdminRecipeViewSet(viewsets.ModelViewSet):
     def reject(self, request, id=None):
         """Reject a recipe."""
         recipe = self.get_object()
+        recipe.moderation_status = Recipe.ModerationStatus.REJECTED
         recipe.is_published = False
+        recipe.moderation_notes = request.data.get('reason', '')
         recipe.save()
         serializer = self.get_serializer(recipe)
         return Response(serializer.data)
@@ -171,8 +180,10 @@ class AdminRecipeViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def flag(self, request, id=None):
         """Flag a recipe for review."""
-        # Placeholder implementation
         recipe = self.get_object()
+        recipe.moderation_status = Recipe.ModerationStatus.FLAGGED
+        recipe.moderation_notes = request.data.get('reason', '')
+        recipe.save()
         serializer = self.get_serializer(recipe)
         return Response(serializer.data)
 
