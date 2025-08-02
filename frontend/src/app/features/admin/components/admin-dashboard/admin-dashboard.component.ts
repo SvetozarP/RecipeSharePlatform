@@ -44,7 +44,7 @@ import { PlatformStatistics, ModerationQueue } from '../../models/admin.models';
         <!-- Platform Statistics -->
         <div class="stats-section">
           <h2>Platform Statistics</h2>
-          <mat-grid-list cols="3" rowHeight="120px" gutterSize="16px">
+          <mat-grid-list cols="4" rowHeight="120px" gutterSize="16px">
             <!-- Users Stats -->
             <mat-grid-tile>
               <mat-card class="stat-card users-card">
@@ -90,6 +90,22 @@ import { PlatformStatistics, ModerationQueue } from '../../models/admin.models';
                     <h3>{{ statistics?.ratings?.total || 0 }}</h3>
                     <p>Total Ratings</p>
                     <small>Avg: {{ statistics?.ratings?.average_rating?.toFixed(1) || '0.0' }}</small>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+            </mat-grid-tile>
+
+            <!-- Views Stats -->
+            <mat-grid-tile>
+              <mat-card class="stat-card views-card">
+                <mat-card-content>
+                  <div class="stat-icon">
+                    <mat-icon>visibility</mat-icon>
+                  </div>
+                  <div class="stat-content">
+                    <h3>{{ statistics?.engagement?.total_views || 0 }}</h3>
+                    <p>Total Views</p>
+                    <small>{{ statistics?.activity?.recipes_created_today || 0 }} created today</small>
                   </div>
                 </mat-card-content>
               </mat-card>
@@ -228,13 +244,15 @@ import { PlatformStatistics, ModerationQueue } from '../../models/admin.models';
   `,
   styles: [`
     .admin-dashboard {
-      max-width: 1200px;
-      margin: 0 auto;
+      width: 100%;
+      max-width: none;
+      margin: 0;
+      padding: 0;
     }
 
     .dashboard-header {
       margin-bottom: 32px;
-      text-align: center;
+      text-align: left;
     }
 
     .dashboard-header h1 {
@@ -324,6 +342,7 @@ import { PlatformStatistics, ModerationQueue } from '../../models/admin.models';
     .users-card .stat-icon mat-icon { color: #1976d2; }
     .recipes-card .stat-icon mat-icon { color: #388e3c; }
     .ratings-card .stat-icon mat-icon { color: #ffc107; }
+    .views-card .stat-icon mat-icon { color: #9c27b0; }
 
     .moderation-card {
       width: 100%;
@@ -417,6 +436,12 @@ import { PlatformStatistics, ModerationQueue } from '../../models/admin.models';
     .activity-content small {
       color: #999;
       font-size: 0.8rem;
+    }
+
+    @media (max-width: 1200px) {
+      mat-grid-list {
+        margin-bottom: 16px;
+      }
     }
 
     @media (max-width: 768px) {
