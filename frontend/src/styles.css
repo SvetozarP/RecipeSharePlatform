@@ -3,6 +3,10 @@
 
 /* Import Material Icons */
 @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons+Outlined');
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons+Round');
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons+Sharp');
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons+Two+Tone');
 
 /* Import Tailwind */
 @tailwind base;
@@ -281,7 +285,7 @@ body, input, textarea, select, button {
 
 /* Material Icons global styling */
 .mat-icon {
-  font-family: 'Material Icons' !important;
+  font-family: 'Material Icons', 'Material Icons Outlined', 'Material Icons Round', 'Material Icons Sharp', 'Material Icons Two Tone' !important;
   font-weight: normal !important;
   font-style: normal !important;
   font-size: 24px !important;
@@ -295,7 +299,31 @@ body, input, textarea, select, button {
   -webkit-font-feature-settings: 'liga' !important;
   -webkit-font-smoothing: antialiased !important;
   text-rendering: optimizeLegibility !important;
+  speak: none !important;
 }
+
+/* Fallback for when Material Icons don't load */
+.mat-icon:not([class*="material-icons"]):before {
+  content: attr(aria-label) !important;
+  font-family: inherit !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+
+/* Ensure icons are visible */
+.mat-icon[class*="material-icons"] {
+  font-family: 'Material Icons' !important;
+}
+
+/* Specific icon fallbacks */
+.mat-icon[class*="restaurant"]:before { content: "🍽️"; }
+.mat-icon[class*="dashboard"]:before { content: "📊"; }
+.mat-icon[class*="person"]:before { content: "👤"; }
+.mat-icon[class*="admin_panel_settings"]:before { content: "⚙️"; }
+.mat-icon[class*="login"]:before { content: "🔑"; }
+.mat-icon[class*="logout"]:before { content: "🚪"; }
+.mat-icon[class*="menu"]:before { content: "☰"; }
+.mat-icon[class*="account_circle"]:before { content: "👤"; }
 
 /* Snackbar styling */
 .warning-snackbar {

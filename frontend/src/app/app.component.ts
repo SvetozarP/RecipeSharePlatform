@@ -15,7 +15,7 @@ import { Observable } from 'rxjs';
       <!-- Navigation Header -->
       <mat-toolbar color="primary" class="mat-elevation-1">
         <button mat-icon-button (click)="toggleSidenav()" *ngIf="isMobile">
-          <mat-icon>menu</mat-icon>
+          <mat-icon aria-label="Menu">menu</mat-icon>
         </button>
         
         <span class="cursor-pointer font-bold text-lg" (click)="navigateHome()">
@@ -27,27 +27,34 @@ import { Observable } from 'rxjs';
         <!-- Desktop Navigation -->
         <div class="hidden md:flex items-center space-x-4">
           <button mat-button routerLink="/recipes">
-            <mat-icon>restaurant</mat-icon>
+            <mat-icon aria-label="Recipes">restaurant</mat-icon>
             Recipes
           </button>
           
           <button mat-button routerLink="/dashboard" *ngIf="currentUser$ | async">
-            <mat-icon>dashboard</mat-icon>
+            <mat-icon aria-label="Dashboard">dashboard</mat-icon>
             Dashboard
           </button>
           
           <button mat-button routerLink="/profile" *ngIf="currentUser$ | async">
-            <mat-icon>person</mat-icon>
+            <mat-icon aria-label="Profile">person</mat-icon>
             Profile
           </button>
           
+          <button mat-button routerLink="/admin" 
+                  class="admin-button"
+                  *ngIf="(currentUser$ | async)?.is_staff || (currentUser$ | async)?.is_superuser">
+            <mat-icon aria-label="Admin">admin_panel_settings</mat-icon>
+            Admin
+          </button>
+          
           <button mat-button routerLink="/auth/login" *ngIf="!(isAuthenticated$ | async)">
-            <mat-icon>login</mat-icon>
+            <mat-icon aria-label="Login">login</mat-icon>
             Login
           </button>
           
           <button mat-button (click)="logout()" *ngIf="isAuthenticated$ | async">
-            <mat-icon>logout</mat-icon>
+            <mat-icon aria-label="Logout">logout</mat-icon>
             Logout
           </button>
         </div>
@@ -65,7 +72,7 @@ import { Observable } from 'rxjs';
           <!-- User Info Section -->
           <div class="sidenav-header" *ngIf="currentUser$ | async as user">
             <div class="user-info">
-              <mat-icon class="user-avatar">account_circle</mat-icon>
+              <mat-icon class="user-avatar" aria-label="User Avatar">account_circle</mat-icon>
               <div class="user-details">
                 <h3 class="user-name">{{ user.first_name || user.username }}</h3>
                 <p class="user-email">{{ user.email }}</p>
@@ -76,30 +83,38 @@ import { Observable } from 'rxjs';
           <!-- Navigation Links -->
           <mat-nav-list class="sidenav-nav">
             <a mat-list-item routerLink="/recipes" (click)="closeSidenav()">
-              <mat-icon matListItemIcon>restaurant</mat-icon>
+              <mat-icon matListItemIcon aria-label="Recipes">restaurant</mat-icon>
               <span matListItemTitle>Recipes</span>
             </a>
             
             <a mat-list-item routerLink="/dashboard" (click)="closeSidenav()" *ngIf="currentUser$ | async">
-              <mat-icon matListItemIcon>dashboard</mat-icon>
+              <mat-icon matListItemIcon aria-label="Dashboard">dashboard</mat-icon>
               <span matListItemTitle>Dashboard</span>
             </a>
             
             <a mat-list-item routerLink="/profile" (click)="closeSidenav()" *ngIf="currentUser$ | async">
-              <mat-icon matListItemIcon>person</mat-icon>
+              <mat-icon matListItemIcon aria-label="Profile">person</mat-icon>
               <span matListItemTitle>Profile</span>
+            </a>
+            
+            <a mat-list-item routerLink="/admin" 
+               (click)="closeSidenav()" 
+               class="admin-nav-item"
+               *ngIf="(currentUser$ | async)?.is_staff || (currentUser$ | async)?.is_superuser">
+              <mat-icon matListItemIcon aria-label="Admin">admin_panel_settings</mat-icon>
+              <span matListItemTitle>Admin</span>
             </a>
             
             <mat-divider></mat-divider>
             
             <!-- Auth Actions -->
             <a mat-list-item routerLink="/auth/login" (click)="closeSidenav()" *ngIf="!(isAuthenticated$ | async)">
-              <mat-icon matListItemIcon>login</mat-icon>
+              <mat-icon matListItemIcon aria-label="Login">login</mat-icon>
               <span matListItemTitle>Login</span>
             </a>
             
             <button mat-list-item (click)="logoutAndClose()" *ngIf="isAuthenticated$ | async">
-              <mat-icon matListItemIcon>logout</mat-icon>
+              <mat-icon matListItemIcon aria-label="Logout">logout</mat-icon>
               <span matListItemTitle>Logout</span>
             </button>
           </mat-nav-list>
@@ -226,6 +241,31 @@ import { Observable } from 'rxjs';
       padding: 24px 16px;
       text-align: center;
       color: #666;
+    }
+    
+    .admin-button {
+      background-color: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      transition: all 0.2s ease;
+    }
+    
+    .admin-button:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+    
+    .admin-nav-item {
+      background-color: #e3f2fd !important;
+      border-left: 4px solid #2196F3;
+    }
+    
+    .admin-nav-item:hover {
+      background-color: #bbdefb !important;
+    }
+    
+    .admin-nav-item mat-icon {
+      color: #2196F3 !important;
     }
     
     @media (max-width: 768px) {

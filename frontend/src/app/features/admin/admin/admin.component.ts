@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterOutlet } from '@angular/router';
+import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
@@ -27,7 +27,8 @@ import { ModerationQueue } from '../models/admin.models';
     MatListModule,
     MatDividerModule,
     MatBadgeModule,
-    MatMenuModule
+    MatMenuModule,
+    RouterLink
   ],
   template: `
     <mat-sidenav-container class="admin-container">
