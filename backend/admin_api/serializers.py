@@ -66,7 +66,7 @@ class AdminRecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = [
-            'id', 'title', 'slug', 'description', 'author', 'is_published',
+            'id', 'title', 'description', 'author', 'is_published',
             'created_at', 'updated_at', 'categories', 'rating_stats',
             'view_count', 'favorite_count', 'moderation_status'
         ]
@@ -152,7 +152,6 @@ class AdminRatingSerializer(serializers.ModelSerializer):
         return {
             'id': str(obj.recipe.id),
             'title': obj.recipe.title,
-            'slug': obj.recipe.slug,
         }
     
     def get_user(self, obj):
