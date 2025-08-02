@@ -541,9 +541,26 @@ class AdminSettingsView(viewsets.ViewSet):
         serializer.is_valid()
         return Response(serializer.data)
     
-    def update(self, request):
+    def update(self, request, pk=None):
         """Update system settings."""
         serializer = SystemSettingsSerializer(data=request.data)
+        if serializer.is_valid():
+            # Placeholder implementation - in real app, save to database
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def partial_update(self, request, pk=None):
+        """Partially update system settings (PATCH method)."""
+        serializer = SystemSettingsSerializer(data=request.data, partial=True)
+        if serializer.is_valid():
+            # Placeholder implementation - in real app, save to database
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    @action(detail=False, methods=['patch'])
+    def update_settings(self, request):
+        """Update system settings without requiring pk."""
+        serializer = SystemSettingsSerializer(data=request.data, partial=True)
         if serializer.is_valid():
             # Placeholder implementation - in real app, save to database
             return Response(serializer.data)

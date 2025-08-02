@@ -203,7 +203,7 @@ export class AdminService {
   }
 
   updateSystemSettings(settings: Partial<SystemSettings>): Observable<SystemSettings> {
-    return this.http.patch<SystemSettings>(`${this.apiUrl}/settings/`, settings);
+    return this.http.patch<SystemSettings>(`${this.apiUrl}/settings/update_settings/`, settings);
   }
 
   // Bulk Operations

@@ -469,6 +469,10 @@ import { PlatformStatistics, ModerationQueue, RecentActivity } from '../../model
       @apply mt-4 text-gray-600;
     }
 
+    .mat-drawer-content {
+      width: 100% !important;
+    }
+
     /* Responsive adjustments */
     @media (max-width: 768px) {
       .stats-grid {
