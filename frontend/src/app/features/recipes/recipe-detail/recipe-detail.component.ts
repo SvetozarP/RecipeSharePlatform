@@ -394,23 +394,13 @@ import { RecipeViewsService } from '../../dashboard/services/recipe-views.servic
           </div>
         </div>
 
-        <!-- Recipe Navigation -->
+        <!-- Browse More Recipes -->
         <div class="bg-white rounded-lg shadow-sm p-6">
-          <div class="flex justify-between items-center">
-            <button mat-button (click)="goToPreviousRecipe()" [disabled]="!hasPreviousRecipe()">
-              <mat-icon>chevron_left</mat-icon>
-              Previous Recipe
-            </button>
-            
-            <a routerLink="/recipes" mat-button color="primary">
+          <div class="flex justify-center">
+            <a routerLink="/recipes" mat-raised-button color="primary">
               <mat-icon>view_list</mat-icon>
               Browse More Recipes
             </a>
-            
-            <button mat-button (click)="goToNextRecipe()" [disabled]="!hasNextRecipe()">
-              Next Recipe
-              <mat-icon>chevron_right</mat-icon>
-            </button>
           </div>
         </div>
       </div>
@@ -992,25 +982,7 @@ export class RecipeDetailComponent implements OnInit, OnDestroy {
     }
   }
 
-  goToPreviousRecipe(): void {
-    // This would require additional API endpoint or local state management
-    console.log('Previous recipe navigation to be implemented');
-  }
 
-  goToNextRecipe(): void {
-    // This would require additional API endpoint or local state management
-    console.log('Next recipe navigation to be implemented');
-  }
-
-  hasPreviousRecipe(): boolean {
-    // This would be determined by API or local state
-    return false;
-  }
-
-  hasNextRecipe(): boolean {
-    // This would be determined by API or local state
-    return false;
-  }
 
   // Helper methods
   getStarArray(rating: number): string[] {
