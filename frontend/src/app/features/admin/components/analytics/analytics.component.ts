@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -14,8 +14,14 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatDividerModule } from '@angular/material/divider';
+import { NgChartsModule, BaseChartDirective } from 'ng2-charts';
+import { Chart, ChartConfiguration, ChartData, ChartType } from 'chart.js';
 import { AdminService } from '../../services/admin.service';
 import { AnalyticsData } from '../../models/admin.models';
+
+// Register Chart.js plugins
+import { registerables } from 'chart.js';
+Chart.register(...registerables);
 
 @Component({
   selector: 'app-analytics',
@@ -36,7 +42,8 @@ import { AnalyticsData } from '../../models/admin.models';
     MatProgressSpinnerModule,
     MatExpansionModule,
     MatTabsModule,
-    MatDividerModule
+    MatDividerModule,
+    NgChartsModule
   ],
   template: `
     <div class="analytics">
@@ -62,6 +69,10 @@ import { AnalyticsData } from '../../models/admin.models';
               <button mat-raised-button color="primary" type="submit">
                 <mat-icon>refresh</mat-icon>
                 Update
+              </button>
+              <button mat-stroked-button type="button" (click)="refreshCharts()">
+                <mat-icon>sync</mat-icon>
+                Refresh Charts
               </button>
             </div>
           </form>
@@ -139,10 +150,12 @@ import { AnalyticsData } from '../../models/admin.models';
           <mat-tab label="User Growth">
             <div class="chart-container">
               <h3>User Growth Over Time</h3>
-              <div class="chart-placeholder">
-                <mat-icon>show_chart</mat-icon>
-                <p>User growth chart would be displayed here</p>
-                <small>Data points: {{ analyticsData?.user_growth?.labels?.length || 0 }}</small>
+              <div class="chart-wrapper">
+                <canvas baseChart
+                  [data]="userGrowthChartData"
+                  [options]="userGrowthChartOptions"
+                  [type]="userGrowthChartType">
+                </canvas>
               </div>
             </div>
           </mat-tab>
@@ -150,10 +163,12 @@ import { AnalyticsData } from '../../models/admin.models';
           <mat-tab label="Recipe Activity">
             <div class="chart-container">
               <h3>Recipe Creation Activity</h3>
-              <div class="chart-placeholder">
-                <mat-icon>show_chart</mat-icon>
-                <p>Recipe activity chart would be displayed here</p>
-                <small>Data points: {{ analyticsData?.recipe_activity?.labels?.length || 0 }}</small>
+              <div class="chart-wrapper">
+                <canvas baseChart
+                  [data]="recipeActivityChartData"
+                  [options]="recipeActivityChartOptions"
+                  [type]="recipeActivityChartType">
+                </canvas>
               </div>
             </div>
           </mat-tab>
@@ -161,10 +176,12 @@ import { AnalyticsData } from '../../models/admin.models';
           <mat-tab label="Category Distribution">
             <div class="chart-container">
               <h3>Recipes by Category</h3>
-              <div class="chart-placeholder">
-                <mat-icon>pie_chart</mat-icon>
-                <p>Category distribution pie chart would be displayed here</p>
-                <small>Categories: {{ analyticsData?.category_distribution?.labels?.length || 0 }}</small>
+              <div class="chart-wrapper">
+                <canvas baseChart
+                  [data]="categoryDistributionChartData"
+                  [options]="categoryDistributionChartOptions"
+                  [type]="categoryDistributionChartType">
+                </canvas>
               </div>
             </div>
           </mat-tab>
@@ -172,10 +189,12 @@ import { AnalyticsData } from '../../models/admin.models';
           <mat-tab label="Rating Distribution">
             <div class="chart-container">
               <h3>Rating Distribution</h3>
-              <div class="chart-placeholder">
-                <mat-icon>bar_chart</mat-icon>
-                <p>Rating distribution bar chart would be displayed here</p>
-                <small>Rating levels: {{ analyticsData?.rating_distribution?.labels?.length || 0 }}</small>
+              <div class="chart-wrapper">
+                <canvas baseChart
+                  [data]="ratingDistributionChartData"
+                  [options]="ratingDistributionChartOptions"
+                  [type]="ratingDistributionChartType">
+                </canvas>
               </div>
             </div>
           </mat-tab>
@@ -393,33 +412,19 @@ import { AnalyticsData } from '../../models/admin.models';
       color: #333;
     }
 
-    .chart-placeholder {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 64px;
-      background-color: #f5f5f5;
+    .chart-wrapper {
+      position: relative;
+      height: 400px;
+      width: 100%;
+      background-color: white;
       border-radius: 8px;
-      border: 2px dashed #ddd;
+      border: 1px solid #e0e0e0;
+      padding: 16px;
     }
 
-    .chart-placeholder mat-icon {
-      font-size: 3rem;
-      width: 3rem;
-      height: 3rem;
-      color: #999;
-      margin-bottom: 16px;
-    }
-
-    .chart-placeholder p {
-      margin: 0 0 8px 0;
-      color: #666;
-      font-size: 1.1rem;
-    }
-
-    .chart-placeholder small {
-      color: #999;
+    .chart-wrapper canvas {
+      width: 100% !important;
+      height: 100% !important;
     }
 
     .performers-grid {
@@ -511,6 +516,337 @@ export class AnalyticsComponent implements OnInit {
   loading = false;
   analyticsData?: AnalyticsData;
   periodForm: FormGroup;
+  @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
+
+  // Chart configurations
+  userGrowthChartData: ChartConfiguration['data'] = {
+    labels: [],
+    datasets: [{
+      data: [],
+      label: 'Total Users',
+      borderColor: '#1976d2',
+      backgroundColor: 'rgba(25, 118, 210, 0.1)',
+      borderWidth: 3,
+      fill: true,
+      tension: 0.4,
+      pointBackgroundColor: '#1976d2',
+      pointBorderColor: '#ffffff',
+      pointBorderWidth: 2,
+      pointRadius: 6,
+      pointHoverRadius: 8,
+    }]
+  };
+  userGrowthChartOptions: ChartConfiguration['options'] = {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: {
+      duration: 1000,
+      easing: 'easeInOutQuart'
+    },
+    plugins: {
+      legend: {
+        display: true,
+        position: 'top',
+        labels: {
+          usePointStyle: true,
+          padding: 20,
+          font: {
+            size: 12,
+            weight: 'bold'
+          }
+        }
+      },
+      tooltip: {
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        titleColor: '#ffffff',
+        bodyColor: '#ffffff',
+        borderColor: '#1976d2',
+        borderWidth: 1,
+        cornerRadius: 8,
+        callbacks: {
+          label: function(context) {
+            let label = context.dataset.label || '';
+            if (label) {
+              label += ': ';
+            }
+            if (context.parsed.y !== null) {
+              label += context.parsed.y.toLocaleString();
+            }
+            return label;
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        type: 'category',
+        grid: {
+          display: false,
+        },
+        ticks: {
+          font: {
+            size: 11
+          },
+          color: '#666'
+        }
+      },
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: 'rgba(0, 0, 0, 0.1)',
+        },
+        ticks: {
+          font: {
+            size: 11
+          },
+          color: '#666',
+          callback: function(value) {
+            return value.toLocaleString();
+          }
+        }
+      }
+    },
+    interaction: {
+      intersect: false,
+      mode: 'index'
+    }
+  };
+  userGrowthChartType: ChartType = 'line';
+
+  recipeActivityChartData: ChartConfiguration['data'] = {
+    labels: [],
+    datasets: [{
+      data: [],
+      label: 'Total Recipes',
+      borderColor: '#4caf50',
+      backgroundColor: 'rgba(76, 175, 80, 0.1)',
+      borderWidth: 3,
+      fill: true,
+      tension: 0.4,
+      pointBackgroundColor: '#4caf50',
+      pointBorderColor: '#ffffff',
+      pointBorderWidth: 2,
+      pointRadius: 6,
+      pointHoverRadius: 8,
+    }]
+  };
+  recipeActivityChartOptions: ChartConfiguration['options'] = {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: {
+      duration: 1000,
+      easing: 'easeInOutQuart'
+    },
+    plugins: {
+      legend: {
+        display: true,
+        position: 'top',
+        labels: {
+          usePointStyle: true,
+          padding: 20,
+          font: {
+            size: 12,
+            weight: 'bold'
+          }
+        }
+      },
+      tooltip: {
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        titleColor: '#ffffff',
+        bodyColor: '#ffffff',
+        borderColor: '#4caf50',
+        borderWidth: 1,
+        cornerRadius: 8,
+        callbacks: {
+          label: function(context) {
+            let label = context.dataset.label || '';
+            if (label) {
+              label += ': ';
+            }
+            if (context.parsed.y !== null) {
+              label += context.parsed.y.toLocaleString();
+            }
+            return label;
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        type: 'category',
+        grid: {
+          display: false,
+        },
+        ticks: {
+          font: {
+            size: 11
+          },
+          color: '#666'
+        }
+      },
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: 'rgba(0, 0, 0, 0.1)',
+        },
+        ticks: {
+          font: {
+            size: 11
+          },
+          color: '#666',
+          callback: function(value) {
+            return value.toLocaleString();
+          }
+        }
+      }
+    },
+    interaction: {
+      intersect: false,
+      mode: 'index'
+    }
+  };
+  recipeActivityChartType: ChartType = 'line';
+
+  categoryDistributionChartData: ChartConfiguration['data'] = {
+    labels: [],
+    datasets: [{
+      data: [],
+      label: 'Recipes',
+      backgroundColor: [
+        '#42a5f5', '#ec407a', '#ab47bc', '#7e57c2', '#4db6ac',
+        '#ffca28', '#ffee58', '#ff8a65', '#a1887f', '#90a4ae',
+        '#26a69a', '#ef5350', '#ff7043', '#8d6e63', '#78909c'
+      ],
+      borderColor: '#ffffff',
+      borderWidth: 2,
+      hoverBorderColor: '#ffffff',
+      hoverBorderWidth: 3,
+    }]
+  };
+  categoryDistributionChartOptions: ChartConfiguration['options'] = {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: {
+      duration: 1000,
+      easing: 'easeInOutQuart'
+    },
+    plugins: {
+      legend: {
+        display: true,
+        position: 'right',
+        labels: {
+          usePointStyle: true,
+          padding: 15,
+          font: {
+            size: 11
+          }
+        }
+      },
+      tooltip: {
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        titleColor: '#ffffff',
+        bodyColor: '#ffffff',
+        cornerRadius: 8,
+        callbacks: {
+          label: function(context) {
+            const label = context.label || '';
+            const value = context.parsed;
+            const total = (context.dataset.data as number[]).reduce((a: number, b: number) => a + b, 0);
+            const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
+            return `${label}: ${value} (${percentage}%)`;
+          }
+        }
+      }
+    }
+  };
+  categoryDistributionChartType: ChartType = 'doughnut';
+
+  ratingDistributionChartData: ChartConfiguration['data'] = {
+    labels: [],
+    datasets: [{
+      data: [],
+      label: 'Ratings',
+      backgroundColor: [
+        '#f44336', '#ff9800', '#ffc107', '#8bc34a', '#4caf50'
+      ],
+      borderColor: '#ffffff',
+      borderWidth: 2,
+      borderRadius: 8,
+      borderSkipped: false,
+    }]
+  };
+  ratingDistributionChartOptions: ChartConfiguration['options'] = {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: {
+      duration: 1000,
+      easing: 'easeInOutQuart'
+    },
+    plugins: {
+      legend: {
+        display: true,
+        position: 'top',
+        labels: {
+          usePointStyle: true,
+          padding: 20,
+          font: {
+            size: 12,
+            weight: 'bold'
+          }
+        }
+      },
+      tooltip: {
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        titleColor: '#ffffff',
+        bodyColor: '#ffffff',
+        borderColor: '#ff9800',
+        borderWidth: 1,
+        cornerRadius: 8,
+        callbacks: {
+          label: function(context) {
+            let label = context.dataset.label || '';
+            if (label) {
+              label += ': ';
+            }
+            if (context.parsed.y !== null) {
+              label += context.parsed.y.toLocaleString();
+            }
+            return label;
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        grid: {
+          display: false,
+        },
+        ticks: {
+          font: {
+            size: 12,
+            weight: 'bold'
+          },
+          color: '#666'
+        }
+      },
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: 'rgba(0, 0, 0, 0.1)',
+        },
+        ticks: {
+          font: {
+            size: 11
+          },
+          color: '#666',
+          callback: function(value) {
+            return value.toLocaleString();
+          }
+        }
+      }
+    }
+  };
+  ratingDistributionChartType: ChartType = 'bar';
 
   // Getter methods for safe access to analytics data
   get totalUsers(): number {
@@ -571,6 +907,7 @@ export class AnalyticsComponent implements OnInit {
     this.adminService.getAnalyticsData(period).subscribe({
       next: (data) => {
         this.analyticsData = data;
+        this.updateCharts();
         this.loading = false;
       },
       error: (error) => {
@@ -585,6 +922,44 @@ export class AnalyticsComponent implements OnInit {
 
   updatePeriod(): void {
     this.loadAnalyticsData();
+  }
+
+  refreshCharts(): void {
+    this.updateCharts();
+    this.snackBar.open('Charts refreshed successfully', 'Close', {
+      duration: 2000
+    });
+  }
+
+  private updateCharts(): void {
+    // Update User Growth Chart
+    if (this.analyticsData?.user_growth) {
+      this.userGrowthChartData.labels = this.analyticsData.user_growth.labels || [];
+      this.userGrowthChartData.datasets[0].data = this.analyticsData.user_growth.datasets[0]?.data || [];
+    }
+
+    // Update Recipe Activity Chart
+    if (this.analyticsData?.recipe_activity) {
+      this.recipeActivityChartData.labels = this.analyticsData.recipe_activity.labels || [];
+      this.recipeActivityChartData.datasets[0].data = this.analyticsData.recipe_activity.datasets[0]?.data || [];
+    }
+
+    // Update Rating Distribution Chart
+    if (this.analyticsData?.rating_distribution) {
+      this.ratingDistributionChartData.labels = this.analyticsData.rating_distribution.labels || [];
+      this.ratingDistributionChartData.datasets[0].data = this.analyticsData.rating_distribution.datasets[0]?.data || [];
+    }
+
+    // Update Category Distribution Chart
+    if (this.analyticsData?.category_distribution) {
+      this.categoryDistributionChartData.labels = this.analyticsData.category_distribution.labels || [];
+      this.categoryDistributionChartData.datasets[0].data = this.analyticsData.category_distribution.datasets[0]?.data || [];
+    }
+
+    // Force chart update
+    if (this.chart) {
+      this.chart.update();
+    }
   }
 
   // Helper methods for calculations
