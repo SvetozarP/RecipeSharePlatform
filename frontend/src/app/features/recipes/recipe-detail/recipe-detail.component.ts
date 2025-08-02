@@ -472,6 +472,7 @@ export class RecipeDetailComponent implements OnInit, OnDestroy {
   private recipeViewsService = inject(RecipeViewsService);
   private destroy$ = new Subject<void>();
   private viewStartTime = Date.now();
+  private isDeleting = false;
 
   // Authentication state
   isAuthenticated$ = this.authService.isAuthenticated$;
@@ -599,7 +600,8 @@ export class RecipeDetailComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     // Record view duration when component is destroyed
-    if (this.recipe()) {
+    // Skip recording if recipe is being deleted
+    if (this.recipe() && !this.isDeleting) {
       const viewDuration = Math.floor((Date.now() - this.viewStartTime) / 1000);
       this.recipeViewsService.recordView(this.recipe()!.id, viewDuration).catch(error => {
         console.error('Failed to record recipe view:', error);
@@ -927,19 +929,22 @@ export class RecipeDetailComponent implements OnInit, OnDestroy {
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if (result && recipe) {
+      if (result && recipe && !this.isDeleting) {
         this.performDelete(recipe.id);
       }
     });
   }
 
   private performDelete(recipeId: string): void {
+    this.isDeleting = true; // Set deletion flag to prevent view recording
+    
     this.recipeService.deleteRecipe(recipeId).subscribe({
       next: () => {
         this.snackBar.open('Recipe deleted successfully', 'Close', { duration: 3000 });
         this.router.navigate(['/recipes']);
       },
       error: () => {
+        this.isDeleting = false; // Reset flag on error
         this.snackBar.open('Failed to delete recipe', 'Close', { duration: 3000 });
       }
     });
