@@ -129,9 +129,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
   getDisplayName(): string {
     if (!this.userProfile) return '';
     
-    const displayName = this.userProfile.preferences.display_name;
-    if (displayName) return displayName;
-    
     const firstName = this.userProfile.user.first_name;
     const lastName = this.userProfile.user.last_name;
     
