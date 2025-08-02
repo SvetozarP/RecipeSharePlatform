@@ -1,0 +1,169 @@
+<div class="security-container">
+  
+  <!-- Password Change Section -->
+  <mat-expansion-panel class="security-panel" [expanded]="true">
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        <mat-icon>lock</mat-icon>
+        Change Password
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+    
+    <div class="panel-content">
+      <form [formGroup]="passwordForm" class="password-form">
+        <div class="form-row">
+          <mat-form-field appearance="fill" class="form-field">
+            <mat-label>Current Password</mat-label>
+            <input 
+              matInput 
+              type="password" 
+              formControlName="current_password"
+              [type]="showPassword ? 'text' : 'password'">
+            <button 
+              mat-icon-button 
+              matSuffix 
+              (click)="showPassword = !showPassword" 
+              type="button">
+              <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+            <mat-error *ngIf="getPasswordError('current_password')">
+              {{ getPasswordError('current_password') }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+        
+        <div class="form-row">
+          <mat-form-field appearance="fill" class="form-field">
+            <mat-label>New Password</mat-label>
+            <input 
+              matInput 
+              type="password" 
+              formControlName="new_password"
+              [type]="showNewPassword ? 'text' : 'password'">
+            <button 
+              mat-icon-button 
+              matSuffix 
+              (click)="showNewPassword = !showNewPassword" 
+              type="button">
+              <mat-icon>{{ showNewPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+            <mat-error *ngIf="getPasswordError('new_password')">
+              {{ getPasswordError('new_password') }}
+            </mat-error>
+          </mat-form-field>
+          
+          <mat-form-field appearance="fill" class="form-field">
+            <mat-label>Confirm New Password</mat-label>
+            <input 
+              matInput 
+              type="password" 
+              formControlName="confirm_password"
+              [type]="showConfirmPassword ? 'text' : 'password'">
+            <button 
+              mat-icon-button 
+              matSuffix 
+              (click)="showConfirmPassword = !showConfirmPassword" 
+              type="button">
+              <mat-icon>{{ showConfirmPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+            <mat-error *ngIf="getPasswordError('confirm_password')">
+              {{ getPasswordError('confirm_password') }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+        
+        <!-- Password Strength Indicator -->
+        <div class="password-strength" *ngIf="passwordForm.get('new_password')?.value">
+          <div class="strength-bar">
+            <div 
+              class="strength-fill" 
+              [style.width.%]="getPasswordStrength(passwordForm.get('new_password')?.value).percentage"
+              [style.background-color]="getPasswordStrength(passwordForm.get('new_password')?.value).color">
+            </div>
+          </div>
+          <span class="strength-text" [style.color]="getPasswordStrength(passwordForm.get('new_password')?.value).color">
+            {{ getPasswordStrength(passwordForm.get('new_password')?.value).strength }}
+          </span>
+        </div>
+        
+        <div class="form-actions">
+          <button 
+            mat-raised-button 
+            color="primary" 
+            (click)="onChangePassword()"
+            [disabled]="passwordForm.invalid || isChangingPassword"
+            class="change-password-btn">
+            <mat-spinner diameter="20" *ngIf="isChangingPassword"></mat-spinner>
+            <mat-icon *ngIf="!isChangingPassword">lock_reset</mat-icon>
+            {{ isChangingPassword ? 'Changing Password...' : 'Change Password' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </mat-expansion-panel>
+
+
+
+  <!-- Account Actions Section -->
+  <mat-expansion-panel class="security-panel">
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        <mat-icon>account_circle</mat-icon>
+        Account Actions
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+    
+    <div class="panel-content">
+      <div class="account-actions">
+        <div class="action-item">
+          <div class="action-info">
+            <h4>Export Your Data</h4>
+            <p>Download a copy of all your data including recipes, preferences, and activity history.</p>
+          </div>
+          <button 
+            mat-stroked-button 
+            color="primary" 
+            (click)="onExportData()"
+            class="export-btn">
+            <mat-icon>download</mat-icon>
+            Export Data
+          </button>
+        </div>
+        
+        <mat-divider></mat-divider>
+        
+        <div class="action-item">
+          <div class="action-info">
+            <h4>Deactivate Account</h4>
+            <p>Temporarily disable your account. You can reactivate it by logging in again.</p>
+          </div>
+          <button 
+            mat-stroked-button 
+            color="warn" 
+            (click)="onDeactivateAccount()"
+            class="deactivate-btn">
+            <mat-icon>pause_circle</mat-icon>
+            Deactivate Account
+          </button>
+        </div>
+        
+        <mat-divider></mat-divider>
+        
+        <div class="action-item">
+          <div class="action-info">
+            <h4>Delete Account</h4>
+            <p>Permanently delete your account and all associated data. This action cannot be undone.</p>
+          </div>
+          <button 
+            mat-raised-button 
+            color="warn" 
+            (click)="onDeleteAccount()"
+            class="delete-btn">
+            <mat-icon>delete_forever</mat-icon>
+            Delete Account
+          </button>
+        </div>
+      </div>
+    </div>
+  </mat-expansion-panel>
+</div> 

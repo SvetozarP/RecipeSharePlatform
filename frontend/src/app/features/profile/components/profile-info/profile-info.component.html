@@ -1,0 +1,205 @@
+<div class="profile-info-container">
+  <!-- Avatar Section -->
+  <div class="avatar-section">
+    <div class="avatar-container">
+      <img [src]="getAvatarUrl()" [alt]="getDisplayName()" class="avatar-image">
+      <div class="avatar-overlay" *ngIf="isEditing">
+        <mat-icon>photo_camera</mat-icon>
+        <span>Change Photo</span>
+      </div>
+    </div>
+    
+    <div class="avatar-actions" *ngIf="isEditing">
+      <input 
+        type="file" 
+        #fileInput 
+        (change)="onFileSelected($event)" 
+        accept="image/*" 
+        style="display: none;">
+      
+      <button 
+        mat-stroked-button 
+        (click)="fileInput.click()"
+        class="upload-btn">
+        <mat-icon>upload</mat-icon>
+        Upload Photo
+      </button>
+      
+      <button 
+        mat-button 
+        color="warn" 
+        (click)="removeSelectedFile()"
+        *ngIf="selectedFile"
+        class="remove-btn">
+        <mat-icon>delete</mat-icon>
+        Remove
+      </button>
+    </div>
+  </div>
+
+  <!-- Profile Form -->
+  <form [formGroup]="profileForm" class="profile-form">
+    <div class="form-section">
+      <h3 class="section-title">Basic Information</h3>
+      
+      <div class="form-row">
+        <mat-form-field appearance="fill" class="form-field">
+          <mat-label>First Name</mat-label>
+          <input matInput formControlName="first_name" [readonly]="!isEditing">
+          <mat-error *ngIf="getFieldError('first_name')">
+            {{ getFieldError('first_name') }}
+          </mat-error>
+        </mat-form-field>
+        
+        <mat-form-field appearance="fill" class="form-field">
+          <mat-label>Last Name</mat-label>
+          <input matInput formControlName="last_name" [readonly]="!isEditing">
+          <mat-error *ngIf="getFieldError('last_name')">
+            {{ getFieldError('last_name') }}
+          </mat-error>
+        </mat-form-field>
+      </div>
+      
+      <mat-form-field appearance="fill" class="form-field full-width">
+        <mat-label>Bio</mat-label>
+        <textarea 
+          matInput 
+          formControlName="bio" 
+          [readonly]="!isEditing"
+          rows="3"
+          placeholder="Tell us about yourself...">
+        </textarea>
+        <mat-hint>{{ profileForm.get('bio')?.value?.length || 0 }}/500 characters</mat-hint>
+        <mat-error *ngIf="getFieldError('bio')">
+          {{ getFieldError('bio') }}
+        </mat-error>
+      </mat-form-field>
+      
+      <div class="form-row">
+        <mat-form-field appearance="fill" class="form-field">
+          <mat-label>Location</mat-label>
+          <input matInput formControlName="location" [readonly]="!isEditing" placeholder="City, Country">
+          <mat-error *ngIf="getFieldError('location')">
+            {{ getFieldError('location') }}
+          </mat-error>
+        </mat-form-field>
+        
+        <mat-form-field appearance="fill" class="form-field">
+          <mat-label>Website</mat-label>
+          <input matInput formControlName="website" [readonly]="!isEditing" placeholder="https://yourwebsite.com">
+          <mat-error *ngIf="getFieldError('website')">
+            {{ getFieldError('website') }}
+          </mat-error>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <!-- Social Links Section -->
+    <div class="form-section" formGroupName="social_links">
+      <h3 class="section-title">Social Media Links</h3>
+      
+      <div class="social-links-grid">
+        <mat-form-field appearance="fill" class="social-field">
+          <mat-label>
+            <mat-icon>facebook</mat-icon>
+            Facebook
+          </mat-label>
+          <input matInput formControlName="facebook" [readonly]="!isEditing" placeholder="https://facebook.com/username">
+          <mat-error *ngIf="getSocialFieldError('facebook')">
+            {{ getSocialFieldError('facebook') }}
+          </mat-error>
+        </mat-form-field>
+        
+        <mat-form-field appearance="fill" class="social-field">
+          <mat-label>
+            <mat-icon>twitter</mat-icon>
+            Twitter
+          </mat-label>
+          <input matInput formControlName="twitter" [readonly]="!isEditing" placeholder="https://twitter.com/username">
+          <mat-error *ngIf="getSocialFieldError('twitter')">
+            {{ getSocialFieldError('twitter') }}
+          </mat-error>
+        </mat-form-field>
+        
+        <mat-form-field appearance="fill" class="social-field">
+          <mat-label>
+            <mat-icon>camera_alt</mat-icon>
+            Instagram
+          </mat-label>
+          <input matInput formControlName="instagram" [readonly]="!isEditing" placeholder="https://instagram.com/username">
+          <mat-error *ngIf="getSocialFieldError('instagram')">
+            {{ getSocialFieldError('instagram') }}
+          </mat-error>
+        </mat-form-field>
+        
+        <mat-form-field appearance="fill" class="social-field">
+          <mat-label>
+            <mat-icon>play_circle</mat-icon>
+            YouTube
+          </mat-label>
+          <input matInput formControlName="youtube" [readonly]="!isEditing" placeholder="https://youtube.com/channel">
+          <mat-error *ngIf="getSocialFieldError('youtube')">
+            {{ getSocialFieldError('youtube') }}
+          </mat-error>
+        </mat-form-field>
+        
+        <mat-form-field appearance="fill" class="social-field">
+          <mat-label>
+            <mat-icon>pin_drop</mat-icon>
+            Pinterest
+          </mat-label>
+          <input matInput formControlName="pinterest" [readonly]="!isEditing" placeholder="https://pinterest.com/username">
+          <mat-error *ngIf="getSocialFieldError('pinterest')">
+            {{ getSocialFieldError('pinterest') }}
+          </mat-error>
+        </mat-form-field>
+        
+        <mat-form-field appearance="fill" class="social-field">
+          <mat-label>
+            <mat-icon>business</mat-icon>
+            LinkedIn
+          </mat-label>
+          <input matInput formControlName="linkedin" [readonly]="!isEditing" placeholder="https://linkedin.com/in/username">
+          <mat-error *ngIf="getSocialFieldError('linkedin')">
+            {{ getSocialFieldError('linkedin') }}
+          </mat-error>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="form-actions">
+      <div class="action-buttons" *ngIf="!isEditing">
+        <button 
+          mat-raised-button 
+          color="primary" 
+          (click)="onEdit()"
+          class="edit-btn">
+          <mat-icon>edit</mat-icon>
+          Edit Profile
+        </button>
+      </div>
+      
+      <div class="action-buttons" *ngIf="isEditing">
+        <button 
+          mat-button 
+          (click)="onCancel()"
+          [disabled]="isSaving"
+          class="cancel-btn">
+          Cancel
+        </button>
+        
+        <button 
+          mat-raised-button 
+          color="primary" 
+          (click)="onSave()"
+          [disabled]="profileForm.invalid || isSaving"
+          class="save-btn">
+          <mat-spinner diameter="20" *ngIf="isSaving"></mat-spinner>
+          <mat-icon *ngIf="!isSaving">save</mat-icon>
+          {{ isSaving ? 'Saving...' : 'Save Changes' }}
+        </button>
+      </div>
+    </div>
+  </form>
+</div> 

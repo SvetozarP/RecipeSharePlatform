@@ -1,0 +1,227 @@
+.profile-container {
+  @apply max-w-6xl mx-auto px-4 py-8;
+}
+
+.profile-header {
+  @apply flex flex-col md:flex-row items-center md:items-start gap-6 mb-8;
+  
+  .profile-avatar {
+    @apply relative w-32 h-32 rounded-full overflow-hidden bg-gray-200 flex-shrink-0;
+    
+    .avatar-image {
+      @apply w-full h-full object-cover;
+    }
+    
+    .avatar-overlay {
+      @apply absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer;
+      
+      mat-icon {
+        @apply text-white text-2xl;
+      }
+    }
+  }
+  
+  .profile-info {
+    @apply flex-1 text-center md:text-left;
+    
+    .profile-name {
+      @apply text-3xl font-bold text-gray-900 mb-2;
+    }
+    
+    .profile-username {
+      @apply text-lg text-gray-600 mb-4;
+    }
+    
+    .profile-meta {
+      @apply flex flex-col sm:flex-row gap-4 justify-center md:justify-start;
+      
+      .meta-item {
+        @apply flex items-center gap-2 text-sm text-gray-500;
+        
+        mat-icon {
+          @apply text-gray-400;
+        }
+      }
+    }
+  }
+}
+
+.profile-content {
+  .profile-card {
+    @apply shadow-lg border-0;
+    
+    ::ng-deep .mat-mdc-tab-group {
+      .mat-mdc-tab-header {
+        @apply border-b border-gray-200;
+        
+        .mat-mdc-tab-label-container {
+          .mat-mdc-tab-label {
+            @apply text-gray-600 font-medium py-4 px-6;
+            
+            &.mat-mdc-tab-label-active {
+              @apply text-blue-600;
+            }
+          }
+        }
+        
+        .mat-mdc-ink-bar {
+          @apply bg-blue-600;
+        }
+      }
+      
+      .mat-mdc-tab-body-wrapper {
+        .mat-mdc-tab-body {
+          .mat-mdc-tab-body-content {
+            @apply p-6;
+          }
+        }
+      }
+    }
+  }
+}
+
+.tab-content {
+  @apply min-h-[400px];
+}
+
+.loading-state {
+  @apply flex flex-col items-center justify-center py-16 text-gray-500;
+  
+  p {
+    @apply mt-4 text-lg;
+  }
+}
+
+.error-state {
+  @apply flex flex-col items-center justify-center py-16 text-center;
+  
+  .error-icon {
+    @apply text-6xl text-red-500 mb-4;
+  }
+  
+  h3 {
+    @apply text-xl font-semibold text-gray-900 mb-2;
+  }
+  
+  p {
+    @apply text-gray-600 mb-6 max-w-md;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .profile-container {
+    @apply px-2 py-4;
+  }
+  
+  .profile-header {
+    @apply gap-4;
+    
+    .profile-avatar {
+      @apply w-24 h-24;
+    }
+    
+    .profile-info {
+      .profile-name {
+        @apply text-2xl;
+      }
+      
+      .profile-username {
+        @apply text-base;
+      }
+      
+      .profile-meta {
+        @apply flex-col gap-2;
+        
+        .meta-item {
+          @apply text-xs;
+        }
+      }
+    }
+  }
+  
+  .profile-content {
+    .profile-card {
+      ::ng-deep .mat-mdc-tab-group {
+        .mat-mdc-tab-header {
+          .mat-mdc-tab-label-container {
+            .mat-mdc-tab-label {
+              @apply px-3 py-3 text-sm;
+            }
+          }
+        }
+        
+        .mat-mdc-tab-body-wrapper {
+          .mat-mdc-tab-body {
+            .mat-mdc-tab-body-content {
+              @apply p-4;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  .profile-container {
+    .profile-header {
+      .profile-info {
+        .profile-name {
+          @apply text-white;
+        }
+        
+        .profile-username {
+          @apply text-gray-300;
+        }
+        
+        .profile-meta {
+          .meta-item {
+            @apply text-gray-400;
+            
+            mat-icon {
+              @apply text-gray-500;
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  .profile-content {
+    .profile-card {
+      @apply bg-gray-800;
+      
+      ::ng-deep .mat-mdc-tab-group {
+        .mat-mdc-tab-header {
+          @apply border-gray-700;
+          
+          .mat-mdc-tab-label-container {
+            .mat-mdc-tab-label {
+              @apply text-gray-300;
+              
+              &.mat-mdc-tab-label-active {
+                @apply text-blue-400;
+              }
+            }
+          }
+          
+          .mat-mdc-ink-bar {
+            @apply bg-blue-400;
+          }
+        }
+      }
+    }
+  }
+  
+  .error-state {
+    h3 {
+      @apply text-white;
+    }
+    
+    p {
+      @apply text-gray-300;
+    }
+  }
+} 

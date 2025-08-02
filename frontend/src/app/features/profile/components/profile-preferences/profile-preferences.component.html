@@ -1,0 +1,326 @@
+<div class="preferences-container">
+  <form [formGroup]="preferencesForm" class="preferences-form">
+    
+    <!-- Display Preferences -->
+    <mat-expansion-panel class="preference-panel" [expanded]="true">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>person</mat-icon>
+          Display Preferences
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      
+      <div class="panel-content">
+        <div class="form-row">
+          <mat-form-field appearance="fill" class="form-field">
+            <mat-label>Display Name</mat-label>
+            <input matInput formControlName="display_name" [readonly]="!isEditing">
+            <mat-error *ngIf="getFieldError('display_name')">
+              {{ getFieldError('display_name') }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+        
+        <div class="checkbox-group">
+          <mat-checkbox formControlName="show_email" [disabled]="!isEditing">
+            Show email address on profile
+          </mat-checkbox>
+          
+          <mat-checkbox formControlName="show_location" [disabled]="!isEditing">
+            Show location on profile
+          </mat-checkbox>
+          
+          <mat-checkbox formControlName="show_social_links" [disabled]="!isEditing">
+            Show social media links on profile
+          </mat-checkbox>
+        </div>
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Notification Preferences -->
+    <mat-expansion-panel class="preference-panel">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>notifications</mat-icon>
+          Notification Preferences
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      
+      <div class="panel-content">
+        <div formGroupName="email_notifications" class="notification-group">
+          <h4>Email Notifications</h4>
+          <div class="checkbox-group">
+            <mat-checkbox formControlName="new_followers" [disabled]="!isEditing">
+              New followers
+            </mat-checkbox>
+            <mat-checkbox formControlName="recipe_comments" [disabled]="!isEditing">
+              Recipe comments
+            </mat-checkbox>
+            <mat-checkbox formControlName="recipe_ratings" [disabled]="!isEditing">
+              Recipe ratings
+            </mat-checkbox>
+            <mat-checkbox formControlName="recipe_favorites" [disabled]="!isEditing">
+              Recipe favorites
+            </mat-checkbox>
+            <mat-checkbox formControlName="weekly_digest" [disabled]="!isEditing">
+              Weekly digest
+            </mat-checkbox>
+            <mat-checkbox formControlName="marketing_emails" [disabled]="!isEditing">
+              Marketing emails
+            </mat-checkbox>
+            <mat-checkbox formControlName="security_alerts" [disabled]="!isEditing">
+              Security alerts
+            </mat-checkbox>
+          </div>
+        </div>
+        
+        <mat-divider></mat-divider>
+        
+        <div formGroupName="push_notifications" class="notification-group">
+          <h4>Push Notifications</h4>
+          <div class="checkbox-group">
+            <mat-checkbox formControlName="new_followers" [disabled]="!isEditing">
+              New followers
+            </mat-checkbox>
+            <mat-checkbox formControlName="recipe_comments" [disabled]="!isEditing">
+              Recipe comments
+            </mat-checkbox>
+            <mat-checkbox formControlName="recipe_ratings" [disabled]="!isEditing">
+              Recipe ratings
+            </mat-checkbox>
+            <mat-checkbox formControlName="recipe_favorites" [disabled]="!isEditing">
+              Recipe favorites
+            </mat-checkbox>
+            <mat-checkbox formControlName="weekly_digest" [disabled]="!isEditing">
+              Weekly digest
+            </mat-checkbox>
+            <mat-checkbox formControlName="security_alerts" [disabled]="!isEditing">
+              Security alerts
+            </mat-checkbox>
+          </div>
+        </div>
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Recipe Preferences -->
+    <mat-expansion-panel class="preference-panel">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>restaurant</mat-icon>
+          Recipe Preferences
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      
+      <div class="panel-content">
+        <div class="form-row">
+          <mat-form-field appearance="fill" class="form-field">
+            <mat-label>Default Servings</mat-label>
+            <input matInput type="number" formControlName="default_servings" [readonly]="!isEditing" min="1" max="20">
+            <mat-error *ngIf="getFieldError('default_servings')">
+              {{ getFieldError('default_servings') }}
+            </mat-error>
+          </mat-form-field>
+          
+          <mat-form-field appearance="fill" class="form-field">
+            <mat-label>Preferred Units</mat-label>
+            <mat-select formControlName="preferred_units" [disabled]="!isEditing">
+              <mat-option *ngFor="let option of unitOptions" [value]="option.value">
+                {{ option.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        
+        <div class="form-row">
+          <mat-form-field appearance="fill" class="form-field">
+            <mat-label>Cooking Skill Level</mat-label>
+            <mat-select formControlName="cooking_skill_level" [disabled]="!isEditing">
+              <mat-option *ngFor="let option of skillLevelOptions" [value]="option.value">
+                {{ option.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        
+        <!-- Dietary Restrictions -->
+        <div class="chips-section">
+          <h4>Dietary Restrictions</h4>
+          <div class="chips-container">
+            <mat-chip 
+              *ngFor="let restriction of preferencesForm.get('dietary_restrictions')?.value" 
+              [removable]="isEditing"
+              (removed)="removeDietaryRestriction(restriction)">
+              {{ restriction }}
+              <mat-icon matChipRemove *ngIf="isEditing">cancel</mat-icon>
+            </mat-chip>
+          </div>
+          
+          <div class="add-item" *ngIf="isEditing">
+            <mat-form-field appearance="fill" class="add-field">
+              <mat-label>Add dietary restriction</mat-label>
+              <input matInput [(ngModel)]="newDietaryRestriction" (keyup.enter)="addDietaryRestriction()" [ngModelOptions]="{standalone: true}">
+            </mat-form-field>
+            <button mat-button color="primary" (click)="addDietaryRestriction()">
+              <mat-icon>add</mat-icon>
+              Add
+            </button>
+          </div>
+        </div>
+        
+        <!-- Favorite Cuisines -->
+        <div class="chips-section">
+          <h4>Favorite Cuisines</h4>
+          <div class="chips-container">
+            <mat-chip 
+              *ngFor="let cuisine of preferencesForm.get('favorite_cuisines')?.value" 
+              [removable]="isEditing"
+              (removed)="removeFavoriteCuisine(cuisine)">
+              {{ cuisine }}
+              <mat-icon matChipRemove *ngIf="isEditing">cancel</mat-icon>
+            </mat-chip>
+          </div>
+          
+          <div class="add-item" *ngIf="isEditing">
+            <mat-form-field appearance="fill" class="add-field">
+              <mat-label>Add favorite cuisine</mat-label>
+              <input matInput [(ngModel)]="newFavoriteCuisine" (keyup.enter)="addFavoriteCuisine()" [ngModelOptions]="{standalone: true}">
+            </mat-form-field>
+            <button mat-button color="primary" (click)="addFavoriteCuisine()">
+              <mat-icon>add</mat-icon>
+              Add
+            </button>
+          </div>
+        </div>
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Privacy Preferences -->
+    <mat-expansion-panel class="preference-panel">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>security</mat-icon>
+          Privacy Preferences
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      
+      <div class="panel-content">
+        <div class="form-row">
+          <mat-form-field appearance="fill" class="form-field">
+            <mat-label>Profile Visibility</mat-label>
+            <mat-select formControlName="profile_visibility" [disabled]="!isEditing">
+              <mat-option *ngFor="let option of visibilityOptions" [value]="option.value">
+                {{ option.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          
+          <mat-form-field appearance="fill" class="form-field">
+            <mat-label>Recipe Visibility</mat-label>
+            <mat-select formControlName="recipe_visibility" [disabled]="!isEditing">
+              <mat-option *ngFor="let option of visibilityOptions" [value]="option.value">
+                {{ option.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        
+        <div class="checkbox-group">
+          <mat-checkbox formControlName="allow_comments" [disabled]="!isEditing">
+            Allow comments on my recipes
+          </mat-checkbox>
+          
+          <mat-checkbox formControlName="allow_ratings" [disabled]="!isEditing">
+            Allow ratings on my recipes
+          </mat-checkbox>
+          
+          <mat-checkbox formControlName="show_activity" [disabled]="!isEditing">
+            Show my activity to others
+          </mat-checkbox>
+        </div>
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Language & Region -->
+    <mat-expansion-panel class="preference-panel">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>language</mat-icon>
+          Language & Region
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      
+      <div class="panel-content">
+        <div class="form-row">
+          <mat-form-field appearance="fill" class="form-field">
+            <mat-label>Language</mat-label>
+            <mat-select formControlName="language" [disabled]="!isEditing">
+              <mat-option *ngFor="let option of languageOptions" [value]="option.value">
+                {{ option.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          
+          <mat-form-field appearance="fill" class="form-field">
+            <mat-label>Timezone</mat-label>
+            <mat-select formControlName="timezone" [disabled]="!isEditing">
+              <mat-option *ngFor="let option of timezoneOptions" [value]="option.value">
+                {{ option.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        
+        <div class="form-row">
+          <mat-form-field appearance="fill" class="form-field">
+            <mat-label>Date Format</mat-label>
+            <input matInput formControlName="date_format" [readonly]="!isEditing" placeholder="MM/DD/YYYY">
+          </mat-form-field>
+          
+          <mat-form-field appearance="fill" class="form-field">
+            <mat-label>Time Format</mat-label>
+            <mat-select formControlName="time_format" [disabled]="!isEditing">
+              <mat-option *ngFor="let option of timeFormatOptions" [value]="option.value">
+                {{ option.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Action Buttons -->
+    <div class="form-actions">
+      <div class="action-buttons" *ngIf="!isEditing">
+        <button 
+          mat-raised-button 
+          color="primary" 
+          (click)="onEdit()"
+          class="edit-btn">
+          <mat-icon>edit</mat-icon>
+          Edit Preferences
+        </button>
+      </div>
+      
+      <div class="action-buttons" *ngIf="isEditing">
+        <button 
+          mat-button 
+          (click)="onCancel()"
+          [disabled]="isSaving"
+          class="cancel-btn">
+          Cancel
+        </button>
+        
+        <button 
+          mat-raised-button 
+          color="primary" 
+          (click)="onSave()"
+          [disabled]="preferencesForm.invalid || isSaving"
+          class="save-btn">
+          <mat-spinner diameter="20" *ngIf="isSaving"></mat-spinner>
+          <mat-icon *ngIf="!isSaving">save</mat-icon>
+          {{ isSaving ? 'Saving...' : 'Save Preferences' }}
+        </button>
+      </div>
+    </div>
+  </form>
+</div> 
