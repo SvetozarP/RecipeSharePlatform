@@ -89,13 +89,6 @@ import { ModerationQueue } from '../models/admin.models';
             <mat-icon matListItemIcon>analytics</mat-icon>
             <span matListItemTitle>Analytics & Reporting</span>
           </a>
-          
-          <a mat-list-item 
-             routerLink="settings" 
-             routerLinkActive="active-link">
-            <mat-icon matListItemIcon>settings</mat-icon>
-            <span matListItemTitle>System Settings</span>
-          </a>
         </mat-nav-list>
         
         <mat-divider></mat-divider>
@@ -282,6 +275,11 @@ import { ModerationQueue } from '../models/admin.models';
     
     .notification-badge {
       font-size: 18px;
+    }
+    
+    /* Ensure content area takes full width */
+    .mat-drawer-content {
+      width: 100% !important;
     }
     
     /* Desktop-first responsive design */

@@ -9,7 +9,6 @@ import {
   AdminRating,
   PlatformStatistics,
   AnalyticsData,
-  SystemSettings,
   BulkOperation,
   ModerationQueue,
   AdminFilters,
@@ -195,15 +194,6 @@ export class AdminService {
   getAnalyticsData(period: string = '30d'): Observable<AnalyticsData> {
     const params = new HttpParams().set('period', period);
     return this.http.get<AnalyticsData>(`${this.apiUrl}/analytics/`, { params });
-  }
-
-  // System Settings
-  getSystemSettings(): Observable<SystemSettings> {
-    return this.http.get<SystemSettings>(`${this.apiUrl}/settings/`);
-  }
-
-  updateSystemSettings(settings: Partial<SystemSettings>): Observable<SystemSettings> {
-    return this.http.patch<SystemSettings>(`${this.apiUrl}/settings/update_settings/`, settings);
   }
 
   // Bulk Operations

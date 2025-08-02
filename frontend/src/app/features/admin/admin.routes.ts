@@ -38,11 +38,6 @@ export const ADMIN_ROUTES: Routes = [
         path: 'analytics',
         loadComponent: () => import('./components/analytics/analytics.component').then(m => m.AnalyticsComponent),
         title: 'Analytics & Reporting'
-      },
-      {
-        path: 'settings',
-        loadComponent: () => import('./components/system-settings/system-settings.component').then(m => m.SystemSettingsComponent),
-        title: 'System Settings'
       }
     ]
   }

@@ -182,23 +182,6 @@ export interface AnalyticsData {
   }>;
 }
 
-export interface SystemSettings {
-  site_name: string;
-  site_description: string;
-  contact_email: string;
-  max_upload_size: number;
-  allowed_image_formats: string[];
-  moderation_enabled: boolean;
-  auto_approve_recipes: boolean;
-  auto_approve_ratings: boolean;
-  registration_enabled: boolean;
-  email_verification_required: boolean;
-  max_recipes_per_user: number;
-  max_images_per_recipe: number;
-  maintenance_mode: boolean;
-  maintenance_message: string;
-}
-
 export interface BulkOperation {
   id: string;
   type: 'delete' | 'approve' | 'reject' | 'ban' | 'activate' | 'deactivate';
