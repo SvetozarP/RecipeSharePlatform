@@ -28,6 +28,12 @@ export const routes: Routes = [
     loadChildren: () => import('./features/profile/profile.routes').then(m => m.profileRoutes)
   },
   {
+    path: 'admin',
+    canActivate: [AuthGuard],
+    data: { requiresAdmin: true },
+    loadChildren: () => import('./features/admin/admin.routes').then(m => m.ADMIN_ROUTES)
+  },
+  {
     path: '**',
     redirectTo: '/recipes'
   }
