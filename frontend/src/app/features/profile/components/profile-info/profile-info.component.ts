@@ -63,15 +63,7 @@ export class ProfileInfoComponent implements OnInit {
       last_name: ['', [Validators.required, Validators.maxLength(50)]],
       bio: ['', [Validators.maxLength(500)]],
       location: ['', [Validators.maxLength(100)]],
-      website: ['', [Validators.pattern('https?://.+')]],
-      social_links: this.fb.group({
-        facebook: ['', [Validators.pattern('https?://(www\.)?facebook\.com/.+')]],
-        twitter: ['', [Validators.pattern('https?://(www\.)?twitter\.com/.+')]],
-        instagram: ['', [Validators.pattern('https?://(www\.)?instagram\.com/.+')]],
-        youtube: ['', [Validators.pattern('https?://(www\.)?youtube\.com/.+')]],
-        pinterest: ['', [Validators.pattern('https?://(www\.)?pinterest\.com/.+')]],
-        linkedin: ['', [Validators.pattern('https?://(www\.)?linkedin\.com/.+')]]
-      })
+      website: ['', [Validators.pattern('https?://.+')]]
     });
   }
 
@@ -82,15 +74,7 @@ export class ProfileInfoComponent implements OnInit {
         last_name: this.userProfile.user.last_name || '',
         bio: this.userProfile.bio || '',
         location: this.userProfile.location || '',
-        website: this.userProfile.website || '',
-        social_links: {
-          facebook: this.userProfile.social_links.facebook || '',
-          twitter: this.userProfile.social_links.twitter || '',
-          instagram: this.userProfile.social_links.instagram || '',
-          youtube: this.userProfile.social_links.youtube || '',
-          pinterest: this.userProfile.social_links.pinterest || '',
-          linkedin: this.userProfile.social_links.linkedin || ''
-        }
+        website: this.userProfile.website || ''
       });
     }
   }
@@ -119,8 +103,7 @@ export class ProfileInfoComponent implements OnInit {
         last_name: formValue.last_name,
         bio: formValue.bio,
         location: formValue.location,
-        website: formValue.website,
-        social_links: formValue.social_links
+        website: formValue.website
       };
 
       const updatedProfile = await this.profileService.updateProfile(updateData);
@@ -166,15 +149,7 @@ export class ProfileInfoComponent implements OnInit {
     return '';
   }
 
-  getSocialFieldError(fieldName: string): string {
-    const field = this.profileForm.get(`social_links.${fieldName}`);
-    if (field?.errors && field.touched) {
-      if (field.errors['pattern']) {
-        return `Please enter a valid ${fieldName} URL`;
-      }
-    }
-    return '';
-  }
+
 
   getAvatarUrl(): string {
     if (this.userProfile?.avatar_url) {

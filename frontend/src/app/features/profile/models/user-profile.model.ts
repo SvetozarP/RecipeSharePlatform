@@ -5,7 +5,6 @@ export interface UserProfile {
   bio?: string;
   location?: string;
   website?: string;
-  social_links: SocialLinks;
   preferences: UserPreferences;
   security_settings: SecuritySettings;
   created_at: string;
@@ -23,21 +22,13 @@ export interface User {
   last_login: string;
 }
 
-export interface SocialLinks {
-  facebook?: string;
-  twitter?: string;
-  instagram?: string;
-  youtube?: string;
-  pinterest?: string;
-  linkedin?: string;
-}
+
 
 export interface UserPreferences {
   // Display preferences
   display_name: string;
   show_email: boolean;
   show_location: boolean;
-  show_social_links: boolean;
   
   // Notification preferences
   email_notifications: EmailNotifications;
@@ -96,14 +87,12 @@ export interface ProfileUpdateRequest {
   location?: string;
   website?: string;
   avatar_url?: string;
-  social_links?: Partial<SocialLinks>;
 }
 
 export interface PreferencesUpdateRequest {
   display_name?: string;
   show_email?: boolean;
   show_location?: boolean;
-  show_social_links?: boolean;
   email_notifications?: Partial<EmailNotifications>;
   push_notifications?: Partial<PushNotifications>;
   default_servings?: number;

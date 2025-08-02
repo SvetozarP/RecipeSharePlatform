@@ -60,12 +60,10 @@ export class ProfileService {
       bio: backendProfile.bio || '',
       location: backendProfile.location || '',
       website: backendProfile.website || '',
-      social_links: {},
       preferences: {
         display_name: `${backendProfile.first_name || ''} ${backendProfile.last_name || ''}`.trim() || 'User',
         show_email: backendProfile.show_email || false,
         show_location: backendProfile.show_location || false,
-        show_social_links: true,
         email_notifications: {
           new_followers: true,
           recipe_comments: true,
@@ -243,19 +241,5 @@ export class ProfileService {
     return emailRegex.test(email);
   }
 
-  validateSocialLink(platform: string, url: string): boolean {
-    if (!url) return true; // Empty URLs are allowed
-    
-    const patterns: { [key: string]: RegExp } = {
-      facebook: /^https?:\/\/(www\.)?facebook\.com\/.+/,
-      twitter: /^https?:\/\/(www\.)?twitter\.com\/.+/,
-      instagram: /^https?:\/\/(www\.)?instagram\.com\/.+/,
-      youtube: /^https?:\/\/(www\.)?youtube\.com\/.+/,
-      pinterest: /^https?:\/\/(www\.)?pinterest\.com\/.+/,
-      linkedin: /^https?:\/\/(www\.)?linkedin\.com\/.+/
-    };
-    
-    const pattern = patterns[platform];
-    return pattern ? pattern.test(url) : true;
-  }
+
 } 

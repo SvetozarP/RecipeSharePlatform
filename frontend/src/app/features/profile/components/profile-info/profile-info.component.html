@@ -68,78 +68,7 @@
       </div>
     </div>
 
-    <!-- Social Links Section -->
-    <div class="form-section" formGroupName="social_links">
-      <h3 class="section-title">Social Media Links</h3>
-      
-      <div class="social-links-grid">
-        <mat-form-field appearance="fill" class="social-field">
-          <mat-label>
-            <mat-icon>facebook</mat-icon>
-            Facebook
-          </mat-label>
-          <input matInput formControlName="facebook" [readonly]="!isEditing" placeholder="https://facebook.com/username">
-          <mat-error *ngIf="getSocialFieldError('facebook')">
-            {{ getSocialFieldError('facebook') }}
-          </mat-error>
-        </mat-form-field>
-        
-        <mat-form-field appearance="fill" class="social-field">
-          <mat-label>
-            <mat-icon>twitter</mat-icon>
-            Twitter
-          </mat-label>
-          <input matInput formControlName="twitter" [readonly]="!isEditing" placeholder="https://twitter.com/username">
-          <mat-error *ngIf="getSocialFieldError('twitter')">
-            {{ getSocialFieldError('twitter') }}
-          </mat-error>
-        </mat-form-field>
-        
-        <mat-form-field appearance="fill" class="social-field">
-          <mat-label>
-            <mat-icon>camera_alt</mat-icon>
-            Instagram
-          </mat-label>
-          <input matInput formControlName="instagram" [readonly]="!isEditing" placeholder="https://instagram.com/username">
-          <mat-error *ngIf="getSocialFieldError('instagram')">
-            {{ getSocialFieldError('instagram') }}
-          </mat-error>
-        </mat-form-field>
-        
-        <mat-form-field appearance="fill" class="social-field">
-          <mat-label>
-            <mat-icon>play_circle</mat-icon>
-            YouTube
-          </mat-label>
-          <input matInput formControlName="youtube" [readonly]="!isEditing" placeholder="https://youtube.com/channel">
-          <mat-error *ngIf="getSocialFieldError('youtube')">
-            {{ getSocialFieldError('youtube') }}
-          </mat-error>
-        </mat-form-field>
-        
-        <mat-form-field appearance="fill" class="social-field">
-          <mat-label>
-            <mat-icon>pin_drop</mat-icon>
-            Pinterest
-          </mat-label>
-          <input matInput formControlName="pinterest" [readonly]="!isEditing" placeholder="https://pinterest.com/username">
-          <mat-error *ngIf="getSocialFieldError('pinterest')">
-            {{ getSocialFieldError('pinterest') }}
-          </mat-error>
-        </mat-form-field>
-        
-        <mat-form-field appearance="fill" class="social-field">
-          <mat-label>
-            <mat-icon>business</mat-icon>
-            LinkedIn
-          </mat-label>
-          <input matInput formControlName="linkedin" [readonly]="!isEditing" placeholder="https://linkedin.com/in/username">
-          <mat-error *ngIf="getSocialFieldError('linkedin')">
-            {{ getSocialFieldError('linkedin') }}
-          </mat-error>
-        </mat-form-field>
-      </div>
-    </div>
+
 
     <!-- Action Buttons -->
     <div class="form-actions">

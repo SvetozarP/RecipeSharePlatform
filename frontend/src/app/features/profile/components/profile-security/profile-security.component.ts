@@ -114,39 +114,7 @@ export class ProfileSecurityComponent implements OnInit {
 
 
 
-  async onExportData(): Promise<void> {
-    try {
-      const data = await this.profileService.exportUserData();
-      
-      // Create download link
-      const url = window.URL.createObjectURL(data);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'user-data-export.json';
-      link.click();
-      window.URL.revokeObjectURL(url);
-      
-      this.snackBar.open('Data exported successfully!', 'Close', { duration: 3000 });
-    } catch (error) {
-      console.error('Failed to export data:', error);
-      this.error.emit('Failed to export data. Please try again.');
-    }
-  }
 
-  onDeactivateAccount(): void {
-    // Show confirmation dialog
-    const confirmed = confirm('Are you sure you want to deactivate your account? This action can be undone by logging in again.');
-    if (confirmed) {
-      this.profileService.deactivateAccount().then(() => {
-        this.snackBar.open('Account deactivated successfully!', 'Close', { duration: 3000 });
-        // Redirect to logout
-        window.location.href = '/auth/logout';
-      }).catch(error => {
-        console.error('Failed to deactivate account:', error);
-        this.error.emit('Failed to deactivate account. Please try again.');
-      });
-    }
-  }
 
   onDeleteAccount(): void {
     // Show confirmation dialog

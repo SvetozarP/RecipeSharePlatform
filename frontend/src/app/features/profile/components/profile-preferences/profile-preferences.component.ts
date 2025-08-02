@@ -119,7 +119,6 @@ export class ProfilePreferencesComponent implements OnInit {
       display_name: ['', [Validators.required, Validators.maxLength(100)]],
       show_email: [false],
       show_location: [false],
-      show_social_links: [false],
       
       // Notification preferences
       email_notifications: this.fb.group({
@@ -169,7 +168,6 @@ export class ProfilePreferencesComponent implements OnInit {
         display_name: prefs.display_name || '',
         show_email: prefs.show_email || false,
         show_location: prefs.show_location || false,
-        show_social_links: prefs.show_social_links || false,
         email_notifications: {
           new_followers: prefs.email_notifications.new_followers || false,
           recipe_comments: prefs.email_notifications.recipe_comments || false,
@@ -227,7 +225,6 @@ export class ProfilePreferencesComponent implements OnInit {
         display_name: formValue.display_name,
         show_email: formValue.show_email,
         show_location: formValue.show_location,
-        show_social_links: formValue.show_social_links,
         email_notifications: formValue.email_notifications,
         push_notifications: formValue.push_notifications,
         default_servings: formValue.default_servings,
