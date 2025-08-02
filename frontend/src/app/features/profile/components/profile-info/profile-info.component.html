@@ -2,38 +2,12 @@
   <!-- Avatar Section -->
   <div class="avatar-section">
     <div class="avatar-container">
-      <img [src]="getAvatarUrl()" [alt]="getDisplayName()" class="avatar-image">
-      <div class="avatar-overlay" *ngIf="isEditing">
-        <mat-icon>photo_camera</mat-icon>
-        <span>Change Photo</span>
-      </div>
-    </div>
-    
-    <div class="avatar-actions" *ngIf="isEditing">
-      <input 
-        type="file" 
-        #fileInput 
-        (change)="onFileSelected($event)" 
-        accept="image/*" 
-        style="display: none;">
-      
-      <button 
-        mat-stroked-button 
-        (click)="fileInput.click()"
-        class="upload-btn">
-        <mat-icon>upload</mat-icon>
-        Upload Photo
-      </button>
-      
-      <button 
-        mat-button 
-        color="warn" 
-        (click)="removeSelectedFile()"
-        *ngIf="selectedFile"
-        class="remove-btn">
-        <mat-icon>delete</mat-icon>
-        Remove
-      </button>
+      <img 
+        [src]="getAvatarUrl()" 
+        [alt]="getDisplayName()" 
+        class="avatar-image"
+        (error)="onImageError($event)"
+        [class.default-avatar]="!userProfile?.avatar_url">
     </div>
   </div>
 

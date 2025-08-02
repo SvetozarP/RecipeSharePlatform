@@ -1,7 +1,12 @@
 <div class="profile-container">
   <div class="profile-header">
     <div class="profile-avatar">
-      <img [src]="getAvatarUrl()" [alt]="getDisplayName()" class="avatar-image">
+      <img 
+        [src]="getAvatarUrl()" 
+        [alt]="getDisplayName()" 
+        class="avatar-image"
+        (error)="onImageError($event)"
+        [class.default-avatar]="!userProfile?.avatar_url">
       <div class="avatar-overlay">
         <mat-icon>photo_camera</mat-icon>
       </div>

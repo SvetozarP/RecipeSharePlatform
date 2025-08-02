@@ -70,7 +70,6 @@ export interface EmailNotifications {
   recipe_ratings: boolean;
   recipe_favorites: boolean;
   weekly_digest: boolean;
-  marketing_emails: boolean;
   security_alerts: boolean;
 }
 
@@ -135,7 +134,4 @@ export interface PasswordChangeRequest {
   confirm_password: string;
 }
 
-export interface AvatarUploadResponse {
-  avatar_url: string;
-  thumbnail_url: string;
-} 
+ 

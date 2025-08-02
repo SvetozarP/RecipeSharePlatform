@@ -10,6 +10,11 @@
     
     .avatar-image {
       @apply w-full h-full object-cover;
+      
+      &.default-avatar {
+        @apply object-contain p-2;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      }
     }
     
     .avatar-overlay {

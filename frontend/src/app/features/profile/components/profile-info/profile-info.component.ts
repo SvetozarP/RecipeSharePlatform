@@ -44,9 +44,6 @@ export class ProfileInfoComponent implements OnInit {
   profileForm: FormGroup;
   isEditing = false;
   isSaving = false;
-  isUploadingAvatar = false;
-  selectedFile: File | null = null;
-  previewUrl: string | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -105,8 +102,6 @@ export class ProfileInfoComponent implements OnInit {
   onCancel(): void {
     this.isEditing = false;
     this.loadProfileData();
-    this.selectedFile = null;
-    this.previewUrl = null;
   }
 
   async onSave(): Promise<void> {
@@ -128,18 +123,10 @@ export class ProfileInfoComponent implements OnInit {
         social_links: formValue.social_links
       };
 
-      // Upload avatar if selected
-      if (this.selectedFile) {
-        const avatarResponse = await this.profileService.uploadAvatar(this.selectedFile);
-        updateData.avatar_url = avatarResponse.avatar_url;
-      }
-
       const updatedProfile = await this.profileService.updateProfile(updateData);
       
       this.profileUpdated.emit(updatedProfile);
       this.isEditing = false;
-      this.selectedFile = null;
-      this.previewUrl = null;
       
       this.snackBar.open('Profile updated successfully!', 'Close', { duration: 3000 });
     } catch (error) {
@@ -148,39 +135,6 @@ export class ProfileInfoComponent implements OnInit {
     } finally {
       this.isSaving = false;
     }
-  }
-
-  onFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      const file = input.files[0];
-      
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
-        this.snackBar.open('Please select an image file', 'Close', { duration: 3000 });
-        return;
-      }
-      
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        this.snackBar.open('Image size must be less than 5MB', 'Close', { duration: 3000 });
-        return;
-      }
-      
-      this.selectedFile = file;
-      
-      // Create preview
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        this.previewUrl = e.target?.result as string;
-      };
-      reader.readAsDataURL(file);
-    }
-  }
-
-  removeSelectedFile(): void {
-    this.selectedFile = null;
-    this.previewUrl = null;
   }
 
   private markFormGroupTouched(): void {
@@ -223,13 +177,15 @@ export class ProfileInfoComponent implements OnInit {
   }
 
   getAvatarUrl(): string {
-    if (this.previewUrl) {
-      return this.previewUrl;
-    }
     if (this.userProfile?.avatar_url) {
       return this.userProfile.avatar_url;
     }
-    return '/assets/images/default-avatar.png';
+    return '/assets/images/default-avatar.svg';
+  }
+
+  onImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.src = '/assets/images/default-avatar.svg';
   }
 
   getDisplayName(): string {

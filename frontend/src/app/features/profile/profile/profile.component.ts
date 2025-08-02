@@ -146,9 +146,14 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
   getAvatarUrl(): string {
     if (!this.userProfile?.avatar_url) {
-      return '/assets/images/default-avatar.png';
+      return '/assets/images/default-avatar.svg';
     }
     return this.userProfile.avatar_url;
+  }
+
+  onImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.src = '/assets/images/default-avatar.svg';
   }
 
   getMemberSince(): string {

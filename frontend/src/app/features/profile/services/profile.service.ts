@@ -7,8 +7,7 @@ import {
   ProfileUpdateRequest,
   PreferencesUpdateRequest,
   SecurityUpdateRequest,
-  PasswordChangeRequest,
-  AvatarUploadResponse
+  PasswordChangeRequest
 } from '../models/user-profile.model';
 
 @Injectable({
@@ -57,7 +56,7 @@ export class ProfileService {
         date_joined: new Date().toISOString(),
         last_login: new Date().toISOString()
       },
-      avatar_url: undefined,
+      avatar_url: '/assets/images/default-avatar.svg',
       bio: backendProfile.bio || '',
       location: backendProfile.location || '',
       website: backendProfile.website || '',
@@ -73,7 +72,6 @@ export class ProfileService {
           recipe_ratings: true,
           recipe_favorites: true,
           weekly_digest: true,
-          marketing_emails: backendProfile.marketing_emails || false,
           security_alerts: true
         },
         push_notifications: {
@@ -111,7 +109,7 @@ export class ProfileService {
 
   async updateProfile(updateData: ProfileUpdateRequest): Promise<UserProfile> {
     try {
-      const backendProfile = await this.apiService.patch<any>('/users/profile/', updateData).toPromise();
+      const backendProfile = await this.apiService.put<any>('/users/profile/', updateData).toPromise();
       if (backendProfile) {
         // Transform backend response to frontend expected structure
         const updatedProfile: UserProfile = this.transformBackendProfile(backendProfile);
@@ -126,35 +124,10 @@ export class ProfileService {
     }
   }
 
-  async uploadAvatar(file: File): Promise<AvatarUploadResponse> {
-    try {
-      const formData = new FormData();
-      formData.append('avatar', file);
-      
-      const response = await this.apiService.post<AvatarUploadResponse>('/users/profile/avatar/', formData).toPromise();
-      
-      if (response) {
-        // Update the profile with new avatar URL
-        const currentProfile = this.profileSubject.value;
-        if (currentProfile) {
-          const updatedProfile = { ...currentProfile, avatar_url: response.avatar_url };
-          this.profileSubject.next(updatedProfile);
-        }
-        
-        return response;
-      } else {
-        throw new Error('Failed to upload avatar');
-      }
-    } catch (error) {
-      console.error('Failed to upload avatar:', error);
-      throw error;
-    }
-  }
-
   // Preferences Management
   async updatePreferences(preferences: PreferencesUpdateRequest): Promise<UserProfile> {
     try {
-      const backendProfile = await this.apiService.patch<any>('/users/profile/preferences/', preferences).toPromise();
+      const backendProfile = await this.apiService.put<any>('/users/profile/preferences/', preferences).toPromise();
       if (backendProfile) {
         // Transform backend response to frontend expected structure
         const updatedProfile: UserProfile = this.transformBackendProfile(backendProfile);
@@ -179,8 +152,6 @@ export class ProfileService {
     }
   }
 
-
-
   async changePassword(passwordData: PasswordChangeRequest): Promise<void> {
     try {
       await this.apiService.post<void>('/auth/password/change/', passwordData).toPromise();
@@ -189,8 +160,6 @@ export class ProfileService {
       throw error;
     }
   }
-
-
 
   // Account Management
   async deactivateAccount(): Promise<void> {

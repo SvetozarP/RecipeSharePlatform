@@ -128,7 +128,6 @@ export class ProfilePreferencesComponent implements OnInit {
         recipe_ratings: [false],
         recipe_favorites: [false],
         weekly_digest: [false],
-        marketing_emails: [false],
         security_alerts: [true]
       }),
       
@@ -177,7 +176,6 @@ export class ProfilePreferencesComponent implements OnInit {
           recipe_ratings: prefs.email_notifications.recipe_ratings || false,
           recipe_favorites: prefs.email_notifications.recipe_favorites || false,
           weekly_digest: prefs.email_notifications.weekly_digest || false,
-          marketing_emails: prefs.email_notifications.marketing_emails || false,
           security_alerts: prefs.email_notifications.security_alerts || true
         },
         push_notifications: {
