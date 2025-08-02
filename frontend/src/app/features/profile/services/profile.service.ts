@@ -22,7 +22,7 @@ export class ProfileService {
   // Profile Management
   async getUserProfile(): Promise<UserProfile> {
     try {
-      const profile = await this.apiService.get<UserProfile>('/user/profile/').toPromise();
+      const profile = await this.apiService.get<UserProfile>('/users/profile/').toPromise();
       if (profile) {
         this.profileSubject.next(profile);
         return profile;
@@ -37,7 +37,7 @@ export class ProfileService {
 
   async updateProfile(updateData: ProfileUpdateRequest): Promise<UserProfile> {
     try {
-      const updatedProfile = await this.apiService.patch<UserProfile>('/user/profile/', updateData).toPromise();
+      const updatedProfile = await this.apiService.patch<UserProfile>('/users/profile/', updateData).toPromise();
       if (updatedProfile) {
         this.profileSubject.next(updatedProfile);
         return updatedProfile;
@@ -55,7 +55,7 @@ export class ProfileService {
       const formData = new FormData();
       formData.append('avatar', file);
       
-      const response = await this.apiService.post<AvatarUploadResponse>('/user/profile/avatar/', formData).toPromise();
+      const response = await this.apiService.post<AvatarUploadResponse>('/users/profile/avatar/', formData).toPromise();
       
       if (response) {
         // Update the profile with new avatar URL
@@ -78,7 +78,7 @@ export class ProfileService {
   // Preferences Management
   async updatePreferences(preferences: PreferencesUpdateRequest): Promise<UserProfile> {
     try {
-      const updatedProfile = await this.apiService.patch<UserProfile>('/user/preferences/', preferences).toPromise();
+      const updatedProfile = await this.apiService.patch<UserProfile>('/users/profile/preferences/', preferences).toPromise();
       if (updatedProfile) {
         this.profileSubject.next(updatedProfile);
         return updatedProfile;
@@ -105,7 +105,7 @@ export class ProfileService {
 
   async changePassword(passwordData: PasswordChangeRequest): Promise<void> {
     try {
-      await this.apiService.post<void>('/user/change-password/', passwordData).toPromise();
+      await this.apiService.post<void>('/auth/password/change/', passwordData).toPromise();
     } catch (error) {
       console.error('Failed to change password:', error);
       throw error;
@@ -117,25 +117,27 @@ export class ProfileService {
   // Account Management
   async deactivateAccount(): Promise<void> {
     try {
-      await this.apiService.post<void>('/user/deactivate/', {}).toPromise();
+      await this.apiService.post<void>('/users/deactivate/', {}).toPromise();
     } catch (error) {
       console.error('Failed to deactivate account:', error);
-      throw error;
+      // For now, just log the error since this endpoint might not exist yet
+      throw new Error('Account deactivation not available yet');
     }
   }
 
   async deleteAccount(): Promise<void> {
     try {
-      await this.apiService.delete<void>('/user/delete/').toPromise();
+      await this.apiService.delete<void>('/users/delete/').toPromise();
     } catch (error) {
       console.error('Failed to delete account:', error);
-      throw error;
+      // For now, just log the error since this endpoint might not exist yet
+      throw new Error('Account deletion not available yet');
     }
   }
 
   async exportUserData(): Promise<Blob> {
     try {
-      const response = await this.apiService.get<Blob>('/user/export/', { responseType: 'blob' }).toPromise();
+      const response = await this.apiService.get<Blob>('/users/export/', { responseType: 'blob' }).toPromise();
       if (response) {
         return response;
       } else {
@@ -143,7 +145,8 @@ export class ProfileService {
       }
     } catch (error) {
       console.error('Failed to export user data:', error);
-      throw error;
+      // For now, just log the error since this endpoint might not exist yet
+      throw new Error('Data export not available yet');
     }
   }
 
