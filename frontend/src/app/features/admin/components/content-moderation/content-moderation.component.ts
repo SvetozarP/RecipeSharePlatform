@@ -22,6 +22,9 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { SelectionModel } from '@angular/cdk/collections';
 import { AdminService } from '../../services/admin.service';
 import { AdminRating, AdminFilters } from '../../models/admin.models';
+import { RatingDetailDialogComponent } from '../rating-detail-dialog/rating-detail-dialog.component';
+import { RatingEditDialogComponent } from '../rating-edit-dialog/rating-edit-dialog.component';
+import { ReviewDetailDialogComponent } from '../review-detail-dialog/review-detail-dialog.component';
 
 @Component({
   selector: 'app-content-moderation',
@@ -169,7 +172,7 @@ import { AdminRating, AdminFilters } from '../../models/admin.models';
                 </th>
                 <td mat-cell *matCellDef="let row">
                   <mat-checkbox (click)="$event.stopPropagation()"
-                               (change)="$event ? selection.toggle(row) : null"
+                               (change)="onCheckboxChange($event, row)"
                                [checked]="selection.isSelected(row)">
                   </mat-checkbox>
                 </td>
@@ -628,26 +631,74 @@ export class ContentModerationComponent implements OnInit {
 
   masterToggle(): void {
     if (this.isAllSelected()) {
+      this.selection.clear();
       this.selectedRatings = [];
     } else {
+      this.dataSource.data.forEach(row => this.selection.select(row));
       this.selectedRatings = [...this.dataSource.data];
     }
   }
 
+  onSelectionChange(): void {
+    this.selectedRatings = this.selection.selected;
+  }
+
+  onCheckboxChange(event: any, row: AdminRating): void {
+    if (event.checked) {
+      this.selection.select(row);
+    } else {
+      this.selection.deselect(row);
+    }
+    this.onSelectionChange();
+  }
+
   // Rating actions
   viewRating(rating: AdminRating): void {
-    // TODO: Implement rating detail view dialog
-    console.log('View rating:', rating);
+    const dialogRef = this.dialog.open(RatingDetailDialogComponent, {
+      width: '600px',
+      data: { rating }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        // Refresh the data if needed
+        this.loadRatings();
+      }
+    });
   }
 
   editRating(rating: AdminRating): void {
-    // TODO: Implement rating edit dialog
-    console.log('Edit rating:', rating);
+    const dialogRef = this.dialog.open(RatingEditDialogComponent, {
+      width: '600px',
+      data: { rating }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        // Refresh the data after successful edit
+        this.loadRatings();
+      }
+    });
   }
 
   viewFullReview(rating: AdminRating): void {
-    // TODO: Implement full review view dialog
-    console.log('View full review:', rating.review);
+    if (!rating.review) {
+      this.snackBar.open('No review text available', 'Close', {
+        duration: 3000
+      });
+      return;
+    }
+
+    const dialogRef = this.dialog.open(ReviewDetailDialogComponent, {
+      width: '600px',
+      data: {
+        review: rating.review,
+        rating: rating.rating,
+        user: rating.user,
+        recipe: rating.recipe,
+        created_at: rating.created_at
+      }
+    });
   }
 
   approveRating(rating: AdminRating): void {
@@ -747,8 +798,28 @@ export class ContentModerationComponent implements OnInit {
     if (this.selectedRatings.length === 0) return;
     
     if (confirm(`Approve ${this.selectedRatings.length} rating(s)?`)) {
-      // TODO: Implement bulk approve
-      console.log('Bulk approve ratings:', this.selectedRatings);
+      const ratingIds = this.selectedRatings.map(r => r.id);
+      
+      // Process each rating individually since bulk operations might not be implemented yet
+      let completed = 0;
+      let failed = 0;
+      
+      ratingIds.forEach(ratingId => {
+        this.adminService.approveRating(ratingId).subscribe({
+          next: () => {
+            completed++;
+            if (completed + failed === ratingIds.length) {
+              this.handleBulkOperationComplete(completed, failed, 'approved');
+            }
+          },
+          error: () => {
+            failed++;
+            if (completed + failed === ratingIds.length) {
+              this.handleBulkOperationComplete(completed, failed, 'approved');
+            }
+          }
+        });
+      });
     }
   }
 
@@ -757,8 +828,27 @@ export class ContentModerationComponent implements OnInit {
     
     const reason = prompt('Please provide a reason for rejection:');
     if (reason !== null) {
-      // TODO: Implement bulk reject
-      console.log('Bulk reject ratings:', this.selectedRatings, 'Reason:', reason);
+      const ratingIds = this.selectedRatings.map(r => r.id);
+      
+      let completed = 0;
+      let failed = 0;
+      
+      ratingIds.forEach(ratingId => {
+        this.adminService.rejectRating(ratingId, reason).subscribe({
+          next: () => {
+            completed++;
+            if (completed + failed === ratingIds.length) {
+              this.handleBulkOperationComplete(completed, failed, 'rejected');
+            }
+          },
+          error: () => {
+            failed++;
+            if (completed + failed === ratingIds.length) {
+              this.handleBulkOperationComplete(completed, failed, 'rejected');
+            }
+          }
+        });
+      });
     }
   }
 
@@ -767,8 +857,27 @@ export class ContentModerationComponent implements OnInit {
     
     const reason = prompt('Please provide a reason for flagging:');
     if (reason !== null) {
-      // TODO: Implement bulk flag
-      console.log('Bulk flag ratings:', this.selectedRatings, 'Reason:', reason);
+      const ratingIds = this.selectedRatings.map(r => r.id);
+      
+      let completed = 0;
+      let failed = 0;
+      
+      ratingIds.forEach(ratingId => {
+        this.adminService.flagRating(ratingId, reason).subscribe({
+          next: () => {
+            completed++;
+            if (completed + failed === ratingIds.length) {
+              this.handleBulkOperationComplete(completed, failed, 'flagged');
+            }
+          },
+          error: () => {
+            failed++;
+            if (completed + failed === ratingIds.length) {
+              this.handleBulkOperationComplete(completed, failed, 'flagged');
+            }
+          }
+        });
+      });
     }
   }
 
@@ -776,8 +885,49 @@ export class ContentModerationComponent implements OnInit {
     if (this.selectedRatings.length === 0) return;
     
     if (confirm(`Delete ${this.selectedRatings.length} rating(s)? This action cannot be undone.`)) {
-      // TODO: Implement bulk delete
-      console.log('Bulk delete ratings:', this.selectedRatings);
+      const ratingIds = this.selectedRatings.map(r => r.id);
+      
+      let completed = 0;
+      let failed = 0;
+      
+      ratingIds.forEach(ratingId => {
+        this.adminService.deleteRating(ratingId).subscribe({
+          next: () => {
+            completed++;
+            if (completed + failed === ratingIds.length) {
+              this.handleBulkOperationComplete(completed, failed, 'deleted');
+            }
+          },
+          error: () => {
+            failed++;
+            if (completed + failed === ratingIds.length) {
+              this.handleBulkOperationComplete(completed, failed, 'deleted');
+            }
+          }
+        });
+      });
     }
+  }
+
+  private handleBulkOperationComplete(completed: number, failed: number, action: string): void {
+    this.selectedRatings = [];
+    this.selection.clear();
+    
+    if (failed === 0) {
+      this.snackBar.open(`Successfully ${action} ${completed} rating(s)`, 'Close', {
+        duration: 3000
+      });
+    } else if (completed === 0) {
+      this.snackBar.open(`Failed to ${action} any ratings`, 'Close', {
+        duration: 5000
+      });
+    } else {
+      this.snackBar.open(`Successfully ${action} ${completed} rating(s), ${failed} failed`, 'Close', {
+        duration: 5000
+      });
+    }
+    
+    // Refresh the data
+    this.loadRatings();
   }
 } 

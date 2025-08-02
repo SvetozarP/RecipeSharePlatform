@@ -199,6 +199,10 @@ export class AdminService {
     return this.http.delete<void>(`${this.apiUrl}/ratings/${ratingId}/`);
   }
 
+  updateRating(ratingId: string, ratingData: Partial<AdminRating>): Observable<AdminRating> {
+    return this.http.patch<AdminRating>(`${this.apiUrl}/ratings/${ratingId}/`, ratingData);
+  }
+
   // Analytics
   getAnalyticsData(period: string = '30d'): Observable<AnalyticsData> {
     const params = new HttpParams().set('period', period);
