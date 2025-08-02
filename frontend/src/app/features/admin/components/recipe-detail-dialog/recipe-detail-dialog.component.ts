@@ -96,13 +96,34 @@ interface DialogData {
                 <div class="status-display">
                   <h4>Current Status</h4>
                   <mat-chip-set>
-                    <mat-chip *ngIf="recipeForm.get('is_published')?.value" color="primary" variant="outlined">
+                    <mat-chip *ngIf="data.recipe.moderation_status === 'approved' && data.recipe.is_published" color="primary" variant="outlined">
                       Published
                     </mat-chip>
-                    <mat-chip *ngIf="!recipeForm.get('is_published')?.value" color="warn" variant="outlined">
+                    <mat-chip *ngIf="data.recipe.moderation_status === 'draft'" color="basic" variant="outlined">
                       Draft
                     </mat-chip>
+                    <mat-chip *ngIf="data.recipe.moderation_status === 'pending'" color="warn" variant="outlined">
+                      Pending Review
+                    </mat-chip>
+                    <mat-chip *ngIf="data.recipe.moderation_status === 'rejected'" color="warn">
+                      Rejected
+                    </mat-chip>
+                    <mat-chip *ngIf="data.recipe.moderation_status === 'flagged'" color="accent">
+                      Flagged for Review
+                    </mat-chip>
                   </mat-chip-set>
+                </div>
+
+                <!-- Moderation Notes -->
+                <div *ngIf="data.recipe.moderation_notes && (data.recipe.moderation_status === 'rejected' || data.recipe.moderation_status === 'flagged')" class="moderation-notes">
+                  <h4>
+                    <mat-icon *ngIf="data.recipe.moderation_status === 'rejected'" color="warn">cancel</mat-icon>
+                    <mat-icon *ngIf="data.recipe.moderation_status === 'flagged'" color="accent">flag</mat-icon>
+                    {{ data.recipe.moderation_status === 'rejected' ? 'Rejection Reason' : 'Flag Message' }}
+                  </h4>
+                  <div class="notes-content">
+                    {{ data.recipe.moderation_notes }}
+                  </div>
                 </div>
               </div>
 
@@ -278,6 +299,36 @@ interface DialogData {
 
     .categories-display {
       margin-top: 8px;
+    }
+
+    .moderation-notes {
+      margin-top: 16px;
+      padding: 12px;
+      border-radius: 6px;
+      background-color: #fff3e0;
+      border-left: 4px solid #ff9800;
+    }
+
+    .moderation-notes h4 {
+      display: flex;
+      align-items: center;
+      margin: 0 0 8px 0;
+      font-size: 0.9rem;
+      color: #e65100;
+    }
+
+    .moderation-notes h4 mat-icon {
+      margin-right: 6px;
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+
+    .notes-content {
+      color: #bf360c;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      white-space: pre-wrap;
     }
 
     mat-chip-set {

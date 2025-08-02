@@ -230,10 +230,16 @@ import { RecipeDetailDialogComponent } from '../recipe-detail-dialog/recipe-deta
                     <mat-chip *ngIf="recipe.moderation_status === 'pending'" color="warn" variant="outlined">
                       Pending
                     </mat-chip>
-                    <mat-chip *ngIf="recipe.moderation_status === 'rejected'" color="warn">
+                    <mat-chip *ngIf="recipe.moderation_status === 'rejected'" 
+                             color="warn"
+                             [matTooltip]="recipe.moderation_notes || 'No rejection reason provided'"
+                             matTooltipClass="moderation-tooltip">
                       Rejected
                     </mat-chip>
-                    <mat-chip *ngIf="recipe.moderation_status === 'flagged'" color="accent">
+                    <mat-chip *ngIf="recipe.moderation_status === 'flagged'" 
+                             color="accent"
+                             [matTooltip]="recipe.moderation_notes || 'No flag message provided'"
+                             matTooltipClass="moderation-tooltip">
                       Flagged
                     </mat-chip>
                   </mat-chip-set>
@@ -487,6 +493,18 @@ import { RecipeDetailDialogComponent } from '../recipe-detail-dialog/recipe-deta
 
     mat-chip {
       font-size: 0.7rem;
+    }
+
+    /* Global tooltip styles for moderation notes */
+    ::ng-deep .moderation-tooltip {
+      background: #fff3e0;
+      color: #bf360c;
+      border: 1px solid #ff9800;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      max-width: 300px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
     }
 
     @media (max-width: 768px) {
