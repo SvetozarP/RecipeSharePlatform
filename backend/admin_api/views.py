@@ -7,12 +7,14 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from django.contrib.auth import get_user_model
-from django.db.models import Q
+from django.db.models import Q, Count, Avg, Sum
+from django.db.models.functions import TruncDate, TruncMonth
 from django.utils import timezone
 from django.http import HttpResponse
 import csv
 import json
 import uuid
+from datetime import datetime, timedelta
 
 from recipes.models import Recipe, Category, Rating
 from .serializers import (
@@ -344,49 +346,188 @@ class AdminAnalyticsView(viewsets.ViewSet):
         """Get analytics data."""
         period = request.query_params.get('period', '30d')
         
-        # Placeholder analytics data
+        # Calculate date range based on period
+        now = timezone.now()
+        
+        if period == '7d':
+            start_date = now - timedelta(days=7)
+            date_trunc = TruncDate
+        elif period == '30d':
+            start_date = now - timedelta(days=30)
+            date_trunc = TruncDate
+        elif period == '90d':
+            start_date = now - timedelta(days=90)
+            date_trunc = TruncDate
+        elif period == '1y':
+            start_date = now - timedelta(days=365)
+            date_trunc = TruncMonth
+        else:
+            start_date = now - timedelta(days=30)
+            date_trunc = TruncDate
+        
+        # User growth data
+        user_growth_data = User.objects.filter(
+            date_joined__gte=start_date
+        ).annotate(
+            date=date_trunc('date_joined')
+        ).values('date').annotate(
+            count=Count('id')
+        ).order_by('date')
+        
+        user_growth_labels = []
+        user_growth_values = []
+        cumulative_users = 0
+        
+        for entry in user_growth_data:
+            cumulative_users += entry['count']
+            if period == '1y':
+                user_growth_labels.append(entry['date'].strftime('%b %Y'))
+            else:
+                user_growth_labels.append(entry['date'].strftime('%b %d'))
+            user_growth_values.append(cumulative_users)
+        
+        # Recipe activity data
+        recipe_activity_data = Recipe.objects.filter(
+            created_at__gte=start_date
+        ).annotate(
+            date=date_trunc('created_at')
+        ).values('date').annotate(
+            count=Count('id')
+        ).order_by('date')
+        
+        recipe_activity_labels = []
+        recipe_activity_values = []
+        cumulative_recipes = 0
+        
+        for entry in recipe_activity_data:
+            cumulative_recipes += entry['count']
+            if period == '1y':
+                recipe_activity_labels.append(entry['date'].strftime('%b %Y'))
+            else:
+                recipe_activity_labels.append(entry['date'].strftime('%b %d'))
+            recipe_activity_values.append(cumulative_recipes)
+        
+        # Rating distribution
+        rating_distribution = Rating.objects.values('rating').annotate(
+            count=Count('id')
+        ).order_by('rating')
+        
+        rating_labels = ['1★', '2★', '3★', '4★', '5★']
+        rating_values = [0, 0, 0, 0, 0]
+        
+        for entry in rating_distribution:
+            if 1 <= entry['rating'] <= 5:
+                rating_values[entry['rating'] - 1] = entry['count']
+        
+        # Top recipes (by rating count and average rating)
+        top_recipes = Recipe.objects.annotate(
+            avg_rating=Avg('ratings__rating'),
+            rating_count=Count('ratings'),
+            view_count=Count('id')  # Placeholder for view count
+        ).filter(
+            rating_count__gt=0
+        ).order_by('-rating_count', '-avg_rating')[:10]
+        
+        top_recipes_data = []
+        for recipe in top_recipes:
+            top_recipes_data.append({
+                'id': str(recipe.id),
+                'title': recipe.title,
+                'views': recipe.view_count or 0,  # Placeholder
+                'favorites': 0,  # Placeholder for favorites
+                'average_rating': float(recipe.avg_rating or 0)
+            })
+        
+        # Top categories (by recipe count and average rating)
+        from recipes.models import Category
+        top_categories = Category.objects.annotate(
+            recipe_count=Count('recipes'),
+            avg_rating=Avg('recipes__ratings__rating')
+        ).filter(
+            recipe_count__gt=0
+        ).order_by('-recipe_count', '-avg_rating')[:10]
+        
+        top_categories_data = []
+        for category in top_categories:
+            top_categories_data.append({
+                'id': category.id,
+                'name': category.name,
+                'recipe_count': category.recipe_count,
+                'average_rating': float(category.avg_rating or 0)
+            })
+        
+        # Top users (by recipe count)
+        top_users = User.objects.annotate(
+            recipe_count=Count('recipes'),
+            total_views=Count('recipes'),  # Placeholder
+            avg_rating=Avg('recipes__ratings__rating')
+        ).filter(
+            recipe_count__gt=0
+        ).order_by('-recipe_count')[:10]
+        
+        top_users_data = []
+        for user in top_users:
+            top_users_data.append({
+                'id': str(user.id),
+                'username': user.username,
+                'recipe_count': user.recipe_count,
+                'total_views': user.total_views or 0,  # Placeholder
+                'average_rating': float(user.avg_rating or 0)
+            })
+        
+        # Category distribution
+        category_distribution = Category.objects.annotate(
+            recipe_count=Count('recipes')
+        ).filter(
+            recipe_count__gt=0
+        ).order_by('-recipe_count')
+        
+        category_labels = []
+        category_values = []
+        
+        for category in category_distribution[:10]:  # Top 10 categories
+            category_labels.append(category.name)
+            category_values.append(category.recipe_count)
+        
         analytics_data = {
             'user_growth': {
-                'labels': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                'labels': user_growth_labels,
                 'datasets': [{
                     'label': 'Users',
-                    'data': [10, 25, 45, 60, 80, 100],
+                    'data': user_growth_values,
                     'borderColor': '#1976d2',
                     'backgroundColor': 'rgba(25, 118, 210, 0.1)'
                 }]
             },
             'recipe_activity': {
-                'labels': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                'labels': recipe_activity_labels,
                 'datasets': [{
                     'label': 'Recipes',
-                    'data': [5, 15, 30, 45, 60, 75],
+                    'data': recipe_activity_values,
                     'borderColor': '#388e3c',
                     'backgroundColor': 'rgba(56, 142, 60, 0.1)'
                 }]
             },
             'rating_distribution': {
-                'labels': ['1★', '2★', '3★', '4★', '5★'],
+                'labels': rating_labels,
                 'datasets': [{
-                    'data': [5, 10, 25, 40, 20],
+                    'data': rating_values,
                     'backgroundColor': ['#f44336', '#ff9800', '#ffc107', '#4caf50', '#2196f3']
                 }]
             },
-            'top_recipes': [
-                {
-                    'id': '1',
-                    'title': 'Spaghetti Carbonara',
-                    'views': 1500,
-                    'favorites': 120,
-                    'average_rating': 4.5
-                },
-                {
-                    'id': '2',
-                    'title': 'Chicken Curry',
-                    'views': 1200,
-                    'favorites': 95,
-                    'average_rating': 4.3
-                }
-            ]
+            'category_distribution': {
+                'labels': category_labels,
+                'datasets': [{
+                    'data': category_values,
+                    'backgroundColor': [
+                        '#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5',
+                        '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4caf50'
+                    ]
+                }]
+            },
+            'top_recipes': top_recipes_data,
+            'top_categories': top_categories_data,
+            'top_users': top_users_data
         }
         
         return Response(analytics_data)
