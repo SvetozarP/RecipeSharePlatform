@@ -337,6 +337,8 @@ export class UserDetailDialogComponent implements OnInit {
     this.populateForm();
   }
 
+
+
   private populateForm(): void {
     const user = this.data.user;
     this.userForm.patchValue({

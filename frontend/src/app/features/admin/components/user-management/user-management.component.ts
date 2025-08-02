@@ -22,6 +22,7 @@ import { SelectionModel } from '@angular/cdk/collections';
 import { AdminService } from '../../services/admin.service';
 import { AdminUser, AdminFilters } from '../../models/admin.models';
 import { UserDetailDialogComponent } from '../user-detail-dialog/user-detail-dialog.component';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-user-management',
@@ -229,19 +230,32 @@ import { UserDetailDialogComponent } from '../user-detail-dialog/user-detail-dia
                       <mat-icon>visibility</mat-icon>
                       <span>View Details</span>
                     </button>
-                    <button mat-menu-item (click)="editUser(user)">
+                    <button mat-menu-item 
+                            (click)="editUser(user)"
+                            [disabled]="!canEditUser(user)"
+                            [matTooltip]="!canEditUser(user) ? 'You do not have permission to edit this user' : ''">
                       <mat-icon>edit</mat-icon>
                       <span>Edit User</span>
                     </button>
-                    <button mat-menu-item (click)="toggleUserStatus(user)">
+                    <button mat-menu-item 
+                            (click)="toggleUserStatus(user)"
+                            [disabled]="!canEditUser(user)"
+                            [matTooltip]="!canEditUser(user) ? 'You do not have permission to modify this user' : ''">
                       <mat-icon>{{ user.is_active ? 'block' : 'check_circle' }}</mat-icon>
                       <span>{{ user.is_active ? 'Deactivate' : 'Activate' }}</span>
                     </button>
-                    <button mat-menu-item (click)="toggleStaffStatus(user)">
+                    <button mat-menu-item 
+                            (click)="toggleStaffStatus(user)"
+                            [disabled]="!canToggleStaffStatus(user)"
+                            [matTooltip]="!canToggleStaffStatus(user) ? 'You do not have permission to modify staff status for this user' : ''">
                       <mat-icon>{{ user.is_staff ? 'person' : 'admin_panel_settings' }}</mat-icon>
                       <span>{{ user.is_staff ? 'Remove Staff' : 'Make Staff' }}</span>
                     </button>
-                    <button mat-menu-item (click)="deleteUser(user)" class="delete-action">
+                    <button mat-menu-item 
+                            (click)="deleteUser(user)" 
+                            class="delete-action"
+                            [disabled]="!canDeleteUser(user)"
+                            [matTooltip]="!canDeleteUser(user) ? 'You do not have permission to delete this user' : ''">
                       <mat-icon>delete</mat-icon>
                       <span>Delete User</span>
                     </button>
@@ -413,7 +427,8 @@ export class UserManagementComponent implements OnInit {
     private adminService: AdminService,
     private formBuilder: FormBuilder,
     private snackBar: MatSnackBar,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private authService: AuthService
   ) {
     this.filtersForm = this.formBuilder.group({
       search: [''],
@@ -492,6 +507,55 @@ export class UserManagementComponent implements OnInit {
     }
   }
 
+  // Permission check methods
+  canEditUser(user: AdminUser): boolean {
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) return false;
+    
+    // Superusers can edit anyone
+    if (currentUser.is_superuser) return true;
+    
+    // Staff users cannot edit superusers
+    if (currentUser.is_staff && user.is_superuser) return false;
+    
+    // Staff users can edit regular users and other staff
+    if (currentUser.is_staff) return true;
+    
+    return false;
+  }
+
+  canToggleStaffStatus(user: AdminUser): boolean {
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) return false;
+    
+    // Superusers can toggle anyone's staff status
+    if (currentUser.is_superuser) return true;
+    
+    // Staff users cannot modify superusers
+    if (currentUser.is_staff && user.is_superuser) return false;
+    
+    // Staff users can toggle other staff status
+    if (currentUser.is_staff) return true;
+    
+    return false;
+  }
+
+  canDeleteUser(user: AdminUser): boolean {
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) return false;
+    
+    // Superusers can delete anyone
+    if (currentUser.is_superuser) return true;
+    
+    // Staff users cannot delete superusers
+    if (currentUser.is_staff && user.is_superuser) return false;
+    
+    // Staff users can delete regular users and other staff
+    if (currentUser.is_staff) return true;
+    
+    return false;
+  }
+
   // User actions
   viewUser(user: AdminUser): void {
     const dialogRef = this.dialog.open(UserDetailDialogComponent, {
@@ -508,6 +572,13 @@ export class UserManagementComponent implements OnInit {
   }
 
   editUser(user: AdminUser): void {
+    if (!this.canEditUser(user)) {
+      this.snackBar.open('You do not have permission to edit this user', 'Close', {
+        duration: 5000
+      });
+      return;
+    }
+
     const dialogRef = this.dialog.open(UserDetailDialogComponent, {
       width: '600px',
       data: { user, mode: 'edit' }
@@ -522,6 +593,13 @@ export class UserManagementComponent implements OnInit {
   }
 
   toggleUserStatus(user: AdminUser): void {
+    if (!this.canEditUser(user)) {
+      this.snackBar.open('You do not have permission to modify this user', 'Close', {
+        duration: 5000
+      });
+      return;
+    }
+
     const newStatus = !user.is_active;
     const action = newStatus ? 'activate' : 'deactivate';
     
@@ -546,6 +624,13 @@ export class UserManagementComponent implements OnInit {
   }
 
   toggleStaffStatus(user: AdminUser): void {
+    if (!this.canToggleStaffStatus(user)) {
+      this.snackBar.open('You do not have permission to modify staff status for this user', 'Close', {
+        duration: 5000
+      });
+      return;
+    }
+
     const newStatus = !user.is_staff;
     const action = newStatus ? 'make staff' : 'remove staff';
     
@@ -570,6 +655,13 @@ export class UserManagementComponent implements OnInit {
   }
 
   deleteUser(user: AdminUser): void {
+    if (!this.canDeleteUser(user)) {
+      this.snackBar.open('You do not have permission to delete this user', 'Close', {
+        duration: 5000
+      });
+      return;
+    }
+
     if (confirm(`Are you sure you want to delete user "${user.first_name} ${user.last_name}"?`)) {
       this.adminService.deleteUser(user.id).subscribe({
         next: () => {
