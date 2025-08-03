@@ -256,7 +256,9 @@ export interface AdminPagination {
 
 export interface AdminListResponse<T> {
   results: T[];
-  pagination: AdminPagination;
+  count: number;
+  next?: string;
+  previous?: string;
   filters?: AdminFilters;
 }
 

@@ -121,8 +121,9 @@ export class RecipeModerationComponent implements OnInit {
         console.log('Recipes response:', response);
         this.dataSource.data = response.results;
         if (this.paginator) {
-          this.paginator.length = response.pagination.total;
-          console.log('Set paginator length to:', response.pagination.total);
+          // Use 'count' field from Django REST Framework pagination
+          this.paginator.length = response.count;
+          console.log('Set paginator length to:', response.count);
         }
         this.loading = false;
       },

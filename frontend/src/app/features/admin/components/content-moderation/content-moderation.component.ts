@@ -115,7 +115,8 @@ export class ContentModerationComponent implements OnInit {
       next: (response) => {
         this.dataSource.data = response.results;
         if (this.paginator) {
-          this.paginator.length = response.pagination.total;
+          // Use 'count' field from Django REST Framework pagination
+          this.paginator.length = response.count;
         }
         this.loading = false;
       },
