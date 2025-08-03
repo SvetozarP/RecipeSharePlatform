@@ -1,6 +1,7 @@
 """
 Recipe views for API endpoints.
 """
+import time
 from rest_framework import viewsets, status, permissions, filters, renderers
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -8,6 +9,9 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q
 from django.utils.text import slugify
+
+from core.services.cache_manager import CacheKeyGenerator, cache_manager, query_optimizer, performance_monitor
+from core.services.performance_monitor import monitor_performance, monitor_database_queries
 
 from .models import Recipe, Category, Rating, UserFavorite, RecipeView
 from .serializers import (
@@ -62,7 +66,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
         return CategorySerializer
 
     def get_queryset(self):
-        """Get queryset for categories."""
+        """Get queryset for categories with performance optimization."""
         queryset = Category.objects.select_related('parent').prefetch_related(
             'children', 'recipes'
         )
@@ -91,14 +95,28 @@ class CategoryViewSet(viewsets.ModelViewSet):
             serializer.save()
 
     @action(detail=False, methods=['get'], renderer_classes=[renderers.JSONRenderer])
+    @monitor_performance
     def tree(self, request):
         """
         Get category tree structure.
         Returns root categories with their nested children.
         """
+        # Try to get from cache first
+        cache_key = CacheKeyGenerator.category_tree()
+        cached_result = cache_manager.get(cache_key)
+        
+        if cached_result:
+            return Response(cached_result)
+        
+        # Generate tree structure
         root_categories = self.get_queryset().filter(parent=None).order_by('order', 'name')
         serializer = CategoryTreeSerializer(root_categories, many=True, context={'request': request})
-        return Response(serializer.data)
+        result = serializer.data
+        
+        # Cache the result for 1 hour
+        cache_manager.set(cache_key, result, cache_manager.LONG_TTL)
+        
+        return Response(result)
 
     @action(detail=True, methods=['get'])
     def recipes(self, request, slug=None):
@@ -192,8 +210,13 @@ class RecipeViewSet(viewsets.ViewSet):
             )
         # Staff users can see all recipes regardless of moderation status
         
+        # Apply query optimization
+        queryset = query_optimizer.optimize_recipe_queryset(queryset)
+        
         return queryset
 
+    @monitor_performance
+    @monitor_database_queries
     def list(self, request):
         """List recipes with filtering and pagination."""
         from django.db.models import Avg, Count, F
@@ -554,6 +577,7 @@ class RecipeViewSet(viewsets.ViewSet):
         })
     
     @action(detail=False, methods=['get'], url_path='search', permission_classes=[permissions.AllowAny])
+    @monitor_performance
     def search(self, request):
         """
         Basic text search endpoint for recipes.
@@ -610,6 +634,7 @@ class RecipeViewSet(viewsets.ViewSet):
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     @action(detail=False, methods=['post'], url_path='advanced-search', permission_classes=[permissions.AllowAny])
+    @monitor_performance
     def advanced_search(self, request):
         """
         Advanced search endpoint with multiple filter criteria.
@@ -661,6 +686,7 @@ class RecipeViewSet(viewsets.ViewSet):
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     @action(detail=False, methods=['get'], url_path='search-suggestions', permission_classes=[permissions.AllowAny])
+    @monitor_performance
     def search_suggestions(self, request):
         """
         Get search suggestions for autocomplete functionality.
@@ -691,6 +717,7 @@ class RecipeViewSet(viewsets.ViewSet):
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     @action(detail=False, methods=['get'], url_path='popular-searches', permission_classes=[permissions.AllowAny])
+    @monitor_performance
     def popular_searches(self, request):
         """
         Get popular search terms based on recipe content analysis.
@@ -949,7 +976,7 @@ class RecipeViewViewSet(viewsets.ModelViewSet):
     Provides tracking and retrieval of recipe view statistics.
     """
     serializer_class = RecipeViewSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.AllowAny]  # Allow anonymous users to record views
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ['recipe', 'user']
     ordering_fields = ['created_at', 'view_duration_seconds']
@@ -961,6 +988,10 @@ class RecipeViewViewSet(viewsets.ModelViewSet):
             # Authenticated users can see their own views
             if self.action in ['list', 'retrieve']:
                 return RecipeView.objects.filter(user=self.request.user).select_related('recipe', 'user')
+        
+        # Anonymous users cannot list views
+        if not self.request.user.is_authenticated and self.action in ['list', 'retrieve']:
+            return RecipeView.objects.none()
         
         # For stats and creation, return all views
         return RecipeView.objects.all().select_related('recipe', 'user')

@@ -141,7 +141,7 @@ import { RecipeViewsService } from '../../dashboard/services/recipe-views.servic
         </div>
 
         <!-- Image Gallery Section -->
-        <div *ngIf="recipe()?.images?.length" class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div *ngIf="hasValidImages()" class="bg-white rounded-lg shadow-sm overflow-hidden">
           <div class="relative">
             <!-- Main Image -->
             <img [src]="currentImage().image" 
@@ -172,7 +172,7 @@ import { RecipeViewsService } from '../../dashboard/services/recipe-views.servic
           <!-- Thumbnail Gallery -->
           <div *ngIf="recipeImages().length > 1" class="p-4">
             <div class="flex gap-2 overflow-x-auto">
-              <img *ngFor="let image of recipeImages(); let i = index" 
+              <img *ngFor="let image of recipeImages(); let i = index"
                    [src]="image.image"
                    [alt]="image.alt_text || recipe()?.title"
                    class="w-16 h-16 object-cover rounded cursor-pointer border-2"
@@ -514,13 +514,38 @@ export class RecipeDetailComponent implements OnInit, OnDestroy {
   // Computed values
   recipeImages = computed(() => {
     const recipe = this.recipe();
+    
+    // If recipe explicitly indicates it has no images, return empty array
+    if (recipe?.has_images === false) {
+      return [];
+    }
+    
     // Handle different image formats from backend
     if (Array.isArray(recipe?.images) && recipe.images.length > 0) {
-      return recipe.images;
+      // Filter out any images with empty URLs
+      const validImages = recipe.images.filter(img => 
+        img.image && img.image.trim() !== '' && img.image !== 'null' && img.image !== 'undefined'
+      );
+      if (validImages.length > 0) {
+        return validImages;
+      }
+    }
+    
+    // Fallback to main_image_url if available
+    if (recipe?.main_image_url && recipe.main_image_url.trim() !== '' && 
+        recipe.main_image_url !== 'null' && recipe.main_image_url !== 'undefined') {
+      return [{
+        id: 1,
+        image: recipe.main_image_url,
+        alt_text: recipe.title || 'Recipe image',
+        is_primary: true,
+        ordering: 0
+      }];
     }
     
     // Fallback to thumbnail_url if images array is empty but thumbnail exists
-    if (recipe?.thumbnail_url) {
+    if (recipe?.thumbnail_url && recipe.thumbnail_url.trim() !== '' && 
+        recipe.thumbnail_url !== 'null' && recipe.thumbnail_url !== 'undefined') {
       return [{
         id: 1,
         image: recipe.thumbnail_url,
@@ -530,13 +555,24 @@ export class RecipeDetailComponent implements OnInit, OnDestroy {
       }];
     }
     
+    // Return empty array if no images are available
     return [];
+  });
+
+  // Additional computed property to check if we have any valid images
+  hasValidImages = computed(() => {
+    const images = this.recipeImages();
+    return images.length > 0 && images.some(img => 
+      img.image && img.image.trim() !== '' && img.image !== 'null' && img.image !== 'undefined'
+    );
   });
 
   currentImage = computed(() => {
     const images = this.recipeImages();
     return images[this.currentImageIndex()] || { image: '', alt_text: '', is_primary: true, ordering: 0, id: 0 };
   });
+
+
 
   recipeIngredients = computed(() => {
     const recipe = this.recipe();
@@ -632,7 +668,8 @@ export class RecipeDetailComponent implements OnInit, OnDestroy {
     if (this.recipe() && !this.isDeleting) {
       const viewDuration = Math.floor((Date.now() - this.viewStartTime) / 1000);
       this.recipeViewsService.recordView(this.recipe()!.id, viewDuration).catch(error => {
-        console.error('Failed to record recipe view:', error);
+        // Silently handle errors for view recording - this is not critical functionality
+        console.debug('Failed to record recipe view (non-critical):', error);
       });
     }
     
@@ -687,6 +724,8 @@ export class RecipeDetailComponent implements OnInit, OnDestroy {
   setCurrentImage(index: number): void {
     this.currentImageIndex.set(index);
   }
+
+
 
   // Rating and Review methods
   private loadCurrentUserRating(recipeId: string): void {

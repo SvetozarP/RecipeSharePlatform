@@ -54,7 +54,8 @@ export class RecipeViewsService {
       }
       return response;
     } catch (error) {
-      console.error('Failed to record recipe view:', error);
+      // Log error but don't throw - view recording is not critical functionality
+      console.debug('Failed to record recipe view (non-critical):', error);
       throw error;
     }
   }

@@ -43,6 +43,11 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'core.middleware.error_handler.ErrorHandlerMiddleware',
     'core.middleware.logging.RequestLoggingMiddleware',
+    # Performance optimization middleware
+    'core.middleware.compression.CompressionMiddleware',
+    'core.middleware.compression.ResponseCacheMiddleware',
+    'core.middleware.compression.ETagMiddleware',
+    'core.middleware.compression.PerformanceHeadersMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -134,4 +139,94 @@ REST_FRAMEWORK = {
 
 # CORS settings
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_ALL_ORIGINS = True  # TODO: Change this in production 
+CORS_ALLOW_ALL_ORIGINS = True  # TODO: Change this in production
+
+# Performance and caching settings
+PERFORMANCE_MONITORING_ENABLED = True
+
+# Cache configuration
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+        'TIMEOUT': 300,  # 5 minutes default
+        'OPTIONS': {
+            'MAX_ENTRIES': 1000,
+            'CULL_FREQUENCY': 3,  # Remove 1/3 of entries when max is reached
+        }
+    }
+}
+
+# Database optimization settings
+DATABASE_OPTIMIZATION = {
+    'CONN_MAX_AGE': 600,  # 10 minutes
+    'OPTIONS': {
+        'timeout': 20,
+    }
+}
+
+# API response optimization
+API_OPTIMIZATION = {
+    'COMPRESSION_ENABLED': True,
+    'CACHE_ENABLED': True,
+    'ETAG_ENABLED': True,
+    'MAX_RESPONSE_SIZE': 1024 * 1024,  # 1MB
+    'COMPRESSION_THRESHOLD': 1024,  # 1KB
+}
+
+# Logging configuration for performance monitoring
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'django.log'),
+            'formatter': 'verbose',
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+        'performance': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'performance.log'),
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'core.services.cache_manager': {
+            'handlers': ['console', 'performance'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'core.services.performance_monitor': {
+            'handlers': ['console', 'performance'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'core.middleware.compression': {
+            'handlers': ['console', 'performance'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+} 

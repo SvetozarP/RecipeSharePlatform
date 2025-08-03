@@ -1,0 +1,197 @@
+<div class="performance-dashboard">
+      <div class="dashboard-header">
+        <h2>Performance Dashboard</h2>
+        <div class="header-actions">
+          <button 
+            mat-raised-button 
+            color="primary" 
+            (click)="refreshMetrics()"
+            [disabled]="loading">
+            <mat-icon>refresh</mat-icon>
+            Refresh
+          </button>
+          <button 
+            mat-raised-button 
+            color="warn" 
+            (click)="clearCache()"
+            [disabled]="loading">
+            <mat-icon>clear_all</mat-icon>
+            Clear Cache
+          </button>
+          <button 
+            mat-raised-button 
+            (click)="exportMetrics()"
+            [disabled]="loading">
+            <mat-icon>download</mat-icon>
+            Export
+          </button>
+        </div>
+      </div>
+
+      <!-- System Overview -->
+      <div class="metrics-grid">
+        <mat-card class="metric-card">
+          <mat-card-header>
+            <mat-card-title>CPU Usage</mat-card-title>
+            <mat-card-subtitle>Current: {{ systemStats?.cpu_percent || 0 }}%</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <mat-progress-bar 
+              [value]="systemStats?.cpu_percent || 0"
+              [color]="getProgressColor(systemStats?.cpu_percent || 0)">
+            </mat-progress-bar>
+            <p class="metric-value">{{ systemStats?.cpu_percent || 0 }}%</p>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="metric-card">
+          <mat-card-header>
+            <mat-card-title>Memory Usage</mat-card-title>
+            <mat-card-subtitle>Available: {{ formatBytes(systemStats?.memory_available || 0) }}</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <mat-progress-bar 
+              [value]="systemStats?.memory_percent || 0"
+              [color]="getProgressColor(systemStats?.memory_percent || 0)">
+            </mat-progress-bar>
+            <p class="metric-value">{{ systemStats?.memory_percent || 0 }}%</p>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="metric-card">
+          <mat-card-header>
+            <mat-card-title>Disk Usage</mat-card-title>
+            <mat-card-subtitle>Free: {{ formatBytes(systemStats?.disk_free || 0) }}</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <mat-progress-bar 
+              [value]="systemStats?.disk_percent || 0"
+              [color]="getProgressColor(systemStats?.disk_percent || 0)">
+            </mat-progress-bar>
+            <p class="metric-value">{{ systemStats?.disk_percent || 0 }}%</p>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="metric-card">
+          <mat-card-header>
+            <mat-card-title>Cache Hit Rate</mat-card-title>
+            <mat-card-subtitle>Performance indicator</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <mat-progress-bar 
+              [value]="metrics?.cache?.hit_rate || 0"
+              [color]="getCacheColor(metrics?.cache?.hit_rate || 0)">
+            </mat-progress-bar>
+            <p class="metric-value">{{ (metrics?.cache?.hit_rate || 0).toFixed(1) }}%</p>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <!-- Performance Details -->
+      <div class="details-grid">
+        <mat-card class="detail-card">
+          <mat-card-header>
+            <mat-card-title>Database Performance</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="detail-item">
+              <span class="label">Queries per minute:</span>
+              <span class="value">{{ metrics?.database?.queries_per_minute || 0 }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Average query time:</span>
+              <span class="value">{{ (metrics?.database?.average_query_time || 0).toFixed(3) }}s</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Slow queries:</span>
+              <span class="value">
+                <mat-chip 
+                  [color]="(metrics?.database?.slow_queries || 0) > 0 ? 'warn' : 'primary'"
+                  selected>
+                  {{ metrics?.database?.slow_queries || 0 }}
+                </mat-chip>
+              </span>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="detail-card">
+          <mat-card-header>
+            <mat-card-title>Request Performance</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="detail-item">
+              <span class="label">Average response time:</span>
+              <span class="value">{{ (metrics?.requests?.average_response_time || 0).toFixed(3) }}s</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Slow requests:</span>
+              <span class="value">
+                <mat-chip 
+                  [color]="(metrics?.requests?.slow_requests || 0) > 0 ? 'warn' : 'primary'"
+                  selected>
+                  {{ metrics?.requests?.slow_requests || 0 }}
+                </mat-chip>
+              </span>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="detail-card">
+          <mat-card-header>
+            <mat-card-title>System Health</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="health-status">
+              <mat-chip 
+                [color]="getHealthColor()"
+                selected>
+                {{ getHealthStatus() }}
+              </mat-chip>
+            </div>
+                         <div class="last-updated">
+               Last updated: {{ formatTimestamp(metrics?.timestamp || '') }}
+             </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <!-- Slow Queries Table -->
+      <mat-card class="table-card">
+        <mat-card-header>
+          <mat-card-title>Recent Slow Queries</mat-card-title>
+          <mat-card-subtitle>Queries taking longer than 1 second</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <table mat-table [dataSource]="slowQueries" class="slow-queries-table">
+            <ng-container matColumnDef="sql">
+              <th mat-header-cell *matHeaderCellDef>SQL Query</th>
+              <td mat-cell *matCellDef="let query">
+                <div class="sql-preview">{{ query.sql | slice:0:100 }}...</div>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="duration">
+              <th mat-header-cell *matHeaderCellDef>Duration</th>
+              <td mat-cell *matCellDef="let query">
+                <span class="duration">{{ query.duration.toFixed(3) }}s</span>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="timestamp">
+              <th mat-header-cell *matHeaderCellDef>Timestamp</th>
+              <td mat-cell *matCellDef="let query">
+                {{ formatTimestamp(query.timestamp) }}
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="slowQueryColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: slowQueryColumns;"></tr>
+          </table>
+
+          <div *ngIf="slowQueries.length === 0" class="no-data">
+            No slow queries detected in the last hour.
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>

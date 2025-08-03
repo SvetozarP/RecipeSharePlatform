@@ -1,0 +1,126 @@
+.star-rating-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.star-display {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.star-input {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.star {
+  cursor: inherit;
+  user-select: none;
+}
+
+.star.filled {
+  color: #ffd700;
+}
+
+.star.half {
+  color: #ffd700;
+}
+
+.star.empty {
+  color: #e0e0e0;
+}
+
+.star-button {
+  background: none;
+  border: none;
+  padding: 2px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.star-button:hover:not(:disabled) {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.star-button:focus {
+  outline: 2px solid #1976d2;
+  outline-offset: 2px;
+}
+
+.star-button:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.star-button .star {
+  transition: color 0.2s ease, transform 0.1s ease;
+}
+
+.star-button:hover:not(:disabled) .star {
+  transform: scale(1.1);
+}
+
+.star-button.hovered .star,
+.star-button.selected .star {
+  color: #ffd700;
+}
+
+.clear-button {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  border-radius: 50%;
+  margin-left: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  transition: opacity 0.2s ease, background-color 0.2s ease;
+}
+
+.clear-button:hover:not(:disabled) {
+  opacity: 1;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.clear-button:focus {
+  outline: 2px solid #1976d2;
+  outline-offset: 2px;
+}
+
+.clear-icon {
+  font-size: 18px;
+  color: #666;
+}
+
+.rating-value {
+  font-weight: 500;
+  margin-left: 8px;
+  color: #333;
+}
+
+.rating-count {
+  color: #666;
+  margin-left: 4px;
+}
+
+/* Size variations */
+.small {
+  font-size: 16px;
+}
+
+.medium {
+  font-size: 20px;
+}
+
+.large {
+  font-size: 24px;
+} 

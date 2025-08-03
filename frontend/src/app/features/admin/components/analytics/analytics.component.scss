@@ -1,0 +1,220 @@
+.analytics {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+
+.page-header {
+  margin-bottom: 24px;
+}
+
+.page-header h1 {
+  margin: 0 0 8px 0;
+  color: #1976d2;
+  font-size: 2rem;
+}
+
+.page-header p {
+  margin: 0;
+  color: #666;
+}
+
+.period-selector {
+  margin-bottom: 24px;
+}
+
+.period-controls {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px;
+}
+
+.loading-container p {
+  margin-top: 16px;
+  color: #666;
+}
+
+.analytics-content {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  width: 100%;
+}
+
+.metrics-section h2,
+.top-performers-section h2,
+.export-section h2 {
+  margin: 0 0 16px 0;
+  color: #333;
+  font-size: 1.5rem;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+.metric-card {
+  height: 120px;
+}
+
+.metric-card mat-card-content {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 16px;
+}
+
+.metric-icon {
+  margin-right: 16px;
+}
+
+.metric-icon mat-icon {
+  font-size: 2rem;
+  width: 2rem;
+  height: 2rem;
+  color: #1976d2;
+}
+
+.metric-content h3 {
+  margin: 0 0 4px 0;
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.metric-content p {
+  margin: 0 0 4px 0;
+  color: #666;
+}
+
+.metric-content small {
+  color: #999;
+  font-size: 0.8rem;
+}
+
+.charts-section {
+  margin-bottom: 32px;
+  width: 100%;
+}
+
+.chart-container {
+  padding: 24px;
+  width: 100%;
+}
+
+.chart-container h3 {
+  margin: 0 0 16px 0;
+  color: #333;
+}
+
+.chart-wrapper {
+  position: relative;
+  height: 400px;
+  width: 100%;
+  background-color: white;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  padding: 16px;
+}
+
+.chart-wrapper canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.performers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+.performer-card {
+  height: 400px;
+}
+
+.performer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.performer-item {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}
+
+.rank {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #1976d2;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.performer-info {
+  flex: 1;
+}
+
+.performer-name {
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.performer-stats {
+  display: flex;
+  gap: 12px;
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.export-section {
+  margin-top: 32px;
+  width: 100%;
+}
+
+.export-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .period-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .performers-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .export-actions {
+    flex-direction: column;
+  }
+} 

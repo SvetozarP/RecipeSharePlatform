@@ -1,0 +1,117 @@
+<div class="rating-form-container">
+      <!-- Form Header -->
+      <div class="form-header">
+        <h4 class="form-title">
+          <mat-icon>{{ isEditing ? 'edit' : 'rate_review' }}</mat-icon>
+          {{ isEditing ? 'Edit Your Review' : 'Write a Review' }}
+        </h4>
+        <button 
+          *ngIf="showCancelButton"
+          mat-icon-button
+          (click)="onCancel()"
+          matTooltip="Cancel">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <!-- Authentication Check -->
+      <div *ngIf="!isAuthenticated" class="auth-prompt">
+        <mat-icon>info</mat-icon>
+        <p>Please <a routerLink="/auth/login">log in</a> to write a review.</p>
+      </div>
+
+      <!-- Own Recipe Check -->
+      <div *ngIf="isAuthenticated && isOwnRecipe" class="own-recipe-notice">
+        <mat-icon>info</mat-icon>
+        <p>You cannot rate your own recipe.</p>
+      </div>
+
+      <!-- Rating Form -->
+      <form 
+        *ngIf="isAuthenticated && !isOwnRecipe" 
+        [formGroup]="ratingForm" 
+        (ngSubmit)="onSubmit()"
+        class="rating-form">
+        
+        <!-- Star Rating -->
+        <div class="rating-section">
+          <label class="rating-label">Your Rating *</label>
+          <div class="star-rating-wrapper">
+            <app-star-rating
+              [value]="selectedRating()"
+              [interactive]="true"
+              [disabled]="submitting()"
+              [size]="32"
+              [allowClear]="false"
+              (ratingChange)="onRatingChange($event)">
+            </app-star-rating>
+            <span class="rating-text">{{ getRatingText() }}</span>
+          </div>
+          <mat-error *ngIf="ratingForm.get('rating')?.invalid && ratingForm.get('rating')?.touched">
+            Please select a rating
+          </mat-error>
+        </div>
+
+        <!-- Review Text -->
+        <div class="review-section">
+          <mat-form-field appearance="fill" class="review-field">
+            <mat-label>Your Review (optional)</mat-label>
+            <textarea 
+              matInput
+              formControlName="review"
+              placeholder="Share your experience with this recipe..."
+              rows="4"
+              maxlength="2000"
+              [disabled]="submitting()">
+            </textarea>
+            <mat-hint align="end">{{ reviewLength() }}/2000</mat-hint>
+            <mat-error *ngIf="ratingForm.get('review')?.invalid">
+              Review must be less than 2000 characters
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button 
+            type="button"
+            mat-button
+            *ngIf="showCancelButton"
+            (click)="onCancel()"
+            [disabled]="submitting()">
+            Cancel
+          </button>
+          
+          <button 
+            type="submit"
+            mat-raised-button
+            color="primary"
+            [disabled]="ratingForm.invalid || submitting()">
+            <mat-spinner diameter="20" *ngIf="submitting()"></mat-spinner>
+            <span *ngIf="!submitting()">
+              {{ isEditing ? 'Update Review' : 'Submit Review' }}
+            </span>
+            <span *ngIf="submitting()">
+              {{ isEditing ? 'Updating...' : 'Submitting...' }}
+            </span>
+          </button>
+
+          <button 
+            type="button"
+            mat-stroked-button
+            color="warn"
+            *ngIf="isEditing"
+            (click)="onDelete()"
+            [disabled]="submitting()">
+            <mat-icon>delete</mat-icon>
+            Delete Review
+          </button>
+        </div>
+
+        <!-- Form Validation Summary -->
+        <div class="validation-summary" *ngIf="showValidationSummary()">
+          <mat-icon color="warn">warning</mat-icon>
+          <span>Please correct the errors above before submitting.</span>
+        </div>
+      </form>
+    </div>

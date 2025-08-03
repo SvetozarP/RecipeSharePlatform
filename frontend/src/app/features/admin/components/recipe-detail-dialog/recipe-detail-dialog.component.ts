@@ -133,7 +133,7 @@ interface DialogData {
                 
                 <div class="info-item">
                   <label>Author:</label>
-                  <span>{{ data.recipe.author?.username || 'Unknown' }}</span>
+                  <span>{{ data.recipe.author.username || 'Unknown' }}</span>
                 </div>
                 
                 <div class="info-item">
@@ -148,12 +148,12 @@ interface DialogData {
                 
                 <div class="info-item">
                   <label>Total Ratings:</label>
-                  <span>{{ data.recipe.rating_stats?.total_ratings || 0 }}</span>
+                  <span>{{ data.recipe.rating_stats.total_ratings || 0 }}</span>
                 </div>
                 
                 <div class="info-item">
                   <label>Average Rating:</label>
-                  <span>{{ data.recipe.rating_stats?.average_rating || 0 }}/5</span>
+                  <span>{{ data.recipe.rating_stats.average_rating || 0 }}/5</span>
                 </div>
                 
                 <div class="info-item">

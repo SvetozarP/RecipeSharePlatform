@@ -1,0 +1,48 @@
+<div class="star-rating-container" [class]="cssClass">
+  <!-- Display Mode (non-interactive) -->
+  <div *ngIf="!interactive" class="star-display" [attr.aria-label]="'Rating: ' + value + ' out of 5 stars'">
+    <mat-icon 
+      *ngFor="let star of starArray(); let i = index" 
+      class="star"
+      [class.filled]="star === 'star'"
+      [class.half]="star === 'star_half'"
+      [class.empty]="star === 'star_border'"
+      [style.color]="getStarColor(star)"
+      [style.font-size.px]="size">
+      {{ star }}
+    </mat-icon>
+    <span *ngIf="showValue" class="rating-value">{{ value | number:'1.1-1' }}</span>
+    <span *ngIf="showCount && count !== undefined" class="rating-count">({{ count }})</span>
+  </div>
+
+  <!-- Interactive Mode (for rating input) -->
+  <div *ngIf="interactive" class="star-input" [attr.aria-label]="'Rate this item from 1 to 5 stars'">
+    <button
+      *ngFor="let star of interactiveStars(); let i = index"
+      type="button"
+      class="star-button"
+      [class.hovered]="hoveredRating() >= i + 1"
+      [class.selected]="selectedRating() >= i + 1"
+      [disabled]="disabled"
+      [style.font-size.px]="size"
+      (click)="onStarClick(i + 1)"
+      (mouseenter)="onStarHover(i + 1)"
+      (mouseleave)="onStarLeave()"
+      [attr.aria-label]="'Rate ' + (i + 1) + ' star' + (i > 0 ? 's' : '')">
+      <mat-icon 
+        class="star"
+        [style.color]="getInteractiveStarColor(i + 1)">
+        {{ getInteractiveStarIcon(i + 1) }}
+      </mat-icon>
+    </button>
+    <button 
+      *ngIf="allowClear && selectedRating() > 0"
+      type="button"
+      class="clear-button"
+      (click)="onClear()"
+      [disabled]="disabled"
+      matTooltip="Clear rating">
+      <mat-icon class="clear-icon">clear</mat-icon>
+    </button>
+  </div>
+</div> 

@@ -1,0 +1,234 @@
+<div class="admin-dashboard">
+      <!-- Loading State -->
+      <div *ngIf="loading" class="loading-container">
+        <mat-spinner></mat-spinner>
+        <p>Loading admin dashboard...</p>
+      </div>
+
+      <!-- Dashboard Content -->
+      <div *ngIf="!loading" class="dashboard-content">
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+          <mat-card class="welcome-card">
+            <div class="welcome-content">
+              <div class="welcome-text">
+                <h2>Admin Dashboard</h2>
+                <p>Platform overview and management tools</p>
+              </div>
+              <div class="welcome-actions">
+                <button 
+                  mat-raised-button 
+                  color="primary" 
+                  (click)="navigateTo('users')">
+                  <mat-icon>people</mat-icon>
+                  Manage Users
+                </button>
+              </div>
+            </div>
+          </mat-card>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="stats-section">
+          <div class="stats-grid">
+            <!-- Total Users -->
+            <mat-card class="stat-card">
+              <div class="stat-content">
+                <div class="stat-icon">
+                  <mat-icon>people</mat-icon>
+                </div>
+                <div class="stat-info">
+                  <h3 class="stat-value">{{ statistics?.users?.total || 0 }}</h3>
+                  <p class="stat-label">Total Users</p>
+                </div>
+              </div>
+            </mat-card>
+
+            <!-- Total Recipes -->
+            <mat-card class="stat-card">
+              <div class="stat-content">
+                <div class="stat-icon">
+                  <mat-icon>restaurant</mat-icon>
+                </div>
+                <div class="stat-info">
+                  <h3 class="stat-value">{{ statistics?.recipes?.total || 0 }}</h3>
+                  <p class="stat-label">Total Recipes</p>
+                </div>
+              </div>
+            </mat-card>
+
+            <!-- Total Ratings -->
+            <mat-card class="stat-card">
+              <div class="stat-content">
+                <div class="stat-icon">
+                  <mat-icon>star</mat-icon>
+                </div>
+                <div class="stat-info">
+                  <h3 class="stat-value">{{ statistics?.ratings?.total || 0 }}</h3>
+                  <p class="stat-label">Total Ratings</p>
+                </div>
+              </div>
+            </mat-card>
+
+            <!-- Total Views -->
+            <mat-card class="stat-card">
+              <div class="stat-content">
+                <div class="stat-icon">
+                  <mat-icon>visibility</mat-icon>
+                </div>
+                <div class="stat-info">
+                  <h3 class="stat-value">{{ statistics?.engagement?.total_views || 0 }}</h3>
+                  <p class="stat-label">Total Views</p>
+                </div>
+              </div>
+            </mat-card>
+          </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="main-content">
+          <!-- Moderation Queue -->
+          <div class="moderation-section">
+            <mat-card class="moderation-card">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon>gavel</mat-icon>
+                  Moderation Queue
+                </mat-card-title>
+                <button 
+                  mat-button 
+                  (click)="navigateTo('recipes')"
+                  class="view-all-btn">
+                  View All
+                </button>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="moderation-grid">
+                  <!-- Recipes Pending -->
+                  <div class="moderation-item" 
+                       [class.has-pending]="hasPendingRecipes"
+                       (click)="navigateToModeration('recipes')">
+                    <div class="moderation-icon">
+                      <mat-icon>restaurant</mat-icon>
+                    </div>
+                    <div class="moderation-info">
+                      <h4 class="moderation-value">{{ pendingRecipesCount }}</h4>
+                      <p class="moderation-label">Recipes Pending</p>
+                      <mat-chip *ngIf="hasFlaggedRecipes" 
+                               color="warn" 
+                               variant="outlined"
+                               class="flag-chip">
+                        {{ flaggedRecipesCount }} flagged
+                      </mat-chip>
+                    </div>
+                  </div>
+
+                  <!-- Ratings Pending -->
+                  <div class="moderation-item"
+                       [class.has-pending]="hasPendingRatings"
+                       (click)="navigateToModeration('content')">
+                    <div class="moderation-icon">
+                      <mat-icon>rate_review</mat-icon>
+                    </div>
+                    <div class="moderation-info">
+                      <h4 class="moderation-value">{{ pendingRatingsCount }}</h4>
+                      <p class="moderation-label">Ratings Pending</p>
+                      <mat-chip *ngIf="hasFlaggedRatings" 
+                               color="warn" 
+                               variant="outlined"
+                               class="flag-chip">
+                        {{ flaggedRatingsCount }} flagged
+                      </mat-chip>
+                    </div>
+                  </div>
+
+                  <!-- Users Pending -->
+                  <div class="moderation-item"
+                       [class.has-pending]="hasPendingUsers"
+                       (click)="navigateToModeration('users')">
+                    <div class="moderation-icon">
+                      <mat-icon>person_add</mat-icon>
+                    </div>
+                    <div class="moderation-info">
+                      <h4 class="moderation-value">{{ pendingUsersCount }}</h4>
+                      <p class="moderation-label">Users Pending</p>
+                      <mat-chip *ngIf="hasFlaggedUsers" 
+                               color="warn" 
+                               variant="outlined"
+                               class="flag-chip">
+                        {{ flaggedUsersCount }} flagged
+                      </mat-chip>
+                    </div>
+                  </div>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </div>
+
+          <!-- Recent Activity -->
+          <div class="activity-section">
+            <mat-card class="activity-card">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon>history</mat-icon>
+                  Recent Activity
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <div *ngIf="recentActivity.length > 0" class="activity-list">
+                  <div 
+                    *ngFor="let activity of recentActivity.slice(0, 5)" 
+                    class="activity-item">
+                    <div class="activity-icon">
+                      <mat-icon>{{ activity.icon }}</mat-icon>
+                    </div>
+                    <div class="activity-content">
+                      <p class="activity-text">{{ activity.message }}</p>
+                      <span class="activity-time">{{ activity.time_ago }}</span>
+                    </div>
+                  </div>
+                </div>
+                <div *ngIf="recentActivity.length === 0" class="no-activity">
+                  <p>No recent activity</p>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+          <button 
+            mat-raised-button 
+            color="primary" 
+            class="action-button"
+            (click)="navigateTo('users')">
+            <mat-icon>people</mat-icon>
+            Manage Users
+          </button>
+          <button 
+            mat-raised-button 
+            color="accent" 
+            class="action-button"
+            (click)="navigateTo('recipes')">
+            <mat-icon>restaurant</mat-icon>
+            Moderate Recipes
+          </button>
+          <button 
+            mat-raised-button 
+            color="warn" 
+            class="action-button"
+            (click)="navigateTo('content')">
+            <mat-icon>rate_review</mat-icon>
+            Review Content
+          </button>
+          <button 
+            mat-raised-button 
+            class="action-button"
+            (click)="navigateTo('analytics')">
+            <mat-icon>analytics</mat-icon>
+            View Analytics
+          </button>
+        </div>
+      </div>
+    </div>

@@ -1,0 +1,120 @@
+<mat-card class="recipe-card" [class.loading]="loading">
+  <div class="card-header">
+    <!-- Image Container -->
+    <div class="image-container" [routerLink]="['/recipes', recipe.id]">
+      <img 
+        [src]="getImageSrc()" 
+        [alt]="recipe.title"
+        class="recipe-image"
+        loading="lazy"
+        (error)="onImageError($event)">
+      
+      <!-- Difficulty Badge -->
+      <div class="difficulty-badge" [class]="'difficulty-' + recipe.difficulty">
+        {{ recipe.difficulty | titlecase }}
+      </div>
+      
+      <!-- Favorite Button (only for authenticated users) -->
+      <button 
+        *ngIf="isAuthenticated$ | async"
+        mat-icon-button 
+        class="favorite-btn"
+        [class.favorited]="recipe.is_favorited"
+        (click)="onFavoriteClick($event)"
+        [disabled]="favoriteLoading"
+        matTooltip="{{ recipe.is_favorited ? 'Remove from favorites' : 'Add to favorites' }}">
+        <mat-icon>{{ recipe.is_favorited ? 'favorite' : 'favorite_border' }}</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <mat-card-content class="card-content">
+    <!-- Title and Description -->
+    <div class="title-section">
+      <h3 class="recipe-title" [routerLink]="['/recipes', recipe.id]">
+        {{ recipe.title }}
+      </h3>
+      <p class="recipe-description" [title]="recipe.description">
+        {{ recipe.description }}
+      </p>
+    </div>
+
+    <!-- Rating Section -->
+    <div class="rating-section" *ngIf="recipe.rating_stats && recipe.rating_stats.total_ratings > 0">
+      <div class="stars">
+        <mat-icon 
+          *ngFor="let star of getStarArray(); let i = index"
+          [class]="getStarClass(i)"
+          class="star-icon">
+          {{ getStarIcon(i) }}
+        </mat-icon>
+      </div>
+      <span class="rating-text">
+        {{ recipe.rating_stats.average_rating | number:'1.1-1' }}
+        ({{ recipe.rating_stats.total_ratings }})
+      </span>
+    </div>
+
+    <!-- Recipe Meta Information -->
+    <div class="meta-section">
+      <div class="meta-item">
+        <mat-icon class="meta-icon">schedule</mat-icon>
+        <span>{{ formatTime(recipe.total_time) }}</span>
+      </div>
+      
+      <div class="meta-item">
+        <mat-icon class="meta-icon">restaurant</mat-icon>
+        <span>{{ recipe.servings }} {{ recipe.servings === 1 ? 'serving' : 'servings' }}</span>
+      </div>
+    </div>
+
+    <!-- Categories -->
+    <div class="categories-section" *ngIf="recipe.categories && recipe.categories.length > 0">
+      <mat-chip-set>
+        <mat-chip 
+          *ngFor="let category of recipe.categories.slice(0, 3)"
+          [routerLink]="['/recipes']"
+          [queryParams]="{ categories: [category.slug] }"
+          class="category-chip">
+          {{ category.name }}
+        </mat-chip>
+        <mat-chip *ngIf="recipe.categories.length > 3" class="more-categories">
+          +{{ recipe.categories.length - 3 }} more
+        </mat-chip>
+      </mat-chip-set>
+    </div>
+
+    <!-- Author Information -->
+    <div class="author-section">
+      <div class="author-info">
+        <mat-icon class="author-icon">person</mat-icon>
+        <span class="author-name">{{ recipe.author_name || 'Unknown Author' }}</span>
+      </div>
+      <span class="created-date">{{ formatDate(recipe.created_at) }}</span>
+    </div>
+  </mat-card-content>
+
+  <!-- Quick Actions -->
+  <mat-card-actions class="card-actions">
+    <button 
+      mat-button 
+      [routerLink]="['/recipes', recipe.id]"
+      color="primary">
+      <mat-icon>visibility</mat-icon>
+      View Recipe
+    </button>
+    
+    <button 
+      mat-button 
+      (click)="onShareClick($event)"
+      matTooltip="Share recipe">
+      <mat-icon>share</mat-icon>
+      Share
+    </button>
+  </mat-card-actions>
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" *ngIf="loading">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+</mat-card> 

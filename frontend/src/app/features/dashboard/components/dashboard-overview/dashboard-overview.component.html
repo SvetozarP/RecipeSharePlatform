@@ -145,7 +145,7 @@
                 <div class="favorite-info">
                   <h4>{{ recipe.title }}</h4>
                   <app-star-rating 
-                    [value]="recipe.rating_stats?.average_rating || 0"
+                    [value]="recipe.rating_stats.average_rating || 0"
                     [interactive]="false"
                     [showValue]="true"
                     [size]="14">

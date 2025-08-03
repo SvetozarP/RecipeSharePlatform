@@ -11,4 +11,8 @@ django-storages>=1.14,<1.15
 
 # Development tools (for development environment)
 django-debug-toolbar>=4.2,<4.3
-django-filter>=23.5,<23.6 
+django-filter>=23.5,<23.6
+
+# Performance monitoring and optimization
+psutil>=5.9,<5.10
+redis>=4.6,<4.7 

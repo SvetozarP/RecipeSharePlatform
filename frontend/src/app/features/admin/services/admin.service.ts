@@ -252,4 +252,39 @@ export class AdminService {
   getRecentActivity(limit: number = 10): Observable<RecentActivity[]> {
     return this.http.get<RecentActivity[]>(`${this.apiUrl}/recent-activity/?limit=${limit}`);
   }
+
+  // Performance Monitoring
+  getPerformanceMetrics(minutes: number = 60): Observable<any> {
+    const params = new HttpParams().set('minutes', minutes.toString());
+    return this.http.get<any>(`${environment.apiUrl}/performance/metrics/`, { params });
+  }
+
+  getSystemStats(): Observable<any> {
+    return this.http.get<any>(`${environment.apiUrl}/performance/system/`);
+  }
+
+  getSlowQueries(minutes: number = 60): Observable<any> {
+    const params = new HttpParams().set('minutes', minutes.toString());
+    return this.http.get<any>(`${environment.apiUrl}/performance/slow-queries/`, { params });
+  }
+
+  getCacheStats(): Observable<any> {
+    return this.http.get<any>(`${environment.apiUrl}/performance/cache/`);
+  }
+
+  clearCache(): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/performance/cache/clear/`, {});
+  }
+
+  exportMetrics(format: 'json' | 'csv' = 'json'): Observable<Blob> {
+    const params = new HttpParams().set('format', format);
+    return this.http.get(`${environment.apiUrl}/performance/export/`, { 
+      params, 
+      responseType: 'blob' 
+    });
+  }
+
+  getPerformanceHealthCheck(): Observable<any> {
+    return this.http.get<any>(`${environment.apiUrl}/performance/health/`);
+  }
 } 

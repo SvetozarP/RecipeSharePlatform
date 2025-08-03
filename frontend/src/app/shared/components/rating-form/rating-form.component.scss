@@ -1,0 +1,124 @@
+.rating-form-container {
+      background: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .form-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .form-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .auth-prompt,
+    .own-recipe-notice {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+      background: #f5f5f5;
+      border-radius: 4px;
+      color: #666;
+    }
+
+    .auth-prompt a {
+      color: #1976d2;
+      text-decoration: none;
+    }
+
+    .auth-prompt a:hover {
+      text-decoration: underline;
+    }
+
+    .rating-form {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .rating-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .rating-label {
+      font-weight: 500;
+      color: #333;
+      margin-bottom: 4px;
+    }
+
+    .star-rating-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .rating-text {
+      font-weight: 500;
+      color: #666;
+      min-width: 80px;
+    }
+
+    .review-section {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .review-field {
+      width: 100%;
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .validation-summary {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px;
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      border-radius: 4px;
+      color: #856404;
+      font-size: 14px;
+    }
+
+    @media (max-width: 768px) {
+      .rating-form-container {
+        padding: 16px;
+      }
+
+      .form-actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .form-actions button {
+        width: 100%;
+      }
+
+      .star-rating-wrapper {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+    }

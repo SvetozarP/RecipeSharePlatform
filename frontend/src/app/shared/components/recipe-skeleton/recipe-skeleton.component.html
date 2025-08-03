@@ -1,0 +1,58 @@
+<mat-card class="recipe-skeleton">
+      <!-- Image Skeleton -->
+      <div class="skeleton-image">
+        <div class="skeleton-badge"></div>
+        <div class="skeleton-favorite"></div>
+      </div>
+
+      <mat-card-content class="skeleton-content">
+        <!-- Title Skeleton -->
+        <div class="skeleton-title-section">
+          <div class="skeleton-title"></div>
+          <div class="skeleton-description"></div>
+          <div class="skeleton-description short"></div>
+        </div>
+
+        <!-- Rating Skeleton -->
+        <div class="skeleton-rating-section">
+          <div class="skeleton-stars">
+            <div class="skeleton-star" *ngFor="let star of [1,2,3,4,5]"></div>
+          </div>
+          <div class="skeleton-rating-text"></div>
+        </div>
+
+        <!-- Meta Section Skeleton -->
+        <div class="skeleton-meta-section">
+          <div class="skeleton-meta-item">
+            <div class="skeleton-icon"></div>
+            <div class="skeleton-meta-text"></div>
+          </div>
+          <div class="skeleton-meta-item">
+            <div class="skeleton-icon"></div>
+            <div class="skeleton-meta-text"></div>
+          </div>
+        </div>
+
+        <!-- Categories Skeleton -->
+        <div class="skeleton-categories">
+          <div class="skeleton-chip"></div>
+          <div class="skeleton-chip"></div>
+          <div class="skeleton-chip small"></div>
+        </div>
+
+        <!-- Author Section Skeleton -->
+        <div class="skeleton-author-section">
+          <div class="skeleton-author">
+            <div class="skeleton-icon"></div>
+            <div class="skeleton-author-text"></div>
+          </div>
+          <div class="skeleton-date"></div>
+        </div>
+      </mat-card-content>
+
+      <!-- Actions Skeleton -->
+      <div class="skeleton-actions">
+        <div class="skeleton-button"></div>
+        <div class="skeleton-button small"></div>
+      </div>
+    </mat-card>

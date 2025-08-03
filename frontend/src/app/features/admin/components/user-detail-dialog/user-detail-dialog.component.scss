@@ -1,0 +1,120 @@
+.user-detail-dialog {
+  min-width: 500px;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.dialog-header h2 {
+  display: flex;
+  align-items: center;
+  margin: 0;
+}
+
+.dialog-header mat-icon {
+  margin-right: 8px;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+}
+
+.loading-container p {
+  margin-top: 16px;
+  color: #666;
+}
+
+.form-grid {
+  display: grid;
+  gap: 24px;
+}
+
+.form-section {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.form-section h3 {
+  margin: 0 0 16px 0;
+  color: #1976d2;
+  font-size: 1.1rem;
+}
+
+.form-section mat-form-field {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.status-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.status-controls.readonly mat-checkbox {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.status-display h4 {
+  margin: 0 0 8px 0;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.info-item:last-child {
+  border-bottom: none;
+}
+
+.info-item label {
+  font-weight: 500;
+  color: #333;
+}
+
+.info-item span {
+  color: #666;
+}
+
+mat-chip-set {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+mat-chip {
+  font-size: 0.7rem;
+}
+
+mat-dialog-actions {
+  padding: 16px 0 0 0;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .user-detail-dialog {
+    min-width: auto;
+    width: 100%;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+} 

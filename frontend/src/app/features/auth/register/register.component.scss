@@ -1,0 +1,23 @@
+.min-h-screen {
+      min-height: 100vh;
+    }
+    
+    .flex-1 {
+      flex: 1;
+    }
+    
+    /* Auth form specific enhancements */
+    .mat-mdc-form-field {
+      width: 100%;
+      margin-bottom: 8px;
+    }
+    
+    .mat-card {
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    }
+    
+    /* Name fields row styling */
+    .flex.gap-4 .mat-mdc-form-field {
+      margin-bottom: 8px;
+    }

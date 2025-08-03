@@ -1,0 +1,229 @@
+.admin-dashboard {
+      @apply w-full px-4 py-6;
+    }
+
+    /* Welcome Section */
+    .welcome-section {
+      @apply mb-8;
+    }
+    
+    .welcome-card {
+      @apply bg-gradient-to-r from-blue-50 to-indigo-50 border-0 shadow-sm;
+    }
+    
+    .welcome-content {
+      @apply flex flex-col md:flex-row items-center justify-between p-6;
+    }
+    
+    .welcome-text {
+      @apply text-center md:text-left mb-4 md:mb-0;
+    }
+    
+    .welcome-text h2 {
+      @apply text-2xl font-bold text-gray-900 mb-2;
+    }
+    
+    .welcome-text p {
+      @apply text-gray-600;
+    }
+    
+    .welcome-actions {
+      @apply flex-shrink-0;
+    }
+
+    /* Statistics Section */
+    .stats-section {
+      @apply mb-8;
+    }
+    
+    .stats-grid {
+      @apply grid grid-cols-2 md:grid-cols-4 gap-4;
+    }
+    
+    .stat-card {
+      @apply border-0 shadow-sm;
+    }
+    
+    .stat-content {
+      @apply flex items-center p-4;
+    }
+    
+    .stat-icon {
+      @apply flex-shrink-0 w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4;
+    }
+    
+    .stat-icon mat-icon {
+      @apply text-blue-600 text-xl;
+    }
+    
+    .stat-info {
+      @apply flex-1;
+    }
+    
+    .stat-value {
+      @apply text-2xl font-bold text-gray-900 mb-1;
+    }
+    
+    .stat-label {
+      @apply text-sm text-gray-600;
+    }
+
+    /* Main Content Grid */
+    .main-content {
+      @apply grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8;
+    }
+
+    /* Moderation Section */
+    .moderation-card {
+      @apply border-0 shadow-sm;
+    }
+    
+    .moderation-card mat-card-header {
+      @apply pb-4;
+    }
+    
+    .moderation-card mat-card-title {
+      @apply flex items-center text-lg font-semibold text-gray-900;
+    }
+    
+    .moderation-card mat-card-title mat-icon {
+      @apply mr-2 text-orange-600;
+    }
+    
+    .view-all-btn {
+      @apply ml-auto;
+    }
+    
+    .moderation-grid {
+      @apply space-y-4;
+    }
+    
+    .moderation-item {
+      @apply flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer;
+    }
+    
+    .moderation-item.has-pending {
+      @apply bg-red-50 border-l-4 border-red-500;
+    }
+    
+    .moderation-icon {
+      @apply flex-shrink-0 w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center;
+    }
+    
+    .moderation-icon mat-icon {
+      @apply text-gray-600 text-lg;
+    }
+    
+    .moderation-info {
+      @apply flex-1;
+    }
+    
+    .moderation-value {
+      @apply text-xl font-bold text-gray-900 mb-1;
+    }
+    
+    .moderation-label {
+      @apply text-sm text-gray-600 mb-2;
+    }
+    
+    .flag-chip {
+      @apply text-xs;
+    }
+
+    /* Activity Section */
+    .activity-card {
+      @apply border-0 shadow-sm;
+    }
+    
+    .activity-card mat-card-header {
+      @apply pb-4;
+    }
+    
+    .activity-card mat-card-title {
+      @apply flex items-center text-lg font-semibold text-gray-900;
+    }
+    
+    .activity-card mat-card-title mat-icon {
+      @apply mr-2 text-blue-600;
+    }
+    
+    .activity-list {
+      @apply space-y-4;
+    }
+    
+    .activity-item {
+      @apply flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors;
+    }
+    
+    .activity-icon {
+      @apply flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center;
+    }
+    
+    .activity-icon mat-icon {
+      @apply text-blue-600 text-sm;
+    }
+    
+    .activity-content {
+      @apply flex-1 min-w-0;
+    }
+    
+    .activity-text {
+      @apply text-sm text-gray-900 mb-1;
+    }
+    
+    .activity-time {
+      @apply text-xs text-gray-500;
+    }
+    
+    .no-activity {
+      @apply text-center py-8 text-gray-500;
+    }
+    
+    .no-activity p {
+      @apply text-gray-600;
+    }
+
+    /* Quick Actions */
+    .quick-actions {
+      @apply flex flex-wrap justify-center gap-3;
+    }
+    
+    .action-button {
+      @apply min-w-[140px];
+    }
+    
+    .action-button mat-icon {
+      @apply mr-2;
+    }
+
+    /* Loading Container */
+    .loading-container {
+      @apply flex flex-col items-center justify-center py-16;
+    }
+    
+    .loading-container p {
+      @apply mt-4 text-gray-600;
+    }
+
+    .mat-drawer-content {
+      width: 100% !important;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .stats-grid {
+        @apply grid-cols-2;
+      }
+      
+      .main-content {
+        @apply grid-cols-1;
+      }
+      
+      .quick-actions {
+        @apply flex-col items-center;
+      }
+      
+      .quick-actions .action-button {
+        @apply w-full max-w-xs;
+      }
+    }

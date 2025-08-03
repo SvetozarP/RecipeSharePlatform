@@ -1,0 +1,178 @@
+<div class="recipe-list-container">
+      <!-- Header Section -->
+      <div class="header-section">
+        <div class="header-content">
+          <div>
+            <h1 class="page-title">Discover Recipes</h1>
+            <p class="page-subtitle">Find your next favorite recipe from our collection</p>
+          </div>
+          <div class="header-actions">
+            <button 
+              *ngIf="isAuthenticated$ | async" 
+              mat-raised-button 
+              color="primary"
+              routerLink="/recipes/create"
+              class="create-button">
+              <mat-icon>add</mat-icon>
+              Create Recipe
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search Section -->
+      <div class="search-section">
+        <mat-card class="search-card">
+        <mat-card-content>
+            <div class="search-bar-container">
+              <mat-form-field class="search-field" appearance="fill">
+                <mat-label>Search recipes...</mat-label>
+                <input 
+                  matInput 
+                  [formControl]="searchControl"
+                  [matAutocomplete]="auto">
+                <mat-icon matSuffix>search</mat-icon>
+                
+                <mat-autocomplete 
+                  #auto="matAutocomplete" 
+                  (optionSelected)="onSuggestionSelected($event)">
+                  <mat-option 
+                    *ngFor="let suggestion of searchSuggestions$ | async" 
+                    [value]="suggestion.value">
+                    <mat-icon class="suggestion-icon">{{ getSuggestionIcon(suggestion.type) }}</mat-icon>
+                    <span class="suggestion-text">{{ suggestion.display }}</span>
+                    <span class="suggestion-type" *ngIf="suggestion.count">({{ suggestion.count }})</span>
+                  </mat-option>
+                </mat-autocomplete>
+              </mat-form-field>
+
+              <button 
+                mat-raised-button 
+                color="primary" 
+                (click)="onSearch()"
+                [disabled]="loading">
+                <mat-icon>search</mat-icon>
+                Search
+              </button>
+            </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+      <!-- Controls Section -->
+      <div class="controls-section">
+        <div class="results-info">
+          <span *ngIf="!loading && totalRecipes !== null">
+            {{ totalRecipes }} {{ totalRecipes === 1 ? 'recipe' : 'recipes' }} found
+            <span *ngIf="searchControl.value" class="search-indicator">
+              for "{{ searchControl.value }}"
+              <button mat-icon-button (click)="clearSearch()" matTooltip="Clear search">
+                <mat-icon>close</mat-icon>
+              </button>
+            </span>
+            <span *ngIf="getAppliedCategoryFilter()" class="search-indicator">
+              in category "{{ getAppliedCategoryFilter() }}"
+              <button mat-icon-button (click)="clearCategoryFilter()" matTooltip="Clear category filter">
+                <mat-icon>close</mat-icon>
+              </button>
+            </span>
+          </span>
+        </div>
+
+        <div class="controls">
+          <mat-form-field appearance="fill" class="sort-field">
+            <mat-label>Sort by</mat-label>
+            <mat-select [value]="currentSort" (selectionChange)="onSortChange($event)">
+              <mat-option *ngFor="let option of SORT_OPTIONS" [value]="option.value">
+                {{ option.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <!-- Pagination/Infinite Scroll Toggle -->
+          <mat-slide-toggle 
+            [checked]="!usePagination"
+            (change)="togglePaginationMode()"
+            class="scroll-toggle"
+            matTooltip="Toggle between pagination and infinite scroll">
+            Infinite Scroll
+          </mat-slide-toggle>
+
+          <mat-button-toggle-group 
+            [value]="viewMode" 
+            (change)="onViewModeChange($event)"
+            class="view-toggle">
+            <mat-button-toggle value="grid" matTooltip="Grid View">
+              <mat-icon>grid_view</mat-icon>
+            </mat-button-toggle>
+            <mat-button-toggle value="list" matTooltip="List View">
+              <mat-icon>view_list</mat-icon>
+            </mat-button-toggle>
+          </mat-button-toggle-group>
+        </div>
+      </div>
+
+      <!-- Recipe Grid -->
+      <div class="recipes-section">
+        <!-- Loading State -->
+        <div class="recipes-grid" *ngIf="loading" [class.list-view]="viewMode === 'list'">
+          <app-recipe-skeleton *ngFor="let skeleton of skeletonArray"></app-recipe-skeleton>
+        </div>
+
+        <!-- Recipes Display -->
+        <div 
+          class="recipes-grid" 
+          *ngIf="!loading && recipes.length > 0"
+          [class.list-view]="viewMode === 'list'">
+          <app-recipe-card
+            *ngFor="let recipe of recipes; trackBy: trackByRecipeId"
+            [recipe]="recipe"
+            [favoriteLoading]="favoriteLoadingIds.has(recipe.id)"
+            (favoriteToggle)="onFavoriteToggle($event)"
+            (share)="onShareRecipe($event)">
+          </app-recipe-card>
+        </div>
+
+        <!-- Infinite Scroll Trigger -->
+        <div #scrollTrigger class="scroll-trigger" *ngIf="!usePagination && hasMoreData && !loading">
+          <div class="loading-more" *ngIf="loadingMore">
+            <mat-spinner diameter="40"></mat-spinner>
+            <p>Loading more recipes...</p>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" *ngIf="!loading && recipes.length === 0">
+          <mat-icon class="empty-icon">restaurant_menu</mat-icon>
+          <h3>No recipes found</h3>
+          <p>{{ getEmptyStateMessage() }}</p>
+          <button mat-raised-button color="primary" (click)="clearFilters()">
+            <mat-icon>refresh</mat-icon>
+            Clear Filters
+          </button>
+        </div>
+
+        <!-- Error State -->
+        <div class="error-state" *ngIf="error">
+          <mat-icon class="error-icon">error_outline</mat-icon>
+          <h3>Something went wrong</h3>
+          <p>{{ error }}</p>
+          <button mat-raised-button color="primary" (click)="loadRecipes()">
+            <mat-icon>refresh</mat-icon>
+            Try Again
+          </button>
+        </div>
+      </div>
+
+      <!-- Pagination (only in pagination mode) -->
+      <div class="pagination-section" *ngIf="usePagination && !loading && totalRecipes && totalRecipes > 0">
+        <mat-paginator
+          [length]="totalRecipes || 0"
+          [pageSize]="pageSize"
+          [pageIndex]="currentPage - 1"
+          [pageSizeOptions]="[12, 24, 48, 96]"
+          (page)="onPageChange($event)"
+          showFirstLastButtons>
+        </mat-paginator>
+      </div>
+    </div>

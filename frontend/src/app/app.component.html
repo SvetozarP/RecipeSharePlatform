@@ -1,0 +1,124 @@
+<div class="app-container">
+      <!-- Navigation Header -->
+      <mat-toolbar color="primary" class="mat-elevation-1">
+        <button mat-icon-button (click)="toggleSidenav()" *ngIf="isMobile">
+          <mat-icon aria-label="Menu">menu</mat-icon>
+        </button>
+        
+        <span class="cursor-pointer font-bold text-lg" (click)="navigateHome()">
+          Recipe Sharing Platform
+        </span>
+        
+        <span class="flex-1"></span>
+        
+        <!-- Desktop Navigation -->
+        <div class="hidden md:flex items-center space-x-4">
+          <button mat-button routerLink="/recipes">
+            <mat-icon aria-label="Recipes">restaurant</mat-icon>
+            Recipes
+          </button>
+          
+          <button mat-button routerLink="/dashboard" *ngIf="currentUser$ | async">
+            <mat-icon aria-label="Dashboard">dashboard</mat-icon>
+            Dashboard
+          </button>
+          
+          <button mat-button routerLink="/profile" *ngIf="currentUser$ | async">
+            <mat-icon aria-label="Profile">person</mat-icon>
+            Profile
+          </button>
+          
+          <button mat-button routerLink="/admin" 
+                  class="admin-button"
+                  *ngIf="(currentUser$ | async)?.is_staff || (currentUser$ | async)?.is_superuser">
+            <mat-icon aria-label="Admin">admin_panel_settings</mat-icon>
+            Admin
+          </button>
+          
+          <button mat-button routerLink="/auth/login" *ngIf="!(isAuthenticated$ | async)">
+            <mat-icon aria-label="Login">login</mat-icon>
+            Login
+          </button>
+          
+          <button mat-button (click)="logout()" *ngIf="isAuthenticated$ | async">
+            <mat-icon aria-label="Logout">logout</mat-icon>
+            Logout
+          </button>
+        </div>
+      </mat-toolbar>
+
+      <!-- Mobile Sidenav -->
+      <mat-sidenav-container class="sidenav-container">
+        <mat-sidenav 
+          #sidenav 
+          mode="over" 
+          opened="false" 
+          class="mobile-sidenav"
+          [class.hidden]="!isMobile">
+          
+          <!-- User Info Section -->
+          <div class="sidenav-header" *ngIf="currentUser$ | async as user">
+            <div class="user-info">
+              <mat-icon class="user-avatar" aria-label="User Avatar">account_circle</mat-icon>
+              <div class="user-details">
+                <h3 class="user-name">{{ user.first_name || user.username }}</h3>
+                <p class="user-email">{{ user.email }}</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Navigation Links -->
+          <mat-nav-list class="sidenav-nav">
+            <a mat-list-item routerLink="/recipes" (click)="closeSidenav()">
+              <mat-icon matListItemIcon aria-label="Recipes">restaurant</mat-icon>
+              <span matListItemTitle>Recipes</span>
+            </a>
+            
+            <a mat-list-item routerLink="/dashboard" (click)="closeSidenav()" *ngIf="currentUser$ | async">
+              <mat-icon matListItemIcon aria-label="Dashboard">dashboard</mat-icon>
+              <span matListItemTitle>Dashboard</span>
+            </a>
+            
+            <a mat-list-item routerLink="/profile" (click)="closeSidenav()" *ngIf="currentUser$ | async">
+              <mat-icon matListItemIcon aria-label="Profile">person</mat-icon>
+              <span matListItemTitle>Profile</span>
+            </a>
+            
+            <a mat-list-item routerLink="/admin" 
+               (click)="closeSidenav()" 
+               class="admin-nav-item"
+               *ngIf="(currentUser$ | async)?.is_staff || (currentUser$ | async)?.is_superuser">
+              <mat-icon matListItemIcon aria-label="Admin">admin_panel_settings</mat-icon>
+              <span matListItemTitle>Admin</span>
+            </a>
+            
+            <mat-divider></mat-divider>
+            
+            <!-- Auth Actions -->
+            <a mat-list-item routerLink="/auth/login" (click)="closeSidenav()" *ngIf="!(isAuthenticated$ | async)">
+              <mat-icon matListItemIcon aria-label="Login">login</mat-icon>
+              <span matListItemTitle>Login</span>
+            </a>
+            
+            <button mat-list-item (click)="logoutAndClose()" *ngIf="isAuthenticated$ | async">
+              <mat-icon matListItemIcon aria-label="Logout">logout</mat-icon>
+              <span matListItemTitle>Logout</span>
+            </button>
+          </mat-nav-list>
+        </mat-sidenav>
+
+        <!-- Main Content -->
+        <mat-sidenav-content class="sidenav-content">
+          <main class="main-content">
+            <router-outlet></router-outlet>
+          </main>
+
+          <!-- Footer -->
+          <footer class="app-footer">
+            <div class="footer-content">
+              <p>&copy; 2025 Recipe Sharing Platform. Built with Angular 20 & Django REST Framework.</p>
+            </div>
+          </footer>
+        </mat-sidenav-content>
+      </mat-sidenav-container>
+    </div>

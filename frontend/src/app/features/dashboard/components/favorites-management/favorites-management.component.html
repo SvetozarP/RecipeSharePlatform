@@ -125,7 +125,7 @@
             </div>
             
             <div class="recipe-author">
-              <span>by {{ recipe.author?.first_name }} {{ recipe.author?.last_name || 'Unknown' }}</span>
+              <span>by {{ recipe.author.first_name }} {{ recipe.author.last_name || 'Unknown' }}</span>
             </div>
           </div>
         </div>
@@ -168,7 +168,7 @@
                   </span>
                   <span class="stat">
                     <mat-icon>person</mat-icon>
-                    {{ recipe.author?.first_name }} {{ recipe.author?.last_name || 'Unknown' }}
+                    {{ recipe.author.first_name }} {{ recipe.author.last_name || 'Unknown' }}
                   </span>
                 </div>
               </div>

@@ -1,0 +1,80 @@
+<div class="review-detail-dialog">
+  <div class="dialog-header">
+    <h2 mat-dialog-title>
+      <mat-icon>rate_review</mat-icon>
+      Review Details
+    </h2>
+    <button mat-icon-button mat-dialog-close>
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-dialog-content>
+    <div class="review-content">
+      <!-- Rating Display -->
+      <div class="rating-section">
+        <h3>Rating</h3>
+        <div class="rating-display">
+          <div class="stars">
+            <span *ngFor="let star of [1,2,3,4,5]" 
+                  [class.filled]="star <= data.rating"
+                  class="star">
+              ★
+            </span>
+          </div>
+          <div class="rating-value">{{ data.rating }}/5</div>
+        </div>
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <!-- Recipe Information -->
+      <div class="info-section">
+        <h3>Recipe</h3>
+        <div class="info-item">
+          <label>Title:</label>
+          <span>{{ data.recipe.title }}</span>
+        </div>
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <!-- User Information -->
+      <div class="info-section">
+        <h3>User</h3>
+        <div class="info-item">
+          <label>Username:</label>
+          <span>{{ data.user.username }}</span>
+        </div>
+        <div class="info-item">
+          <label>Email:</label>
+          <span>{{ data.user.email }}</span>
+        </div>
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <!-- Review Content -->
+      <div class="review-section">
+        <h3>Review Content</h3>
+        <div class="review-text">
+          <p>{{ data.review }}</p>
+        </div>
+        <div class="review-stats">
+          <div class="stat-item">
+            <mat-icon>text_fields</mat-icon>
+            <span>{{ data.review.length }} characters</span>
+          </div>
+          <div class="stat-item">
+            <mat-icon>schedule</mat-icon>
+            <span>{{ data.created_at | date:'medium' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close>Close</button>
+  </mat-dialog-actions>
+</div> 
