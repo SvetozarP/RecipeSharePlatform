@@ -43,11 +43,16 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'core.middleware.error_handler.ErrorHandlerMiddleware',
     'core.middleware.logging.RequestLoggingMiddleware',
-    # Performance optimization middleware
-    'core.middleware.compression.CompressionMiddleware',
-    'core.middleware.compression.ResponseCacheMiddleware',
-    'core.middleware.compression.ETagMiddleware',
-    'core.middleware.compression.PerformanceHeadersMiddleware',
+]
+
+# Conditionally add performance optimization middleware in production
+if PERFORMANCE_MONITORING_ENABLED:
+    MIDDLEWARE.extend([
+        'core.middleware.compression.CompressionMiddleware',
+        'core.middleware.compression.ResponseCacheMiddleware',
+        'core.middleware.compression.ETagMiddleware',
+        'core.middleware.compression.PerformanceHeadersMiddleware',
+    ])
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -142,7 +147,9 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_ORIGINS = True  # TODO: Change this in production
 
 # Performance and caching settings
-PERFORMANCE_MONITORING_ENABLED = True
+# Automatically enable performance monitoring in production
+import os
+PERFORMANCE_MONITORING_ENABLED = os.getenv('DJANGO_ENV', 'development') == 'production'
 
 # Cache configuration
 CACHES = {
@@ -174,6 +181,14 @@ API_OPTIMIZATION = {
     'COMPRESSION_THRESHOLD': 1024,  # 1KB
 }
 
+# Ensure logs directory exists
+logs_dir = os.path.join(BASE_DIR, 'logs')
+try:
+    os.makedirs(logs_dir, exist_ok=True)
+except (OSError, PermissionError):
+    # If we can't create logs directory, use console-only logging
+    logs_dir = None
+
 # Logging configuration for performance monitoring
 LOGGING = {
     'version': 1,
@@ -189,44 +204,21 @@ LOGGING = {
         },
     },
     'handlers': {
-        'file': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'logs', 'django.log'),
-            'formatter': 'verbose',
-        },
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'simple',
         },
-        'performance': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'logs', 'performance.log'),
-            'formatter': 'verbose',
-        },
     },
     'loggers': {
         'django': {
-            'handlers': ['console', 'file'],
+            'handlers': ['console'],
             'level': 'INFO',
             'propagate': True,
         },
-        'core.services.cache_manager': {
-            'handlers': ['console', 'performance'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-        'core.services.performance_monitor': {
-            'handlers': ['console', 'performance'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-        'core.middleware.compression': {
-            'handlers': ['console', 'performance'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
     },
 } 

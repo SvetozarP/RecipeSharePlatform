@@ -1,10 +1,14 @@
 """
-Production settings for recipe sharing platform project.
+Production settings for the Recipe Sharing Platform.
+Automatically enables performance monitoring and optimizations.
 """
 
 import os
 from datetime import timedelta
 from .base import *  # noqa
+
+# Set production environment
+os.environ['DJANGO_ENV'] = 'production'
 
 # Add WhiteNoise middleware for static file serving in production (with fallback)
 try:
@@ -41,18 +45,9 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
 
-# SECURITY WARNING: don't run with debug turned on in production!
+# Security settings for production
 DEBUG = False
-
-ALLOWED_HOSTS = [
-    os.environ.get('WEBSITE_HOSTNAME', '*'),  # Azure App Service hostname
-    'recipe-api-dev98298.azurewebsites.net',  # Your Azure app hostname
-    '169.254.129.1',   # Azure internal health check IP
-    '169.254.129.2',   # Azure internal health check IP  
-    '169.254.129.18',  # Azure internal health check IP
-    '127.0.0.1',       # Localhost
-    'localhost',       # Localhost domain
-]
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',') if os.getenv('ALLOWED_HOSTS') else []
 
 # Remove debug toolbar from installed apps
 if 'debug_toolbar' in INSTALLED_APPS:
@@ -61,29 +56,31 @@ if 'debug_toolbar' in INSTALLED_APPS:
 if 'debug_toolbar.middleware.DebugToolbarMiddleware' in MIDDLEWARE:
     MIDDLEWARE.remove('debug_toolbar.middleware.DebugToolbarMiddleware')
 
-# Database - PostgreSQL for production
-if os.environ.get('DB_NAME'):
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.environ.get('DB_NAME'),
-            'USER': os.environ.get('DB_USER'),
-            'PASSWORD': os.environ.get('DB_PASSWORD'),
-            'HOST': os.environ.get('DB_HOST'),
-            'PORT': os.environ.get('DB_PORT', '5432'),
-            'OPTIONS': {
-                'sslmode': 'require',  # Azure PostgreSQL requires SSL
-            },
+# Database configuration for production
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('DB_NAME', 'recipe_platform'),
+        'USER': os.getenv('DB_USER', 'postgres'),
+        'PASSWORD': os.getenv('DB_PASSWORD', ''),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': os.getenv('DB_PORT', '5432'),
+        'OPTIONS': {
+            'sslmode': 'require',
+        },
+    }
+}
+
+# Cache configuration for production (Redis)
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': os.getenv('REDIS_URL', 'redis://localhost:6379/1'),
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         }
     }
-else:
-    # Fallback to SQLite if database settings are not provided
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
+}
 
 # Email configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -102,23 +99,20 @@ if not (EMAIL_HOST_USER and EMAIL_HOST_PASSWORD):
 # Frontend URL
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'https://white-rock-011c63e03.2.azurestaticapps.net')
 
-# Security settings
+# HTTPS settings
 SECURE_SSL_REDIRECT = True
+SECURE_HSTS_SECONDS = 31536000
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_BROWSER_XSS_FILTER = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
-SECURE_BROWSER_XSS_FILTER = True
-SECURE_CONTENT_TYPE_NOSNIFF = True
-X_FRAME_OPTIONS = 'DENY'
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-# CORS settings for production
-CORS_ALLOWED_ORIGINS = [
-    os.environ.get('FRONTEND_URL', 'https://white-rock-011c63e03.2.azurestaticapps.net'),
-]
-
-# Static files configuration for production
+# Static files configuration
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # WhiteNoise configuration (with fallback)
 try:
@@ -131,11 +125,14 @@ except ImportError:
     # Fallback to default storage if whitenoise is not installed
     STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 
-# Azure Blob Storage configuration for media files
-AZURE_ACCOUNT_NAME = os.environ.get('AZURE_STORAGE_ACCOUNT_NAME', '')
-AZURE_ACCOUNT_KEY = os.environ.get('AZURE_STORAGE_ACCOUNT_KEY', '')
-AZURE_CONTAINER = os.environ.get('AZURE_STORAGE_CONTAINER_NAME', 'media')
+# Media files configuration (Azure Blob Storage)
+DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
+AZURE_ACCOUNT_NAME = os.getenv('AZURE_ACCOUNT_NAME')
+AZURE_ACCOUNT_KEY = os.getenv('AZURE_ACCOUNT_KEY')
+AZURE_CUSTOM_DOMAIN = os.getenv('AZURE_CUSTOM_DOMAIN')
+AZURE_CONTAINER = os.getenv('AZURE_CONTAINER', 'media')
 
+# Azure Blob Storage configuration for media files
 if AZURE_ACCOUNT_NAME and AZURE_ACCOUNT_KEY:
     # Use Azure Blob Storage for media files
     DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
@@ -149,24 +146,88 @@ else:
     MEDIA_URL = '/media/'
     MEDIA_ROOT = BASE_DIR / 'media'
 
-# Logging
+# Performance monitoring is automatically enabled in production
+# (handled by base.py based on DJANGO_ENV)
+
+# Logging configuration for production
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
     'handlers': {
         'console': {
+            'level': 'INFO',
             'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
         },
     },
     'root': {
         'handlers': ['console'],
         'level': 'INFO',
     },
-    'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': os.environ.get('DJANGO_LOG_LEVEL', 'INFO'),
+}
+
+# Add file logging if logs directory is available
+logs_dir = os.path.join(BASE_DIR, 'logs')
+try:
+    os.makedirs(logs_dir, exist_ok=True)
+    LOGGING['handlers'].update({
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(logs_dir, 'django.log'),
+            'formatter': 'verbose',
+        },
+        'performance': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(logs_dir, 'performance.log'),
+            'formatter': 'verbose',
+        },
+    })
+    
+    # Update loggers to include file handlers
+    LOGGING['loggers']['django']['handlers'].append('file')
+    LOGGING['loggers'].update({
+        'core.services.cache_manager': {
+            'handlers': ['console', 'performance'],
+            'level': 'INFO',
             'propagate': False,
         },
-    },
-} 
+        'core.services.performance_monitor': {
+            'handlers': ['console', 'performance'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'core.middleware.compression': {
+            'handlers': ['console', 'performance'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    })
+except (OSError, PermissionError):
+    # If we can't create logs directory, use console-only logging
+    pass
+
+# CORS settings for production
+CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', '').split(',') if os.getenv('CORS_ALLOWED_ORIGINS') else []
+CORS_ALLOW_CREDENTIALS = True
+
+# X_FRAME_OPTIONS = 'DENY'
+# SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https') 

@@ -1,0 +1,87 @@
+<div class="rating-edit-dialog">
+  <div class="dialog-header">
+    <h2 mat-dialog-title>
+      <mat-icon>edit</mat-icon>
+      Edit Rating
+    </h2>
+    <button mat-icon-button mat-dialog-close>
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-dialog-content>
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading-container">
+      <mat-spinner></mat-spinner>
+      <p>Saving changes...</p>
+    </div>
+
+    <!-- Rating Edit Form -->
+    <div *ngIf="!loading">
+      <form [formGroup]="ratingForm" (ngSubmit)="onSubmit()">
+        <div class="form-grid">
+          <!-- Rating Information -->
+          <div class="form-section">
+            <h3>Rating Information</h3>
+            
+            <mat-form-field appearance="fill">
+              <mat-label>Rating</mat-label>
+              <mat-select formControlName="rating">
+                <mat-option value="1">1 Star</mat-option>
+                <mat-option value="2">2 Stars</mat-option>
+                <mat-option value="3">3 Stars</mat-option>
+                <mat-option value="4">4 Stars</mat-option>
+                <mat-option value="5">5 Stars</mat-option>
+              </mat-select>
+              <mat-error *ngIf="ratingForm.get('rating')?.hasError('required')">
+                Rating is required
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill">
+              <mat-label>Review</mat-label>
+              <textarea matInput formControlName="review" rows="4" placeholder="Enter review text (optional)"></textarea>
+            </mat-form-field>
+          </div>
+
+          <!-- Current Information (Read-only) -->
+          <div class="form-section">
+            <h3>Current Information</h3>
+            
+            <div class="info-item">
+              <label>Recipe:</label>
+              <span>{{ data.rating.recipe.title }}</span>
+            </div>
+            
+            <div class="info-item">
+              <label>User:</label>
+              <span>{{ data.rating.user.username }} ({{ data.rating.user.email }})</span>
+            </div>
+            
+            <div class="info-item">
+              <label>Created:</label>
+              <span>{{ data.rating.created_at | date:'medium' }}</span>
+            </div>
+            
+            <div class="info-item">
+              <label>Helpful Votes:</label>
+              <span>{{ data.rating.helpful_count }}</span>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close>Cancel</button>
+    <button 
+      mat-raised-button 
+      color="primary" 
+      (click)="onSubmit()"
+      [disabled]="ratingForm.invalid || loading">
+      <mat-icon>save</mat-icon>
+      Save Changes
+    </button>
+  </mat-dialog-actions>
+</div> 

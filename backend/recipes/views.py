@@ -10,8 +10,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q
 from django.utils.text import slugify
 
-from core.services.cache_manager import CacheKeyGenerator, cache_manager, query_optimizer, performance_monitor
-from core.services.performance_monitor import monitor_performance, monitor_database_queries
+# Use service wrapper for graceful fallbacks
+from core.services.service_wrapper import service_wrapper
 
 from .models import Recipe, Category, Rating, UserFavorite, RecipeView
 from .serializers import (
@@ -38,7 +38,7 @@ from .serializers import (
 )
 from .services.recipe_service import recipe_service
 from .services.search_service import search_service
-from core.services.storage_service import storage_service
+# Storage service is now handled by service wrapper
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -95,16 +95,16 @@ class CategoryViewSet(viewsets.ModelViewSet):
             serializer.save()
 
     @action(detail=False, methods=['get'], renderer_classes=[renderers.JSONRenderer])
-    @monitor_performance
+    @service_wrapper.monitor_performance
     def tree(self, request):
         """
         Get category tree structure.
         Returns root categories with their nested children.
         """
         # Try to get from cache first
-        cache_key = CacheKeyGenerator.category_tree()
-        cached_result = cache_manager.get(cache_key)
-        
+        # Try to get cached result
+        cache_key = 'category_tree'
+        cached_result = service_wrapper.cache_get(cache_key)
         if cached_result:
             return Response(cached_result)
         
@@ -114,7 +114,8 @@ class CategoryViewSet(viewsets.ModelViewSet):
         result = serializer.data
         
         # Cache the result for 1 hour
-        cache_manager.set(cache_key, result, cache_manager.LONG_TTL)
+        # Cache the result
+        service_wrapper.cache_set(cache_key, result, 3600)  # 1 hour TTL
         
         return Response(result)
 
@@ -211,12 +212,12 @@ class RecipeViewSet(viewsets.ViewSet):
         # Staff users can see all recipes regardless of moderation status
         
         # Apply query optimization
-        queryset = query_optimizer.optimize_recipe_queryset(queryset)
+        queryset = service_wrapper.optimize_queryset(queryset)
         
         return queryset
 
-    @monitor_performance
-    @monitor_database_queries
+    @service_wrapper.monitor_performance
+    @service_wrapper.monitor_database_queries
     def list(self, request):
         """List recipes with filtering and pagination."""
         from django.db.models import Avg, Count, F
@@ -408,7 +409,7 @@ class RecipeViewSet(viewsets.ViewSet):
             
             # Delete associated images
             if recipe.images:
-                storage_service.delete_recipe_images(recipe.images)
+                service_wrapper.delete_images(recipe.images)
             
             recipe.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
@@ -441,20 +442,23 @@ class RecipeViewSet(viewsets.ViewSet):
             try:
                 # Delete existing images first
                 if recipe.images:
-                    storage_service.delete_recipe_images(recipe.images)
+                    service_wrapper.delete_images(recipe.images)
                 
                 # Save new image with thumbnails
-                image_urls = storage_service.save_image_with_thumbnails(
-                    image_file, 
-                    str(recipe.id)
-                )
-                recipe.images = image_urls
-                recipe.save(update_fields=['images'])
-                
-                return Response({
-                    'message': 'Image uploaded successfully',
-                    'images': image_urls
-                })
+                image_urls = service_wrapper.save_image(image_file, str(recipe.id))
+                if image_urls:
+                    recipe.images = image_urls
+                    recipe.save(update_fields=['images'])
+                    
+                    return Response({
+                        'message': 'Image uploaded successfully',
+                        'images': image_urls
+                    })
+                else:
+                    return Response(
+                        {'error': 'Failed to process image'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
             except Exception as e:
                 return Response(
                     {'error': f'Failed to process image: {str(e)}'},
@@ -480,7 +484,7 @@ class RecipeViewSet(viewsets.ViewSet):
                 )
             
             if recipe.images:
-                storage_service.delete_recipe_images(recipe.images)
+                service_wrapper.delete_images(recipe.images)
                 recipe.images = {}
                 recipe.save(update_fields=['images'])
             
@@ -577,7 +581,7 @@ class RecipeViewSet(viewsets.ViewSet):
         })
     
     @action(detail=False, methods=['get'], url_path='search', permission_classes=[permissions.AllowAny])
-    @monitor_performance
+    @service_wrapper.monitor_performance
     def search(self, request):
         """
         Basic text search endpoint for recipes.
@@ -634,7 +638,7 @@ class RecipeViewSet(viewsets.ViewSet):
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     @action(detail=False, methods=['post'], url_path='advanced-search', permission_classes=[permissions.AllowAny])
-    @monitor_performance
+    @service_wrapper.monitor_performance
     def advanced_search(self, request):
         """
         Advanced search endpoint with multiple filter criteria.
@@ -686,7 +690,7 @@ class RecipeViewSet(viewsets.ViewSet):
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     @action(detail=False, methods=['get'], url_path='search-suggestions', permission_classes=[permissions.AllowAny])
-    @monitor_performance
+    @service_wrapper.monitor_performance
     def search_suggestions(self, request):
         """
         Get search suggestions for autocomplete functionality.
@@ -717,7 +721,7 @@ class RecipeViewSet(viewsets.ViewSet):
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     @action(detail=False, methods=['get'], url_path='popular-searches', permission_classes=[permissions.AllowAny])
-    @monitor_performance
+    @service_wrapper.monitor_performance
     def popular_searches(self, request):
         """
         Get popular search terms based on recipe content analysis.
