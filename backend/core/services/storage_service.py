@@ -3,6 +3,7 @@ Content storage service for handling file uploads and image processing.
 """
 import os
 import uuid
+import logging
 from io import BytesIO
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -13,6 +14,8 @@ from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from PIL import Image, ImageOps
+
+logger = logging.getLogger(__name__)
 
 
 class StorageService:
@@ -25,6 +28,8 @@ class StorageService:
         self.max_file_size = self.storage_config.get('MAX_IMAGE_SIZE', 5 * 1024 * 1024)
         self.image_quality = self.storage_config.get('IMAGE_QUALITY', 85)
         self.thumbnail_sizes = self.storage_config.get('THUMBNAIL_SIZES', {})
+        
+        logger.info(f"StorageService initialized with config: {self.storage_config}")
 
     def validate_image_file(self, file) -> None:
         """
@@ -38,6 +43,8 @@ class StorageService:
         """
         if not file:
             raise ValidationError("No file provided")
+        
+        logger.info(f"Validating image file: {file.name}, size: {file.size}")
             
         # Check file size
         if file.size > self.max_file_size:
@@ -56,7 +63,9 @@ class StorageService:
             with Image.open(file) as img:
                 img.verify()  # Verify it's a valid image
             file.seek(0)  # Reset pointer again
+            logger.info(f"Image validation successful for {file.name}")
         except Exception as e:
+            logger.error(f"Image validation failed for {file.name}: {e}")
             raise ValidationError(f"Invalid image file: {str(e)}")
 
     def generate_unique_filename(self, original_filename: str, prefix: str = "") -> str:
@@ -99,27 +108,37 @@ class StorageService:
                 image = image.convert('RGBA')
             background.paste(image, mask=image.split()[-1] if image.mode == 'RGBA' else None)
             image = background
+        elif image.mode != 'RGB':
+            image = image.convert('RGB')
             
-        # Auto-rotate image based on EXIF data
-        image = ImageOps.exif_transpose(image)
-        
         return image
 
     def create_thumbnail(self, image: Image.Image, size: Tuple[int, int]) -> Image.Image:
         """
-        Create thumbnail from image.
+        Create a thumbnail from an image.
         
         Args:
             image: PIL Image object
-            size: Tuple of (width, height)
+            size: Target size (width, height)
             
         Returns:
             Thumbnail PIL Image object
         """
-        # Create thumbnail maintaining aspect ratio
+        # Use thumbnail method to maintain aspect ratio
         thumbnail = image.copy()
         thumbnail.thumbnail(size, Image.Resampling.LANCZOS)
-        return thumbnail
+        
+        # Create a new image with the target size and white background
+        result = Image.new('RGB', size, (255, 255, 255))
+        
+        # Calculate position to center the thumbnail
+        x = (size[0] - thumbnail.size[0]) // 2
+        y = (size[1] - thumbnail.size[1]) // 2
+        
+        # Paste the thumbnail onto the result
+        result.paste(thumbnail, (x, y))
+        
+        return result
 
     def save_image_with_thumbnails(self, file, recipe_id: str) -> Dict[str, str]:
         """
@@ -132,46 +151,61 @@ class StorageService:
         Returns:
             Dictionary with image URLs
         """
-        self.validate_image_file(file)
+        logger.info(f"Starting image processing for recipe {recipe_id}")
         
-        # Generate unique filename
-        filename = self.generate_unique_filename(file.name, f"recipe_{recipe_id}")
-        
-        # Open and process image
-        with Image.open(file) as img:
-            optimized_img = self.optimize_image(img)
+        try:
+            self.validate_image_file(file)
             
-            results = {}
+            # Generate unique filename
+            filename = self.generate_unique_filename(file.name, f"recipe_{recipe_id}")
+            logger.info(f"Generated filename: {filename}")
             
-            # Save original (optimized) image
-            original_path = os.path.join(self.recipe_images_path, 'originals', filename)
-            original_buffer = BytesIO()
-            optimized_img.save(original_buffer, format='JPEG', quality=self.image_quality, optimize=True)
-            original_content = ContentFile(original_buffer.getvalue())
-            
-            saved_path = default_storage.save(original_path, original_content)
-            original_url = default_storage.url(saved_path)
-            # Ensure we return full URLs for Azure blob storage
-            results['original'] = self._ensure_absolute_url(original_url)
-            
-            # Create and save thumbnails
-            for size_name, dimensions in self.thumbnail_sizes.items():
-                thumbnail = self.create_thumbnail(optimized_img, dimensions)
+            # Open and process image
+            with Image.open(file) as img:
+                logger.info(f"Opened image: {img.size}, mode: {img.mode}")
+                optimized_img = self.optimize_image(img)
                 
-                # Save thumbnail
-                thumb_filename = f"{Path(filename).stem}_{size_name}{Path(filename).suffix}"
-                thumb_path = os.path.join(self.recipe_images_path, 'thumbnails', thumb_filename)
+                results = {}
                 
-                thumb_buffer = BytesIO()
-                thumbnail.save(thumb_buffer, format='JPEG', quality=self.image_quality, optimize=True)
-                thumb_content = ContentFile(thumb_buffer.getvalue())
+                # Save original (optimized) image
+                original_path = os.path.join(self.recipe_images_path, 'originals', filename)
+                original_buffer = BytesIO()
+                optimized_img.save(original_buffer, format='JPEG', quality=self.image_quality, optimize=True)
+                original_content = ContentFile(original_buffer.getvalue())
                 
-                saved_thumb_path = default_storage.save(thumb_path, thumb_content)
-                thumb_url = default_storage.url(saved_thumb_path)
+                logger.info(f"Saving original image to: {original_path}")
+                saved_path = default_storage.save(original_path, original_content)
+                original_url = default_storage.url(saved_path)
                 # Ensure we return full URLs for Azure blob storage
-                results[size_name] = self._ensure_absolute_url(thumb_url)
+                results['original'] = self._ensure_absolute_url(original_url)
+                logger.info(f"Original image saved: {results['original']}")
                 
-        return results
+                # Create and save thumbnails
+                for size_name, dimensions in self.thumbnail_sizes.items():
+                    logger.info(f"Creating thumbnail {size_name}: {dimensions}")
+                    thumbnail = self.create_thumbnail(optimized_img, dimensions)
+                    
+                    # Save thumbnail
+                    thumb_filename = f"{Path(filename).stem}_{size_name}{Path(filename).suffix}"
+                    thumb_path = os.path.join(self.recipe_images_path, 'thumbnails', thumb_filename)
+                    
+                    thumb_buffer = BytesIO()
+                    thumbnail.save(thumb_buffer, format='JPEG', quality=self.image_quality, optimize=True)
+                    thumb_content = ContentFile(thumb_buffer.getvalue())
+                    
+                    logger.info(f"Saving thumbnail {size_name} to: {thumb_path}")
+                    saved_thumb_path = default_storage.save(thumb_path, thumb_content)
+                    thumb_url = default_storage.url(saved_thumb_path)
+                    # Ensure we return full URLs for Azure blob storage
+                    results[size_name] = self._ensure_absolute_url(thumb_url)
+                    logger.info(f"Thumbnail {size_name} saved: {results[size_name]}")
+                    
+            logger.info(f"Image processing completed for recipe {recipe_id}: {list(results.keys())}")
+            return results
+            
+        except Exception as e:
+            logger.error(f"Error processing image for recipe {recipe_id}: {e}")
+            raise
 
     def delete_recipe_images(self, image_urls: Dict[str, str]) -> None:
         """
@@ -180,11 +214,15 @@ class StorageService:
         Args:
             image_urls: Dictionary with image URLs to delete
         """
+        logger.info(f"Deleting images: {list(image_urls.keys())}")
+        
         for size_name, url in image_urls.items():
             if url and default_storage.exists(url):
                 try:
                     default_storage.delete(url)
-                except Exception:
+                    logger.info(f"Deleted image {size_name}: {url}")
+                except Exception as e:
+                    logger.error(f"Failed to delete image {size_name}: {url}, error: {e}")
                     # Log error but don't fail the operation
                     pass
 
@@ -221,8 +259,8 @@ class StorageService:
         Returns:
             List of supported file extensions
         """
-        return self.allowed_extensions.copy()
+        return self.allowed_extensions
 
 
-# Service instance
+# Global storage service instance
 storage_service = StorageService() 

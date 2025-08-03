@@ -19,6 +19,21 @@ class ServiceWrapper:
     
     def _get_service(self, service_name: str):
         """Get a service with error handling."""
+        # Always allow storage service, regardless of performance monitoring
+        if service_name == 'storage_service':
+            if service_name not in self._services:
+                try:
+                    from .storage_service import storage_service
+                    self._services[service_name] = storage_service
+                except ImportError as e:
+                    logger.warning(f"Failed to import {service_name}: {e}")
+                    return None
+                except Exception as e:
+                    logger.error(f"Error initializing {service_name}: {e}")
+                    return None
+            return self._services[service_name]
+        
+        # For other services, check if performance monitoring is enabled
         if not self.enabled:
             return None
             
@@ -33,9 +48,6 @@ class ServiceWrapper:
                 elif service_name == 'performance_monitor':
                     from .performance_monitor import PerformanceMonitor
                     self._services[service_name] = PerformanceMonitor()
-                elif service_name == 'storage_service':
-                    from .storage_service import storage_service
-                    self._services[service_name] = storage_service
                 else:
                     logger.warning(f"Unknown service: {service_name}")
                     return None
@@ -112,21 +124,36 @@ class ServiceWrapper:
         storage_service = self._get_service('storage_service')
         if storage_service:
             try:
-                return storage_service.save_image_with_thumbnails(image_file, recipe_id)
+                logger.info(f"Attempting to save image for recipe {recipe_id}")
+                result = storage_service.save_image_with_thumbnails(image_file, recipe_id)
+                if result:
+                    logger.info(f"Successfully saved image for recipe {recipe_id}: {list(result.keys())}")
+                else:
+                    logger.warning(f"Storage service returned None for recipe {recipe_id}")
+                return result
             except Exception as e:
-                logger.debug(f"Image save failed: {e}")
-        return None
+                logger.error(f"Image save failed for recipe {recipe_id}: {e}")
+                # Re-raise the exception to be handled by the serializer
+                raise
+        else:
+            logger.error("Storage service not available")
+            raise Exception("Storage service not available")
     
     def delete_images(self, images: Dict[str, str]) -> bool:
         """Delete images with fallback."""
         storage_service = self._get_service('storage_service')
         if storage_service:
             try:
+                logger.info(f"Attempting to delete images: {list(images.keys())}")
                 storage_service.delete_recipe_images(images)
+                logger.info("Successfully deleted images")
                 return True
             except Exception as e:
-                logger.debug(f"Image deletion failed: {e}")
-        return False
+                logger.error(f"Image deletion failed: {e}")
+                return False
+        else:
+            logger.warning("Storage service not available for image deletion")
+            return False
 
 
 # Global service wrapper instance

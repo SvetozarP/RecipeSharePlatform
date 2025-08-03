@@ -187,10 +187,13 @@ if AZURE_ACCOUNT_NAME and AZURE_ACCOUNT_KEY:
     AZURE_STORAGE_CONTAINER_NAME = AZURE_CONTAINER
     AZURE_URL_EXPIRATION_SECS = None  # Never expire URLs
     MEDIA_URL = f'https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER}/'
+    print(f"Using Azure Blob Storage: {AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER}")
 else:
     # Fallback to local media storage
+    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
     MEDIA_URL = '/media/'
     MEDIA_ROOT = BASE_DIR / 'media'
+    print(f"Using local file storage: {MEDIA_ROOT}")
 
 # Performance monitoring is automatically enabled in production
 # (handled by base.py based on DJANGO_ENV)

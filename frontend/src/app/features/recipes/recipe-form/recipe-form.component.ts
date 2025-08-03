@@ -267,12 +267,33 @@ export class RecipeFormComponent implements OnInit {
   onImageSelected(event: Event): void {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (file) {
+      console.log('Image selected:', file.name, 'Size:', file.size, 'Type:', file.type);
+      
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        this.snackBar.open('Please select a valid image file (JPEG, PNG, or WebP)', 'Close', { duration: 3000 });
+        return;
+      }
+      
+      // Validate file size (5MB limit)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        this.snackBar.open('Image file size must be less than 5MB', 'Close', { duration: 3000 });
+        return;
+      }
+      
       this.selectedImage.set(file);
       
       // Create preview
       const reader = new FileReader();
       reader.onload = (e) => {
         this.imagePreview.set(e.target?.result as string);
+        console.log('Image preview created');
+      };
+      reader.onerror = (e) => {
+        console.error('Error reading image file:', e);
+        this.snackBar.open('Error reading image file', 'Close', { duration: 3000 });
       };
       reader.readAsDataURL(file);
     }
@@ -407,6 +428,16 @@ export class RecipeFormComponent implements OnInit {
 
     const formData = this.buildFormData();
     
+    // Log form data for debugging
+    console.log('Submitting form with data:');
+    for (const [key, value] of formData.entries()) {
+      if (key === 'image') {
+        console.log(`${key}: [File] ${(value as File).name} (${(value as File).size} bytes)`);
+      } else {
+        console.log(`${key}: ${value}`);
+      }
+    }
+    
     const operation = this.isEditing() 
       ? this.recipeService.updateRecipe(this.recipeId!, formData)
       : this.recipeService.createRecipe(formData);
@@ -415,6 +446,7 @@ export class RecipeFormComponent implements OnInit {
       finalize(() => this.submitting.set(false))
     ).subscribe({
       next: (recipe) => {
+        console.log('Recipe saved successfully:', recipe);
         const message = this.isEditing() ? 'Recipe updated successfully' : 'Recipe created successfully';
         this.snackBar.open(message, 'Close', { duration: 3000 });
         // Replace URL to prevent going back to form when user clicks back
@@ -427,6 +459,12 @@ export class RecipeFormComponent implements OnInit {
       },
       error: (error) => {
         console.error('Recipe submission error:', error);
+        console.error('Error details:', {
+          status: error.status,
+          statusText: error.statusText,
+          url: error.url,
+          error: error.error
+        });
         
         // Try to show specific error messages from backend
         let errorMessage = 'Failed to save recipe. Please try again.';
@@ -516,7 +554,11 @@ export class RecipeFormComponent implements OnInit {
 
     // Add image if selected
     if (this.selectedImage()) {
-      formData.append('image', this.selectedImage()!);
+      const imageFile = this.selectedImage()!;
+      console.log('Adding image to form data:', imageFile.name, 'Size:', imageFile.size, 'Type:', imageFile.type);
+      formData.append('image', imageFile);
+    } else {
+      console.log('No image selected for upload');
     }
 
     return formData;
