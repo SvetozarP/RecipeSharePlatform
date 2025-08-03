@@ -173,21 +173,21 @@ except ImportError:
 
 # Media files configuration (Azure Blob Storage)
 DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
-AZURE_ACCOUNT_NAME = os.getenv('AZURE_ACCOUNT_NAME')
-AZURE_ACCOUNT_KEY = os.getenv('AZURE_ACCOUNT_KEY')
+AZURE_STORAGE_ACCOUNT_NAME = os.getenv('AZURE_STORAGE_ACCOUNT_NAME')
+AZURE_STORAGE_ACCOUNT_KEY = os.getenv('AZURE_STORAGE_ACCOUNT_KEY')
 AZURE_CUSTOM_DOMAIN = os.getenv('AZURE_CUSTOM_DOMAIN')
-AZURE_CONTAINER = os.getenv('AZURE_CONTAINER', 'recipe-images')
+AZURE_STORAGE_CONTAINER_NAME = os.getenv('AZURE_STORAGE_CONTAINER_NAME', 'recipe-images')
 
 # Azure Blob Storage configuration for media files
-if AZURE_ACCOUNT_NAME and AZURE_ACCOUNT_KEY:
+if AZURE_STORAGE_ACCOUNT_NAME and AZURE_STORAGE_ACCOUNT_KEY:
     # Use Azure Blob Storage for media files
     DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
-    AZURE_STORAGE_ACCOUNT_NAME = AZURE_ACCOUNT_NAME
-    AZURE_STORAGE_ACCOUNT_KEY = AZURE_ACCOUNT_KEY  
-    AZURE_STORAGE_CONTAINER_NAME = AZURE_CONTAINER
+    AZURE_ACCOUNT_NAME = AZURE_STORAGE_ACCOUNT_NAME
+    AZURE_ACCOUNT_KEY = AZURE_STORAGE_ACCOUNT_KEY  
+    AZURE_CONTAINER = AZURE_STORAGE_CONTAINER_NAME
     AZURE_URL_EXPIRATION_SECS = None  # Never expire URLs
-    MEDIA_URL = f'https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER}/'
-    print(f"Using Azure Blob Storage: {AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER}")
+    MEDIA_URL = f'https://{AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_STORAGE_CONTAINER_NAME}/'
+    print(f"Using Azure Blob Storage: {AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_STORAGE_CONTAINER_NAME}")
 else:
     # Fallback to local media storage
     DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'

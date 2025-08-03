@@ -61,10 +61,11 @@ export class RecipeListComponent implements OnInit, OnDestroy {
   
   // State
   recipes: RecipeListItem[] = [];
-  loading = false;
+  loading = true; // Start with loading true to show loading state immediately
   loadingMore = false;
   error: string | null = null;
   hasMoreData = true;
+  private isInitialLoad = true;
   
   // Authentication state
   isAuthenticated$: Observable<boolean>;
@@ -118,6 +119,9 @@ export class RecipeListComponent implements OnInit, OnDestroy {
     await this.favoritesService.refreshCache();
     this.initializeComponent();
     this.setupRouteSubscription();
+    
+    // Load recipes immediately to show loading state
+    this.loadRecipes();
   }
 
   ngOnDestroy(): void {
@@ -257,7 +261,10 @@ export class RecipeListComponent implements OnInit, OnDestroy {
       distinctUntilChanged()
     ).subscribe(queryParams => {
       this.processUrlParameters(queryParams);
-      this.loadRecipes();
+      // Only reload if this is not the initial load
+      if (!this.isInitialLoad) {
+        this.loadRecipes();
+      }
     });
   }
 
@@ -391,12 +398,23 @@ export class RecipeListComponent implements OnInit, OnDestroy {
         this.hasMoreData = newRecipes.length === this.pageSize;
         this.loading = false;
         
+        // Mark initial load as complete
+        if (this.isInitialLoad) {
+          this.isInitialLoad = false;
+        }
+        
         // The backend now provides is_favorited field directly, so no need to check manually
         this.cdr.markForCheck();
       },
       error: (error) => {
         this.error = 'Failed to load recipes. Please try again.';
         this.loading = false;
+        
+        // Mark initial load as complete even on error
+        if (this.isInitialLoad) {
+          this.isInitialLoad = false;
+        }
+        
         this.cdr.markForCheck();
         console.error('Error loading recipes:', error);
       }

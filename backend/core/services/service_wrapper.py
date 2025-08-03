@@ -23,8 +23,8 @@ class ServiceWrapper:
         if service_name == 'storage_service':
             if service_name not in self._services:
                 try:
-                    from .storage_service import storage_service
-                    self._services[service_name] = storage_service
+                    from .storage_service import get_storage_service
+                    self._services[service_name] = get_storage_service()
                 except ImportError as e:
                     logger.warning(f"Failed to import {service_name}: {e}")
                     return None

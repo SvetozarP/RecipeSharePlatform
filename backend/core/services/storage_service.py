@@ -277,5 +277,15 @@ class StorageService:
         return self.allowed_extensions
 
 
-# Global storage service instance
-storage_service = StorageService() 
+# Global storage service instance (lazy initialization)
+_storage_service_instance = None
+
+def get_storage_service():
+    """Get the global storage service instance with lazy initialization."""
+    global _storage_service_instance
+    if _storage_service_instance is None:
+        _storage_service_instance = StorageService()
+    return _storage_service_instance
+
+# For backward compatibility
+storage_service = get_storage_service() 
