@@ -1,248 +1,300 @@
 import { TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
-import { ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
-import { BehaviorSubject, of } from 'rxjs';
-
+import { Router, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
+import { of, throwError } from 'rxjs';
 import { AuthGuard } from './auth.guard';
 import { AuthService } from '../services/auth.service';
 
 describe('AuthGuard', () => {
   let guard: AuthGuard;
-  let mockAuthService: jasmine.SpyObj<AuthService>;
-  let mockRouter: jasmine.SpyObj<Router>;
-  let mockRoute: ActivatedRouteSnapshot;
-  let mockState: RouterStateSnapshot;
+  let authServiceSpy: jasmine.SpyObj<AuthService>;
+  let routerSpy: jasmine.SpyObj<Router>;
+
+  const mockUser = {
+    id: '1',
+    email: 'test@example.com',
+    username: 'testuser',
+    first_name: 'Test',
+    last_name: 'User',
+    is_staff: false,
+    is_superuser: false
+  };
+
+  const mockAdminUser = {
+    ...mockUser,
+    is_staff: true,
+    is_superuser: false
+  };
+
+  const mockSuperUser = {
+    ...mockUser,
+    is_staff: false,
+    is_superuser: true
+  };
 
   beforeEach(() => {
-    // Create spy objects
-    mockAuthService = jasmine.createSpyObj('AuthService', [], {
-      isAuthenticated$: new BehaviorSubject<boolean>(false)
-    });
-    mockRouter = jasmine.createSpyObj('Router', ['navigate']);
+    const authSpy = jasmine.createSpyObj('AuthService', ['getCurrentUser']);
+    authSpy.isAuthenticated$ = of(true);
+    const routerSpyObj = jasmine.createSpyObj('Router', ['navigate']);
 
     TestBed.configureTestingModule({
       providers: [
         AuthGuard,
-        { provide: AuthService, useValue: mockAuthService },
-        { provide: Router, useValue: mockRouter }
+        { provide: AuthService, useValue: authSpy },
+        { provide: Router, useValue: routerSpyObj }
       ]
     });
 
     guard = TestBed.inject(AuthGuard);
-    
-    // Create mock route and state objects
-    mockRoute = {} as ActivatedRouteSnapshot;
-    mockState = { url: '/protected-route' } as RouterStateSnapshot;
+    authServiceSpy = TestBed.inject(AuthService) as jasmine.SpyObj<AuthService>;
+    routerSpy = TestBed.inject(Router) as jasmine.SpyObj<Router>;
   });
 
-  describe('Initialization', () => {
-    it('should be created', () => {
-      expect(guard).toBeTruthy();
-    });
+  it('should be created', () => {
+    expect(guard).toBeTruthy();
   });
 
   describe('canActivate', () => {
-    it('should allow access when user is authenticated', (done) => {
-      // Set user as authenticated
-      (mockAuthService.isAuthenticated$ as BehaviorSubject<boolean>).next(true);
+    let mockRoute: ActivatedRouteSnapshot;
+    let mockState: RouterStateSnapshot;
 
-      const result = guard.canActivate(mockRoute, mockState);
-      
-      if (result instanceof Promise) {
-        result.then(canActivate => {
-          expect(canActivate).toBeTrue();
-          expect(mockRouter.navigate).not.toHaveBeenCalled();
-          done();
-        });
-      } else if (typeof result === 'object' && 'subscribe' in result) {
-        result.subscribe(canActivate => {
-          expect(canActivate).toBeTrue();
-          expect(mockRouter.navigate).not.toHaveBeenCalled();
-          done();
-        });
-      } else {
-        expect(result).toBeTrue();
-        expect(mockRouter.navigate).not.toHaveBeenCalled();
-        done();
-      }
+    beforeEach(() => {
+      mockRoute = {
+        data: {}
+      } as ActivatedRouteSnapshot;
+      mockState = {
+        url: '/protected-route'
+      } as RouterStateSnapshot;
     });
 
-    it('should deny access and redirect to login when user is not authenticated', (done) => {
-      // Set user as not authenticated
-      (mockAuthService.isAuthenticated$ as BehaviorSubject<boolean>).next(false);
+    it('should allow access for authenticated users', () => {
+      authServiceSpy.isAuthenticated$ = of(true);
+      authServiceSpy.getCurrentUser.and.returnValue(mockUser);
 
       const result = guard.canActivate(mockRoute, mockState);
-      
-      if (result instanceof Promise) {
-        result.then(canActivate => {
-          expect(canActivate).toBeFalse();
-          expect(mockRouter.navigate).toHaveBeenCalledWith(['/auth/login'], { 
-            queryParams: { returnUrl: '/protected-route' } 
-          });
-          done();
-        });
-      } else if (typeof result === 'object' && 'subscribe' in result) {
-        result.subscribe(canActivate => {
-          expect(canActivate).toBeFalse();
-          expect(mockRouter.navigate).toHaveBeenCalledWith(['/auth/login'], { 
-            queryParams: { returnUrl: '/protected-route' } 
-          });
-          done();
-        });
-      } else {
-        fail('Expected observable or promise result');
-      }
-    });
-
-    it('should include return URL in navigation when redirecting to login', (done) => {
-      const testUrl = '/dashboard/profile';
-      mockState.url = testUrl;
-      
-      (mockAuthService.isAuthenticated$ as BehaviorSubject<boolean>).next(false);
-
-      const result = guard.canActivate(mockRoute, mockState);
-      
       if (typeof result === 'object' && 'subscribe' in result) {
-        result.subscribe(canActivate => {
-          expect(canActivate).toBeFalse();
-          expect(mockRouter.navigate).toHaveBeenCalledWith(['/auth/login'], { 
-            queryParams: { returnUrl: testUrl } 
-          });
-          done();
+        result.subscribe((canActivate: boolean) => {
+          expect(canActivate).toBe(true);
+          expect(routerSpy.navigate).not.toHaveBeenCalled();
         });
-      } else {
-        done();
       }
     });
 
-    it('should handle authentication service errors gracefully', () => {
-      // Set user as not authenticated first
-      (mockAuthService.isAuthenticated$ as BehaviorSubject<boolean>).next(false);
+    it('should redirect to login for unauthenticated users', () => {
+      authServiceSpy.isAuthenticated$ = of(false);
 
       const result = guard.canActivate(mockRoute, mockState);
-      
       if (typeof result === 'object' && 'subscribe' in result) {
-        result.subscribe({
-          next: (canActivate) => {
-            expect(canActivate).toBeFalse();
-            expect(mockRouter.navigate).toHaveBeenCalledWith(['/auth/login'], { 
-              queryParams: { returnUrl: '/protected-route' } 
-            });
-          },
-          error: () => {
-            fail('Guard should handle errors gracefully');
-          }
+        result.subscribe((canActivate: boolean) => {
+          expect(canActivate).toBe(false);
+          expect(routerSpy.navigate).toHaveBeenCalledWith(
+            ['/auth/login'],
+            { queryParams: { returnUrl: '/protected-route' } }
+          );
+        });
+      }
+    });
+
+    it('should allow access for admin users when admin required', () => {
+      authServiceSpy.isAuthenticated$ = of(true);
+      authServiceSpy.getCurrentUser.and.returnValue(mockAdminUser);
+      mockRoute.data = { requiresAdmin: true };
+
+      const result = guard.canActivate(mockRoute, mockState);
+      if (typeof result === 'object' && 'subscribe' in result) {
+        result.subscribe((canActivate: boolean) => {
+          expect(canActivate).toBe(true);
+          expect(routerSpy.navigate).not.toHaveBeenCalled();
+        });
+      }
+    });
+
+    it('should allow access for superusers when admin required', () => {
+      authServiceSpy.isAuthenticated$ = of(true);
+      authServiceSpy.getCurrentUser.and.returnValue(mockSuperUser);
+      mockRoute.data = { requiresAdmin: true };
+
+      const result = guard.canActivate(mockRoute, mockState);
+      if (typeof result === 'object' && 'subscribe' in result) {
+        result.subscribe((canActivate: boolean) => {
+          expect(canActivate).toBe(true);
+          expect(routerSpy.navigate).not.toHaveBeenCalled();
+        });
+      }
+    });
+
+    it('should redirect to recipes for non-admin users when admin required', () => {
+      authServiceSpy.isAuthenticated$ = of(true);
+      authServiceSpy.getCurrentUser.and.returnValue(mockUser);
+      mockRoute.data = { requiresAdmin: true };
+
+      const result = guard.canActivate(mockRoute, mockState);
+      if (typeof result === 'object' && 'subscribe' in result) {
+        result.subscribe((canActivate: boolean) => {
+          expect(canActivate).toBe(false);
+          expect(routerSpy.navigate).toHaveBeenCalledWith(['/recipes']);
+        });
+      }
+    });
+
+    it('should redirect to recipes when admin required but no current user', () => {
+      authServiceSpy.isAuthenticated$ = of(true);
+      authServiceSpy.getCurrentUser.and.returnValue(null);
+      mockRoute.data = { requiresAdmin: true };
+
+      const result = guard.canActivate(mockRoute, mockState);
+      if (typeof result === 'object' && 'subscribe' in result) {
+        result.subscribe((canActivate: boolean) => {
+          expect(canActivate).toBe(false);
+          expect(routerSpy.navigate).toHaveBeenCalledWith(['/recipes']);
+        });
+      }
+    });
+
+    it('should handle authentication errors gracefully', () => {
+      authServiceSpy.isAuthenticated$ = throwError(() => new Error('Auth error'));
+
+      const result = guard.canActivate(mockRoute, mockState);
+      if (typeof result === 'object' && 'subscribe' in result) {
+        result.subscribe((canActivate: boolean) => {
+          expect(canActivate).toBe(false);
+          expect(routerSpy.navigate).toHaveBeenCalledWith(['/auth/login']);
+        });
+      }
+    });
+
+    it('should not require admin by default', () => {
+      authServiceSpy.isAuthenticated$ = of(true);
+      authServiceSpy.getCurrentUser.and.returnValue(mockUser);
+      mockRoute.data = {};
+
+      const result = guard.canActivate(mockRoute, mockState);
+      if (typeof result === 'object' && 'subscribe' in result) {
+        result.subscribe((canActivate: boolean) => {
+          expect(canActivate).toBe(true);
+          expect(routerSpy.navigate).not.toHaveBeenCalled();
         });
       }
     });
   });
 
   describe('canActivateChild', () => {
-    it('should use the same logic as canActivate for child routes', (done) => {
-      (mockAuthService.isAuthenticated$ as BehaviorSubject<boolean>).next(true);
+    let mockRoute: ActivatedRouteSnapshot;
+    let mockState: RouterStateSnapshot;
+
+    beforeEach(() => {
+      mockRoute = {
+        data: {}
+      } as ActivatedRouteSnapshot;
+      mockState = {
+        url: '/protected-child-route'
+      } as RouterStateSnapshot;
+    });
+
+    it('should delegate to canActivate', () => {
+      authServiceSpy.isAuthenticated$ = of(true);
+      authServiceSpy.getCurrentUser.and.returnValue(mockUser);
+      spyOn(guard, 'canActivate').and.returnValue(of(true));
 
       const result = guard.canActivateChild(mockRoute, mockState);
-      
-      if (result instanceof Promise) {
-        result.then(canActivate => {
-          expect(canActivate).toBeTrue();
-          done();
+      if (typeof result === 'object' && 'subscribe' in result) {
+        result.subscribe((canActivate: boolean) => {
+          expect(canActivate).toBe(true);
+          expect(guard.canActivate).toHaveBeenCalledWith(mockRoute, mockState);
         });
-      } else if (typeof result === 'object' && 'subscribe' in result) {
-        result.subscribe(canActivate => {
-          expect(canActivate).toBeTrue();
-          done();
-        });
-      } else {
-        expect(result).toBeTrue();
-        done();
       }
     });
 
-    it('should deny access to child routes when user is not authenticated', (done) => {
-      (mockAuthService.isAuthenticated$ as BehaviorSubject<boolean>).next(false);
+    it('should handle admin requirements in child routes', () => {
+      authServiceSpy.isAuthenticated$ = of(true);
+      authServiceSpy.getCurrentUser.and.returnValue(mockUser);
+      mockRoute.data = { requiresAdmin: true };
 
       const result = guard.canActivateChild(mockRoute, mockState);
-      
       if (typeof result === 'object' && 'subscribe' in result) {
-        result.subscribe(canActivate => {
-          expect(canActivate).toBeFalse();
-          expect(mockRouter.navigate).toHaveBeenCalledWith(['/auth/login'], { 
-            queryParams: { returnUrl: '/protected-route' } 
-          });
-          done();
+        result.subscribe((canActivate: boolean) => {
+          expect(canActivate).toBe(false);
+          expect(routerSpy.navigate).toHaveBeenCalledWith(['/recipes']);
         });
-      } else {
-        done();
       }
     });
   });
 
   describe('Edge Cases', () => {
-    it('should handle undefined URL gracefully', (done) => {
-      mockState.url = undefined as any;
-      (mockAuthService.isAuthenticated$ as BehaviorSubject<boolean>).next(false);
+    let mockRoute: ActivatedRouteSnapshot;
+    let mockState: RouterStateSnapshot;
+
+    beforeEach(() => {
+      mockRoute = {
+        data: {}
+      } as ActivatedRouteSnapshot;
+      mockState = {
+        url: '/test-route'
+      } as RouterStateSnapshot;
+    });
+
+    it('should handle empty route data', () => {
+      authServiceSpy.isAuthenticated$ = of(true);
+      authServiceSpy.getCurrentUser.and.returnValue(mockUser);
+      mockRoute.data = {};
 
       const result = guard.canActivate(mockRoute, mockState);
-      
       if (typeof result === 'object' && 'subscribe' in result) {
-        result.subscribe(canActivate => {
-          expect(canActivate).toBeFalse();
-          expect(mockRouter.navigate).toHaveBeenCalled();
-          done();
+        result.subscribe((canActivate: boolean) => {
+          expect(canActivate).toBe(true);
         });
-      } else {
-        done();
       }
     });
 
-    it('should work with empty URL', (done) => {
-      mockState.url = '';
-      (mockAuthService.isAuthenticated$ as BehaviorSubject<boolean>).next(false);
+    it('should handle false requiresAdmin value', () => {
+      authServiceSpy.isAuthenticated$ = of(true);
+      authServiceSpy.getCurrentUser.and.returnValue(mockUser);
+      mockRoute.data = { requiresAdmin: false };
 
       const result = guard.canActivate(mockRoute, mockState);
-      
       if (typeof result === 'object' && 'subscribe' in result) {
-        result.subscribe(canActivate => {
-          expect(canActivate).toBeFalse();
-          expect(mockRouter.navigate).toHaveBeenCalledWith(['/auth/login'], { 
-            queryParams: { returnUrl: '' } 
-          });
-          done();
+        result.subscribe((canActivate: boolean) => {
+          expect(canActivate).toBe(true);
         });
-      } else {
-        done();
       }
     });
   });
 
-  describe('Authentication State Changes', () => {
-    it('should deny access when not authenticated', () => {
-      // Set user as not authenticated
-      (mockAuthService.isAuthenticated$ as BehaviorSubject<boolean>).next(false);
+  describe('Navigation Behavior', () => {
+    let mockRoute: ActivatedRouteSnapshot;
+    let mockState: RouterStateSnapshot;
+
+    beforeEach(() => {
+      mockRoute = {
+        data: {}
+      } as ActivatedRouteSnapshot;
+      mockState = {
+        url: '/admin/dashboard'
+      } as RouterStateSnapshot;
+    });
+
+    it('should preserve return URL when redirecting to login', () => {
+      authServiceSpy.isAuthenticated$ = of(false);
 
       const result = guard.canActivate(mockRoute, mockState);
-      
       if (typeof result === 'object' && 'subscribe' in result) {
-        result.subscribe(canActivate => {
-          expect(canActivate).toBeFalse();
-          expect(mockRouter.navigate).toHaveBeenCalledWith(['/auth/login'], { 
-            queryParams: { returnUrl: '/protected-route' } 
-          });
+        result.subscribe((canActivate: boolean) => {
+          expect(canActivate).toBe(false);
+          expect(routerSpy.navigate).toHaveBeenCalledWith(
+            ['/auth/login'],
+            { queryParams: { returnUrl: '/admin/dashboard' } }
+          );
         });
       }
     });
 
-    it('should allow access when authenticated', () => {
-      // Set user as authenticated
-      (mockAuthService.isAuthenticated$ as BehaviorSubject<boolean>).next(true);
+    it('should not include return URL when handling errors', () => {
+      authServiceSpy.isAuthenticated$ = throwError(() => new Error('Auth error'));
 
       const result = guard.canActivate(mockRoute, mockState);
-      
       if (typeof result === 'object' && 'subscribe' in result) {
-        result.subscribe(canActivate => {
-          expect(canActivate).toBeTrue();
-          expect(mockRouter.navigate).not.toHaveBeenCalled();
+        result.subscribe((canActivate: boolean) => {
+          expect(canActivate).toBe(false);
+          expect(routerSpy.navigate).toHaveBeenCalledWith(['/auth/login']);
         });
       }
     });

@@ -293,6 +293,38 @@ describe('LoginComponent', () => {
       expect(component.isLoading).toBeFalse();
     });
 
+    it('should handle 400 email verification error', () => {
+      const error = { 
+        status: 400, 
+        error: { 
+          email: ['Please verify your email address before logging in. Check your inbox for a verification link.'] 
+        } 
+      };
+      mockAuthService.login.and.returnValue(throwError(() => error));
+      
+      component.onSubmit();
+      
+      expect(component.errorMessage).toBe('Please verify your email address before logging in. Check your inbox for a verification link.');
+      expect(component.isEmailVerificationError).toBeTrue();
+      expect(component.isLoading).toBeFalse();
+    });
+
+    it('should handle 400 email verification error with string message', () => {
+      const error = { 
+        status: 400, 
+        error: { 
+          email: 'Please verify your email address before logging in.' 
+        } 
+      };
+      mockAuthService.login.and.returnValue(throwError(() => error));
+      
+      component.onSubmit();
+      
+      expect(component.errorMessage).toBe('Please verify your email address before logging in.');
+      expect(component.isEmailVerificationError).toBeTrue();
+      expect(component.isLoading).toBeFalse();
+    });
+
     it('should handle 401 Unauthorized error', () => {
       const error = { status: 401 };
       mockAuthService.login.and.returnValue(throwError(() => error));

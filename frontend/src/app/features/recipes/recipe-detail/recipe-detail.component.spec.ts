@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { of, throwError } from 'rxjs';
 import { signal } from '@angular/core';
 
@@ -60,6 +61,7 @@ describe('RecipeDetailComponent', () => {
       total_ratings: 10,
       rating_distribution: { 5: 6, 4: 3, 3: 1, 2: 0, 1: 0 }
     },
+    is_published: true,
     is_favorited: false,
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2024-01-01T00:00:00Z'
@@ -85,7 +87,8 @@ describe('RecipeDetailComponent', () => {
       imports: [
         RecipeDetailComponent,
         DeleteConfirmationDialog,
-        NoopAnimationsModule
+        NoopAnimationsModule,
+        HttpClientTestingModule
       ],
       providers: [
         { provide: RecipeService, useValue: recipeServiceSpy },

@@ -100,14 +100,12 @@ export class LoginComponent implements OnInit, OnDestroy {
   private handleLoginError(error: any): void {
     this.isEmailVerificationError = false;
     
-    if (error.status === 401) {
-      // Check if it's an email verification error
-      if (error.error?.email) {
-        this.errorMessage = error.error.email;
-        this.isEmailVerificationError = true;
-      } else {
-        this.errorMessage = 'Invalid email or password. Please try again.';
-      }
+    // Check for email verification error (400 status with email field in error)
+    if (error.status === 400 && error.error?.email) {
+      this.errorMessage = Array.isArray(error.error.email) ? error.error.email[0] : error.error.email;
+      this.isEmailVerificationError = true;
+    } else if (error.status === 401) {
+      this.errorMessage = 'Invalid email or password. Please try again.';
     } else if (error.status === 429) {
       this.errorMessage = 'Too many login attempts. Please try again later.';
     } else if (error.status === 0) {

@@ -60,6 +60,7 @@ describe('RecipeFormComponent', () => {
       total_ratings: 10,
       rating_distribution: { 5: 6, 4: 3, 3: 1, 2: 0, 1: 0 }
     },
+    is_published: true,
     is_favorited: false,
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2024-01-01T00:00:00Z'
@@ -69,7 +70,8 @@ describe('RecipeFormComponent', () => {
     const recipeServiceSpy = jasmine.createSpyObj('RecipeService', [
       'getCategories', 'getRecipe', 'createRecipe', 'updateRecipe'
     ]);
-    const authServiceSpy = jasmine.createSpyObj('AuthService', ['getCurrentUser']);
+    const authServiceSpy = jasmine.createSpyObj('AuthService', ['getCurrentUser', 'isStaff']);
+    authServiceSpy.isStaff.and.returnValue(false);
     const routerSpy = jasmine.createSpyObj('Router', ['navigate', 'createUrlTree', 'serializeUrl']);
     routerSpy.createUrlTree.and.returnValue({} as any);
     routerSpy.serializeUrl.and.returnValue('');
