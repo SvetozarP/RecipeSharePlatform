@@ -52,12 +52,29 @@ DEBUG = False
 DEFAULT_ALLOWED_HOSTS = [
     'recipe-api-dev98298.azurewebsites.net',
     'localhost',
-    '169.254.129.3'
+    '169.254.129.3',
+    '169.254.129.6',  # Additional Azure internal IP
+    '169.254.129.1',
+    '169.254.129.5'
 ]
 
-# Combine environment variable hosts with default hosts
+# Add Azure internal IP range pattern
+AZURE_INTERNAL_IPS = [
+    '169.254.129.1',
+    '169.254.129.2', 
+    '169.254.129.3',
+    '169.254.129.4',
+    '169.254.129.5',
+    '169.254.129.6',
+    '169.254.129.7',
+    '169.254.129.8',
+    '169.254.129.9',
+    '169.254.129.10'
+]
+
+# Combine environment variable hosts with default hosts and Azure internal IPs
 env_hosts = os.getenv('ALLOWED_HOSTS', '').split(',') if os.getenv('ALLOWED_HOSTS') else []
-ALLOWED_HOSTS = list(set(DEFAULT_ALLOWED_HOSTS + [host.strip() for host in env_hosts if host.strip()]))
+ALLOWED_HOSTS = list(set(DEFAULT_ALLOWED_HOSTS + AZURE_INTERNAL_IPS + [host.strip() for host in env_hosts if host.strip()]))
 
 # Remove debug toolbar from installed apps
 if 'debug_toolbar' in INSTALLED_APPS:
@@ -124,8 +141,9 @@ if not (EMAIL_HOST_USER and EMAIL_HOST_PASSWORD):
 # Frontend URL
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'https://white-rock-011c63e03.2.azurestaticapps.net')
 
-# HTTPS settings
-SECURE_SSL_REDIRECT = True
+# HTTPS settings - conditional based on environment
+# Only enable SSL redirect if we're behind a proper proxy/load balancer
+SECURE_SSL_REDIRECT = os.getenv('ENABLE_SSL_REDIRECT', 'False').lower() == 'true'
 SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
@@ -133,6 +151,9 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_BROWSER_XSS_FILTER = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
+
+# Trust proxy headers for Azure
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Static files configuration
 STATIC_URL = '/static/'
