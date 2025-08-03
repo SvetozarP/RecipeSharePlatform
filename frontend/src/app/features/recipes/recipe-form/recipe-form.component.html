@@ -377,6 +377,21 @@
                     (click)="saveDraft()" [disabled]="submitting()">
               Save as Draft
             </button> -->
+            
+            <!-- Form Validation Status -->
+            <div *ngIf="hasFormErrors()" class="flex flex-col text-red-600 text-sm mr-4 max-w-xs">
+              <div class="flex items-center mb-2">
+                <mat-icon class="text-red-600 mr-1">error</mat-icon>
+                <span class="font-medium">Form has errors:</span>
+              </div>
+              <ul class="text-xs space-y-1">
+                <li *ngFor="let error of getFormErrorMessages()" class="flex items-start">
+                  <span class="text-red-500 mr-1">•</span>
+                  <span>{{ error }}</span>
+                </li>
+              </ul>
+            </div>
+            
             <button type="submit" mat-raised-button color="primary" 
                     [disabled]="recipeForm.invalid || submitting()">
               <mat-icon *ngIf="submitting()">hourglass_empty</mat-icon>

@@ -112,6 +112,51 @@ export class RecipeFormComponent implements OnInit {
     return this.recipeForm.get('instructions') as FormArray;
   }
 
+  // Helper method to check if form has specific errors
+  hasFormErrors(): boolean {
+    return this.recipeForm.invalid && this.recipeForm.touched;
+  }
+
+  // Helper method to get specific error messages
+  getFormErrorMessages(): string[] {
+    const errors: string[] = [];
+    
+    if (this.recipeForm.get('title')?.invalid && this.recipeForm.get('title')?.touched) {
+      errors.push('Title is required (minimum 3 characters)');
+    }
+    if (this.recipeForm.get('description')?.invalid && this.recipeForm.get('description')?.touched) {
+      errors.push('Description is required');
+    }
+    if (this.recipeForm.get('prep_time')?.invalid && this.recipeForm.get('prep_time')?.touched) {
+      errors.push('Prep time is required (minimum 1 minute)');
+    }
+    if (this.recipeForm.get('cook_time')?.invalid && this.recipeForm.get('cook_time')?.touched) {
+      errors.push('Cook time is required (minimum 1 minute)');
+    }
+    if (this.recipeForm.get('servings')?.invalid && this.recipeForm.get('servings')?.touched) {
+      errors.push('Servings is required (minimum 1)');
+    }
+    if (this.recipeForm.get('difficulty')?.invalid && this.recipeForm.get('difficulty')?.touched) {
+      errors.push('Difficulty level is required');
+    }
+
+    // Check ingredients array
+    this.ingredientsArray.controls.forEach((control, index) => {
+      if (control.invalid && control.touched) {
+        errors.push(`Ingredient ${index + 1}: Name and amount are required`);
+      }
+    });
+
+    // Check instructions array
+    this.instructionsArray.controls.forEach((control, index) => {
+      if (control.invalid && control.touched) {
+        errors.push(`Instruction ${index + 1}: Step description is required`);
+      }
+    });
+
+    return errors;
+  }
+
   ngOnInit(): void {
     this.loadCategories();
     
@@ -159,48 +204,62 @@ export class RecipeFormComponent implements OnInit {
     this.instructionsArray.clear();
 
     // Populate ingredients - handle both string and object formats for backward compatibility
-    recipe.ingredients.forEach(ingredient => {
-      if (typeof ingredient === 'string') {
-        // Legacy format - try to parse "amount name" format
-        const parts = ingredient.split(' ');
-        const amount = parts.slice(0, 2).join(' '); // First 1-2 words as amount
-        const name = parts.slice(2).join(' '); // Rest as name
-        this.ingredientsArray.push(this.fb.group({
-          name: [name || ingredient, Validators.required],
-          amount: [amount || '1', Validators.required]
-        }));
-      } else {
-        // New structured format
-        this.ingredientsArray.push(this.fb.group({
-          name: [ingredient.name || '', Validators.required],
-          amount: [ingredient.amount || '', Validators.required]
-        }));
-      }
-    });
+    if (recipe.ingredients && recipe.ingredients.length > 0) {
+      recipe.ingredients.forEach(ingredient => {
+        if (typeof ingredient === 'string') {
+          // Legacy format - try to parse "amount name" format
+          const parts = ingredient.split(' ');
+          const amount = parts.slice(0, 2).join(' '); // First 1-2 words as amount
+          const name = parts.slice(2).join(' '); // Rest as name
+          this.ingredientsArray.push(this.fb.group({
+            name: [name || ingredient, Validators.required],
+            amount: [amount || '1', Validators.required]
+          }));
+        } else {
+          // New structured format
+          this.ingredientsArray.push(this.fb.group({
+            name: [ingredient.name || '', Validators.required],
+            amount: [ingredient.amount || '', Validators.required]
+          }));
+        }
+      });
+    } else {
+      // Ensure at least one ingredient field exists
+      this.ingredientsArray.push(this.createIngredientGroup());
+    }
 
     // Populate instructions
-    recipe.instructions.forEach(instruction => {
-      this.instructionsArray.push(this.fb.control(instruction, Validators.required));
-    });
+    if (recipe.instructions && recipe.instructions.length > 0) {
+      recipe.instructions.forEach(instruction => {
+        this.instructionsArray.push(this.fb.control(instruction, Validators.required));
+      });
+    } else {
+      // Ensure at least one instruction field exists
+      this.instructionsArray.push(this.fb.control('', Validators.required));
+    }
 
     // Populate tags
     this.tags.set([...recipe.tags]);
 
-    // Populate main form
+    // Populate main form with proper defaults
     this.recipeForm.patchValue({
-      title: recipe.title,
-      description: recipe.description,
-      prep_time: recipe.prep_time,
-      cook_time: recipe.cook_time,
-      servings: recipe.servings,
-      difficulty: recipe.difficulty,
+      title: recipe.title || '',
+      description: recipe.description || '',
+      prep_time: recipe.prep_time || 1,
+      cook_time: recipe.cook_time || 1,
+      servings: recipe.servings || 1,
+      difficulty: recipe.difficulty || 'medium',
       cooking_method: recipe.cooking_method || 'other',
-      cuisine_type: recipe.cuisine_type,
-      categories: recipe.categories.map(cat => cat.id),
+      cuisine_type: recipe.cuisine_type || '',
+      categories: recipe.categories?.map(cat => cat.id) || [],
 
       nutrition_info: recipe.nutrition_info || {},
       is_published: this.isStaff() ? recipe.is_published : false // Non-staff users cannot publish recipes
     });
+
+    // Debug: Log form validation status
+    console.log('Form populated. Valid:', this.recipeForm.valid);
+    console.log('Form errors:', this.getFormValidationErrors());
   }
 
   // Image handling
@@ -266,7 +325,20 @@ export class RecipeFormComponent implements OnInit {
       this.submitForm();
     } else {
       this.markFormGroupTouched(this.recipeForm);
-      this.snackBar.open('Please fix the form errors before submitting', 'Close', { duration: 3000 });
+      const errors = this.getFormValidationErrors();
+      console.log('Form validation errors:', errors);
+      
+      // Create a more helpful error message
+      let errorMessage = 'Please fix the following form errors:\n';
+      Object.keys(errors).forEach(field => {
+        if (field === 'ingredients' || field === 'instructions') {
+          errorMessage += `- ${field}: Some items are incomplete\n`;
+        } else {
+          errorMessage += `- ${field}: Required field\n`;
+        }
+      });
+      
+      this.snackBar.open(errorMessage, 'Close', { duration: 5000 });
     }
   }
 
@@ -274,11 +346,41 @@ export class RecipeFormComponent implements OnInit {
     const formErrors: any = {};
     
     Object.keys(this.recipeForm.controls).forEach(key => {
-      const controlErrors = this.recipeForm.get(key)?.errors;
+      const control = this.recipeForm.get(key);
+      const controlErrors = control?.errors;
       if (controlErrors) {
-        formErrors[key] = controlErrors;
+        formErrors[key] = {
+          errors: controlErrors,
+          value: control?.value,
+          valid: control?.valid,
+          touched: control?.touched
+        };
       }
     });
+
+    // Check form arrays for errors
+    const ingredientsErrors = this.ingredientsArray.controls.map((control, index) => {
+      const errors = control.errors;
+      if (errors) {
+        return { index, errors, value: control.value };
+      }
+      return null;
+    }).filter(error => error !== null);
+
+    const instructionsErrors = this.instructionsArray.controls.map((control, index) => {
+      const errors = control.errors;
+      if (errors) {
+        return { index, errors, value: control.value };
+      }
+      return null;
+    }).filter(error => error !== null);
+
+    if (ingredientsErrors.length > 0) {
+      formErrors.ingredients = ingredientsErrors;
+    }
+    if (instructionsErrors.length > 0) {
+      formErrors.instructions = instructionsErrors;
+    }
     
     return formErrors;
   }
