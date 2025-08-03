@@ -266,8 +266,6 @@ The API provides comprehensive endpoints for:
 - **Users**: Profile management and preferences
 - **Admin**: Content moderation and analytics
 
-Full API documentation available at: `https://recipe-api-dev98298.azurewebsites.net/api/docs/`
-
 ## 🤝 Contributing
 
 1. Fork the repository
