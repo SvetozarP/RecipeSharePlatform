@@ -5,6 +5,9 @@ Django settings for the project.
 from pathlib import Path
 import os
 
+# Environment detection for performance monitoring
+PERFORMANCE_MONITORING_ENABLED = os.getenv('DJANGO_ENV', 'development') == 'production'
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -146,9 +149,6 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_ORIGINS = True  # TODO: Change this in production
 
 # Performance and caching settings
-# Automatically enable performance monitoring in production
-import os
-PERFORMANCE_MONITORING_ENABLED = os.getenv('DJANGO_ENV', 'development') == 'production'
 
 # Cache configuration
 CACHES = {
