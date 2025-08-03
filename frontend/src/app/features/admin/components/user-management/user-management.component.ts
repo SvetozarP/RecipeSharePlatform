@@ -84,16 +84,11 @@ export class UserManagementComponent implements OnInit {
     // Don't connect dataSource.paginator to avoid conflicts with server-side pagination
     this.dataSource.sort = this.sort;
     
-    // Ensure paginator is properly initialized
+    // Load initial data
+    this.loadUsers();
+    
+    // Subscribe to pagination events
     if (this.paginator) {
-      // Set initial page size
-      this.paginator.pageSize = 25;
-      this.paginator.pageIndex = 0;
-      
-      // Load initial data
-      this.loadUsers();
-      
-      // Subscribe to pagination events
       this.paginator.page.subscribe((event) => {
         console.log('Pagination event:', event);
         this.loadUsers();
@@ -111,10 +106,12 @@ export class UserManagementComponent implements OnInit {
     this.adminService.getUsers(page, pageSize, filters).subscribe({
       next: (response) => {
         this.dataSource.data = response.results;
-        if (this.paginator) {
-          // Use 'count' field from Django REST Framework pagination
+        
+        // Set paginator length after data is loaded
+        if (this.paginator && response.count !== undefined) {
           this.paginator.length = response.count;
         }
+        
         this.loading = false;
       },
       error: (error) => {
