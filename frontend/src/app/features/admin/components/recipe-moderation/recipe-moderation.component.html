@@ -110,8 +110,8 @@
           </div>
 
           <!-- Table -->
-          <div *ngIf="!loading" class="table-container">
-            <table mat-table [dataSource]="dataSource" matSort class="recipes-table">
+          <div class="table-container">
+            <table mat-table [dataSource]="dataSource" matSort class="recipes-table" *ngIf="!loading">
               <!-- Checkbox Column -->
               <ng-container matColumnDef="select">
                 <th mat-header-cell *matHeaderCellDef>
