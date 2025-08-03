@@ -120,7 +120,8 @@
 
 .chart-wrapper {
   position: relative;
-  height: 400px;
+  min-height: 400px;
+  height: auto;
   width: 100%;
   background-color: white;
   border-radius: 8px;
@@ -138,24 +139,34 @@
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
   gap: 16px;
   width: 100%;
+  align-items: start;
 }
 
 .performer-card {
-  height: 400px;
+  min-height: 300px;
+  height: auto;
+}
+
+.performer-card mat-card-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .performer-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  flex: 1;
 }
 
 .performer-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   padding: 12px;
   background-color: #f9f9f9;
   border-radius: 8px;
+  min-height: 60px;
 }
 
 .rank {
@@ -174,12 +185,15 @@
 
 .performer-info {
   flex: 1;
+  min-width: 0;
 }
 
 .performer-name {
   font-weight: 500;
   color: #333;
   margin-bottom: 4px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .performer-stats {
@@ -187,6 +201,7 @@
   gap: 12px;
   font-size: 0.8rem;
   color: #666;
+  flex-wrap: wrap;
 }
 
 .export-section {
@@ -212,6 +227,15 @@
 
   .performers-grid {
     grid-template-columns: 1fr;
+  }
+
+  .performer-card {
+    min-height: 250px;
+  }
+
+  .performer-stats {
+    flex-direction: column;
+    gap: 4px;
   }
 
   .export-actions {
