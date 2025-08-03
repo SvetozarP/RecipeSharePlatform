@@ -116,11 +116,23 @@ export class RecipeModerationComponent implements OnInit {
         console.log('Recipes response:', response);
         this.dataSource.data = response.results;
         
-        // Set paginator length after data is loaded
-        if (this.paginator && response.count !== undefined) {
-          this.paginator.length = response.count;
-          console.log('Set paginator length to:', response.count);
-        }
+        // Set paginator length after data is loaded with a small delay to ensure paginator is ready
+        setTimeout(() => {
+          if (this.paginator && response.count !== undefined) {
+            this.paginator.length = response.count;
+            console.log('Set paginator length to:', response.count);
+            console.log('Paginator state after setting length:', {
+              length: this.paginator.length,
+              pageIndex: this.paginator.pageIndex,
+              pageSize: this.paginator.pageSize
+            });
+          } else {
+            console.log('Paginator not available or count undefined:', {
+              paginator: !!this.paginator,
+              count: response.count
+            });
+          }
+        }, 0);
         
         this.loading = false;
       },

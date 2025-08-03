@@ -208,11 +208,12 @@
           </tr>
         </table>
 
-        <mat-paginator [pageSizeOptions]="[10, 25, 50, 100]"
-                      [pageSize]="25"
-                      showFirstLastButtons
-                      aria-label="Select page of ratings">
-        </mat-paginator>
+                    <mat-paginator #paginator
+                          [pageSizeOptions]="[10, 25, 50, 100]"
+                          [pageSize]="25"
+                          showFirstLastButtons
+                          aria-label="Select page of ratings">
+            </mat-paginator>
       </div>
     </mat-card-content>
   </mat-card>
