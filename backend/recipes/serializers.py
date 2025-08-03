@@ -5,7 +5,7 @@ from rest_framework import serializers
 from django.core.exceptions import ValidationError as DjangoValidationError
 
 from .models import Recipe, Category, Rating, UserFavorite, RecipeView
-from core.services.storage_service import storage_service
+from core.services.service_wrapper import service_wrapper
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -192,6 +192,8 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         """Validate uploaded image file."""
         if value:
             try:
+                # Use service wrapper for validation
+                from core.services.storage_service import storage_service
                 storage_service.validate_image_file(value)
             except DjangoValidationError as e:
                 raise serializers.ValidationError(str(e))
@@ -215,12 +217,10 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         # Process and save image if provided
         if image_file:
             try:
-                image_urls = storage_service.save_image_with_thumbnails(
-                    image_file, 
-                    str(recipe.id)
-                )
-                recipe.images = image_urls
-                recipe.save(update_fields=['images'])
+                image_urls = service_wrapper.save_image(image_file, str(recipe.id))
+                if image_urls:
+                    recipe.images = image_urls
+                    recipe.save(update_fields=['images'])
             except DjangoValidationError as e:
                 # If image processing fails, delete the recipe and raise error
                 recipe.delete()
@@ -300,6 +300,8 @@ class RecipeUpdateSerializer(serializers.ModelSerializer):
         """Validate uploaded image file."""
         if value:
             try:
+                # Use service wrapper for validation
+                from core.services.storage_service import storage_service
                 storage_service.validate_image_file(value)
             except DjangoValidationError as e:
                 raise serializers.ValidationError(str(e))
@@ -317,21 +319,19 @@ class RecipeUpdateSerializer(serializers.ModelSerializer):
         
         # Handle image removal
         if remove_image and instance.images:
-            storage_service.delete_recipe_images(instance.images)
+            service_wrapper.delete_images(instance.images)
             instance.images = {}
         
         # Process new image if provided
         if image_file:
             # Delete existing images first
             if instance.images:
-                storage_service.delete_recipe_images(instance.images)
+                service_wrapper.delete_images(instance.images)
             
             try:
-                image_urls = storage_service.save_image_with_thumbnails(
-                    image_file, 
-                    str(instance.id)
-                )
-                instance.images = image_urls
+                image_urls = service_wrapper.save_image(image_file, str(instance.id))
+                if image_urls:
+                    instance.images = image_urls
             except DjangoValidationError as e:
                 raise serializers.ValidationError({'image': str(e)})
         
