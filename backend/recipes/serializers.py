@@ -203,9 +203,18 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         """Create recipe with image processing."""
         image_file = validated_data.pop('image', None)
         categories = validated_data.pop('categories', [])
+        is_published = validated_data.pop('is_published', False)
         
         # Set author from request context
         validated_data['author'] = self.context['request'].user
+        
+        # Set moderation status based on publication status
+        if is_published:
+            # If user wants to publish, set to APPROVED (users can publish their own recipes)
+            validated_data['moderation_status'] = Recipe.ModerationStatus.APPROVED
+        else:
+            # If saving as draft, keep as DRAFT
+            validated_data['moderation_status'] = Recipe.ModerationStatus.DRAFT
         
         # Create recipe instance
         recipe = Recipe.objects.create(**validated_data)
@@ -312,10 +321,21 @@ class RecipeUpdateSerializer(serializers.ModelSerializer):
         image_file = validated_data.pop('image', None)
         remove_image = validated_data.pop('remove_image', False)
         categories = validated_data.pop('categories', None)
+        is_published = validated_data.pop('is_published', None)
         
         # Handle categories update
         if categories is not None:
             instance.categories.set(categories)
+        
+        # Handle publication status and moderation status
+        if is_published is not None:
+            instance.is_published = is_published
+            if is_published:
+                # If user wants to publish, set to APPROVED (users can publish their own recipes)
+                instance.moderation_status = Recipe.ModerationStatus.APPROVED
+            else:
+                # If saving as draft, set to DRAFT
+                instance.moderation_status = Recipe.ModerationStatus.DRAFT
         
         # Handle image removal
         if remove_image and instance.images:

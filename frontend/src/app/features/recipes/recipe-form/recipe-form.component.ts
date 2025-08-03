@@ -164,6 +164,7 @@ export class RecipeFormComponent implements OnInit {
     if (this.isStaff()) {
       this.recipeForm.patchValue({ is_published: true });
     } else {
+      // For regular users, default to draft (false) but they can choose to publish
       this.recipeForm.patchValue({ is_published: false });
     }
     
@@ -321,7 +322,7 @@ export class RecipeFormComponent implements OnInit {
   // Form submission
   onSubmit(): void {
     if (this.recipeForm.valid) {
-      this.recipeForm.patchValue({ is_published: true });
+      // Use the user's choice for publication status (from radio buttons)
       this.submitForm();
     } else {
       this.markFormGroupTouched(this.recipeForm);

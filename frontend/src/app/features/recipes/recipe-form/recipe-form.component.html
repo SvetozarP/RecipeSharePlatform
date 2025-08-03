@@ -353,20 +353,37 @@
             </mat-card-content>
           </mat-card>
 
-          <!-- Publication Notice for non-staff users -->
-          <mat-card *ngIf="!isStaff()" class="bg-blue-50 border-blue-200">
+          <!-- Publication Options for regular users -->
+          <mat-card *ngIf="!isStaff()">
             <mat-card-header>
-              <mat-card-title class="flex items-center gap-2 text-blue-800">
-                <mat-icon>info</mat-icon>
-                Publication Status
+              <mat-card-title class="flex items-center gap-2">
+                <mat-icon>visibility</mat-icon>
+                Publication Options
               </mat-card-title>
             </mat-card-header>
             <mat-card-content>
-              <p class="text-sm text-blue-700">
-                Your recipe will be submitted for moderation. Once approved by our team, it will be published and visible to all users.
-              </p>
+              <mat-radio-group formControlName="is_published" class="space-y-3">
+                <div class="flex items-start gap-3">
+                  <mat-radio-button [value]="true" class="flex-1">
+                    <div class="ml-2">
+                      <div class="font-medium">Publish Now</div>
+                      <div class="text-sm text-gray-600">Make this recipe immediately visible to all users</div>
+                    </div>
+                  </mat-radio-button>
+                </div>
+                <div class="flex items-start gap-3">
+                  <mat-radio-button [value]="false" class="flex-1">
+                    <div class="ml-2">
+                      <div class="font-medium">Save as Draft</div>
+                      <div class="text-sm text-gray-600">Keep this recipe private for now, you can publish it later</div>
+                    </div>
+                  </mat-radio-button>
+                </div>
+              </mat-radio-group>
             </mat-card-content>
           </mat-card>
+
+
 
           <!-- Form Actions -->
           <div class="flex gap-4 justify-end pt-6 border-t">
@@ -395,8 +412,8 @@
             <button type="submit" mat-raised-button color="primary" 
                     [disabled]="recipeForm.invalid || submitting()">
               <mat-icon *ngIf="submitting()">hourglass_empty</mat-icon>
-              <mat-icon *ngIf="!submitting()">{{ isEditing() ? 'update' : 'publish' }}</mat-icon>
-              {{ submitting() ? 'Saving...' : (isEditing() ? 'Update Recipe' : 'Create Recipe') }}
+              <mat-icon *ngIf="!submitting()">{{ isEditing() ? 'update' : (recipeForm.get('is_published')?.value ? 'publish' : 'save') }}</mat-icon>
+              {{ submitting() ? 'Saving...' : (isEditing() ? 'Update Recipe' : (recipeForm.get('is_published')?.value ? 'Publish Recipe' : 'Save as Draft')) }}
             </button>
           </div>
         </form>
