@@ -53,7 +53,6 @@ if PERFORMANCE_MONITORING_ENABLED:
         'core.middleware.compression.ETagMiddleware',
         'core.middleware.compression.PerformanceHeadersMiddleware',
     ])
-]
 
 ROOT_URLCONF = 'config.urls'
 
