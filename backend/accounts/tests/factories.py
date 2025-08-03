@@ -19,4 +19,5 @@ class UserFactory(factory.django.DjangoModelFactory):
     email = factory.LazyFunction(lambda: fake.email())
     username = factory.LazyFunction(lambda: fake.user_name())
     password = factory.PostGenerationMethodCall('set_password', 'testpass123')
-    is_active = True 
+    is_active = True
+    is_email_verified = False 
