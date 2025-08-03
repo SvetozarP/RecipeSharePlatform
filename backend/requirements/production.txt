@@ -9,4 +9,5 @@ django-storages[azure]>=1.14,<1.15
 
 # Performance monitoring dependencies (from base.txt)
 psutil>=5.9,<5.10
-redis>=4.6,<4.7 
+redis>=4.6,<4.7
+django-redis>=5.4,<5.5 
