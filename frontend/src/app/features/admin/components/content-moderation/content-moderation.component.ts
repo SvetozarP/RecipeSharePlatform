@@ -87,16 +87,16 @@ export class ContentModerationComponent implements OnInit {
     // Don't connect dataSource.paginator to avoid conflicts with server-side pagination
     this.dataSource.sort = this.sort;
     
-    // Load initial data
-    this.loadRatings();
-    
-    // Subscribe to pagination events
+    // Subscribe to pagination events first
     if (this.paginator) {
       this.paginator.page.subscribe((event) => {
         console.log('Pagination event:', event);
         this.loadRatings();
       });
     }
+    
+    // Load initial data after setting up event listeners
+    this.loadRatings();
   }
 
   private loadRatings(): void {
@@ -110,23 +110,21 @@ export class ContentModerationComponent implements OnInit {
       next: (response) => {
         this.dataSource.data = response.results;
         
-        // Set paginator length after data is loaded with a small delay to ensure paginator is ready
-        setTimeout(() => {
-          if (this.paginator && response.count !== undefined) {
-            this.paginator.length = response.count;
-            console.log('Set paginator length to:', response.count);
-            console.log('Paginator state after setting length:', {
-              length: this.paginator.length,
-              pageIndex: this.paginator.pageIndex,
-              pageSize: this.paginator.pageSize
-            });
-          } else {
-            console.log('Paginator not available or count undefined:', {
-              paginator: !!this.paginator,
-              count: response.count
-            });
-          }
-        }, 0);
+        // Set paginator length immediately after data is loaded
+        if (this.paginator && response.count !== undefined) {
+          this.paginator.length = response.count;
+          console.log('Set paginator length to:', response.count);
+          console.log('Paginator state after setting length:', {
+            length: this.paginator.length,
+            pageIndex: this.paginator.pageIndex,
+            pageSize: this.paginator.pageSize
+          });
+        } else {
+          console.log('Paginator not available or count undefined:', {
+            paginator: !!this.paginator,
+            count: response.count
+          });
+        }
         
         this.loading = false;
       },
