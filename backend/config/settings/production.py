@@ -47,7 +47,17 @@ SIMPLE_JWT = {
 
 # Security settings for production
 DEBUG = False
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',') if os.getenv('ALLOWED_HOSTS') else []
+
+# Default allowed hosts for production
+DEFAULT_ALLOWED_HOSTS = [
+    'recipe-api-dev98298.azurewebsites.net',
+    'localhost',
+    '169.254.129.3'
+]
+
+# Combine environment variable hosts with default hosts
+env_hosts = os.getenv('ALLOWED_HOSTS', '').split(',') if os.getenv('ALLOWED_HOSTS') else []
+ALLOWED_HOSTS = list(set(DEFAULT_ALLOWED_HOSTS + [host.strip() for host in env_hosts if host.strip()]))
 
 # Remove debug toolbar from installed apps
 if 'debug_toolbar' in INSTALLED_APPS:
