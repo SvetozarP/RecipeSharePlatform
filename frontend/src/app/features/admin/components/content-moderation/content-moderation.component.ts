@@ -85,7 +85,9 @@ export class ContentModerationComponent implements OnInit {
 
   ngAfterViewInit(): void {
     // Don't connect dataSource.paginator to avoid conflicts with server-side pagination
-    this.dataSource.sort = this.sort;
+    if (this.sort) {
+      this.dataSource.sort = this.sort;
+    }
     
     // Subscribe to pagination events first
     if (this.paginator) {
@@ -101,13 +103,13 @@ export class ContentModerationComponent implements OnInit {
   private loadRatings(): void {
     this.loading = true;
     
-    const page = this.paginator?.pageIndex + 1 || 1;
+    const page = (this.paginator?.pageIndex || 0) + 1;
     const pageSize = this.paginator?.pageSize || 25;
     const filters = this.getFiltersFromForm();
 
     this.adminService.getRatings(page, pageSize, filters).subscribe({
       next: (response) => {
-        this.dataSource.data = response.results;
+        this.dataSource.data = response.results || [];
         
         // Set paginator length with a small delay to ensure paginator is fully initialized
         setTimeout(() => {
@@ -136,7 +138,7 @@ export class ContentModerationComponent implements OnInit {
   }
 
   private getFiltersFromForm(): AdminFilters['ratings'] {
-    const formValue = this.filtersForm.value;
+    const formValue = this.filtersForm?.value || {};
     return {
       search: formValue.search || undefined,
       rating: formValue.rating || undefined,
@@ -146,19 +148,21 @@ export class ContentModerationComponent implements OnInit {
   }
 
   applyFilters(): void {
-    this.paginator.pageIndex = 0;
+    if (this.paginator) {
+      this.paginator.pageIndex = 0;
+    }
     this.loadRatings();
   }
 
   clearFilters(): void {
-    this.filtersForm.reset();
+    this.filtersForm?.reset();
     this.applyFilters();
   }
 
   // Selection methods
   isAllSelected(): boolean {
     const numSelected = this.selectedRatings.length;
-    const numRows = this.dataSource.data.length;
+    const numRows = this.dataSource.data?.length || 0;
     return numSelected === numRows;
   }
 
@@ -167,20 +171,20 @@ export class ContentModerationComponent implements OnInit {
       this.selection.clear();
       this.selectedRatings = [];
     } else {
-      this.dataSource.data.forEach(row => this.selection.select(row));
-      this.selectedRatings = [...this.dataSource.data];
+      (this.dataSource.data || []).forEach(row => this.selection.select(row));
+      this.selectedRatings = [...(this.dataSource.data || [])];
     }
   }
 
   onSelectionChange(): void {
-    this.selectedRatings = this.selection.selected;
+    this.selectedRatings = this.selection.selected || [];
   }
 
   onCheckboxChange(event: any, row: AdminRating): void {
     if (event.checked) {
-      this.selection.select(row);
+      this.selection?.select(row);
     } else {
-      this.selection.deselect(row);
+      this.selection?.deselect(row);
     }
     this.onSelectionChange();
   }
@@ -189,7 +193,7 @@ export class ContentModerationComponent implements OnInit {
   viewRating(rating: AdminRating): void {
     const dialogRef = this.dialog.open(RatingDetailDialogComponent, {
       width: '600px',
-      data: { rating }
+      data: { rating: rating || {} }
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -203,7 +207,7 @@ export class ContentModerationComponent implements OnInit {
   editRating(rating: AdminRating): void {
     const dialogRef = this.dialog.open(RatingEditDialogComponent, {
       width: '600px',
-      data: { rating }
+      data: { rating: rating || {} }
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -227,8 +231,8 @@ export class ContentModerationComponent implements OnInit {
       data: {
         review: rating.review,
         rating: rating.rating,
-        user: rating.user,
-        recipe: rating.recipe,
+        user: rating.user || { username: 'Unknown User', email: 'No email' },
+        recipe: rating.recipe || { title: 'Unknown Recipe' },
         created_at: rating.created_at
       }
     });
@@ -238,7 +242,7 @@ export class ContentModerationComponent implements OnInit {
     if (confirm(`Are you sure you want to delete this rating?`)) {
       this.adminService.deleteRating(rating.id).subscribe({
         next: () => {
-          const index = this.dataSource.data.findIndex(r => r.id === rating.id);
+          const index = (this.dataSource.data || []).findIndex(r => r.id === rating.id);
           if (index !== -1) {
             this.dataSource.data.splice(index, 1);
             this.dataSource._updateChangeSubscription();
@@ -259,7 +263,7 @@ export class ContentModerationComponent implements OnInit {
 
   // Bulk actions
   bulkDelete(): void {
-    if (this.selectedRatings.length === 0) return;
+    if (!this.selectedRatings || this.selectedRatings.length === 0) return;
     
     if (confirm(`Delete ${this.selectedRatings.length} rating(s)? This action cannot be undone.`)) {
       const ratingIds = this.selectedRatings.map(r => r.id);
@@ -288,7 +292,7 @@ export class ContentModerationComponent implements OnInit {
 
   private handleBulkOperationComplete(completed: number, failed: number, action: string): void {
     this.selectedRatings = [];
-    this.selection.clear();
+    this.selection?.clear();
     
     if (failed === 0) {
       this.snackBar.open(`Successfully ${action} ${completed} rating(s)`, 'Close', {
