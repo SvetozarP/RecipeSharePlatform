@@ -164,7 +164,6 @@ The platform features a comprehensive gamification system that rewards users for
 - **🌟 Top Contributor** - Consistently high-quality contributions
 
 ### Special Badges
-- **🔒 Verified Purchase** - Badge for users who have actually made the recipe
 - **👍 Helpful Review** - Badge for reviews marked as helpful by the community
 - **⭐ Featured Recipe** - Badge for recipes selected by moderators
 - **🏅 Community Choice** - Badge for recipes with highest community ratings
