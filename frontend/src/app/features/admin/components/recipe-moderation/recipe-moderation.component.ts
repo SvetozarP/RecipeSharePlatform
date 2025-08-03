@@ -90,13 +90,21 @@ export class RecipeModerationComponent implements OnInit {
     // Don't connect dataSource.paginator to avoid conflicts with server-side pagination
     this.dataSource.sort = this.sort;
     
-    // Load initial data
-    this.loadRecipes();
-    
-    // Subscribe to pagination events
-    this.paginator.page.subscribe(() => {
+    // Ensure paginator is properly initialized
+    if (this.paginator) {
+      // Set initial page size
+      this.paginator.pageSize = 25;
+      this.paginator.pageIndex = 0;
+      
+      // Load initial data
       this.loadRecipes();
-    });
+      
+      // Subscribe to pagination events
+      this.paginator.page.subscribe((event) => {
+        console.log('Pagination event:', event);
+        this.loadRecipes();
+      });
+    }
   }
 
   private loadRecipes(): void {
@@ -106,11 +114,15 @@ export class RecipeModerationComponent implements OnInit {
     const pageSize = this.paginator?.pageSize || 25;
     const filters = this.getFiltersFromForm();
 
+    console.log('Loading recipes - Page:', page, 'PageSize:', pageSize, 'Filters:', filters);
+
     this.adminService.getRecipes(page, pageSize, filters).subscribe({
       next: (response) => {
+        console.log('Recipes response:', response);
         this.dataSource.data = response.results;
         if (this.paginator) {
           this.paginator.length = response.pagination.total;
+          console.log('Set paginator length to:', response.pagination.total);
         }
         this.loading = false;
       },

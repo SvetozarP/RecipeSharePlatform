@@ -84,13 +84,21 @@ export class UserManagementComponent implements OnInit {
     // Don't connect dataSource.paginator to avoid conflicts with server-side pagination
     this.dataSource.sort = this.sort;
     
-    // Load initial data
-    this.loadUsers();
-    
-    // Subscribe to pagination events
-    this.paginator.page.subscribe(() => {
+    // Ensure paginator is properly initialized
+    if (this.paginator) {
+      // Set initial page size
+      this.paginator.pageSize = 25;
+      this.paginator.pageIndex = 0;
+      
+      // Load initial data
       this.loadUsers();
-    });
+      
+      // Subscribe to pagination events
+      this.paginator.page.subscribe((event) => {
+        console.log('Pagination event:', event);
+        this.loadUsers();
+      });
+    }
   }
 
   private loadUsers(): void {
