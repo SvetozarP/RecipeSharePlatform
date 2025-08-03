@@ -80,13 +80,18 @@ export class RecipeModerationComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loadRecipes();
+    // Load categories immediately
     this.loadCategories();
+    
+    // Load recipes after view init to ensure paginator is available
   }
 
   ngAfterViewInit(): void {
-    this.dataSource.paginator = this.paginator;
+    // Don't connect dataSource.paginator to avoid conflicts with server-side pagination
     this.dataSource.sort = this.sort;
+    
+    // Load initial data
+    this.loadRecipes();
     
     // Subscribe to pagination events
     this.paginator.page.subscribe(() => {

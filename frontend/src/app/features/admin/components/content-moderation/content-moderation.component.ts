@@ -80,12 +80,15 @@ export class ContentModerationComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loadRatings();
+    // Load ratings after view init to ensure paginator is available
   }
 
   ngAfterViewInit(): void {
-    this.dataSource.paginator = this.paginator;
+    // Don't connect dataSource.paginator to avoid conflicts with server-side pagination
     this.dataSource.sort = this.sort;
+    
+    // Load initial data
+    this.loadRatings();
     
     // Subscribe to pagination events
     this.paginator.page.subscribe(() => {
