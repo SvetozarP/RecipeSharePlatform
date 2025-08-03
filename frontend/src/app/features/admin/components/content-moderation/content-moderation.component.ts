@@ -60,7 +60,7 @@ export class ContentModerationComponent implements OnInit {
 
   loading = false;
   dataSource = new MatTableDataSource<AdminRating>();
-  displayedColumns: string[] = ['select', 'rating', 'recipe', 'user', 'review', 'engagement', 'created_at', 'actions'];
+  displayedColumns: string[] = ['select', 'recipe', 'user', 'rating', 'review', 'status', 'helpful_votes', 'actions'];
   filtersForm: FormGroup;
   selectedRatings: AdminRating[] = [];
   selection = new SelectionModel<AdminRating>(true, []);

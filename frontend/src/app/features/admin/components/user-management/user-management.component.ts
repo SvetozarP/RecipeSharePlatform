@@ -56,7 +56,7 @@ export class UserManagementComponent implements OnInit {
 
   loading = false;
   dataSource = new MatTableDataSource<AdminUser>();
-  displayedColumns: string[] = ['select', 'name', 'email', 'status', 'date_joined', 'last_login', 'actions'];
+  displayedColumns: string[] = ['select', 'username', 'email', 'first_name', 'last_name', 'status', 'date_joined', 'last_login', 'actions'];
   filtersForm: FormGroup;
   selectedUsers: AdminUser[] = [];
   selection = new SelectionModel<AdminUser>(true, []);
