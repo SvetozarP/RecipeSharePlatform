@@ -86,6 +86,11 @@ export class ContentModerationComponent implements OnInit {
   ngAfterViewInit(): void {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
+    
+    // Subscribe to pagination events
+    this.paginator.page.subscribe(() => {
+      this.loadRatings();
+    });
   }
 
   private loadRatings(): void {
@@ -213,76 +218,4 @@ export class ContentModerationComponent implements OnInit {
   }
 
   deleteRating(rating: AdminRating): void {
-    if (confirm(`Are you sure you want to delete this rating?`)) {
-      this.adminService.deleteRating(rating.id).subscribe({
-        next: () => {
-          const index = this.dataSource.data.findIndex(r => r.id === rating.id);
-          if (index !== -1) {
-            this.dataSource.data.splice(index, 1);
-            this.dataSource._updateChangeSubscription();
-          }
-          this.snackBar.open('Rating deleted successfully', 'Close', {
-            duration: 3000
-          });
-        },
-        error: (error) => {
-          console.error('Failed to delete rating:', error);
-          this.snackBar.open('Failed to delete rating', 'Close', {
-            duration: 5000
-          });
-        }
-      });
-    }
-  }
-
-  // Bulk actions
-  bulkDelete(): void {
-    if (this.selectedRatings.length === 0) return;
-    
-    if (confirm(`Delete ${this.selectedRatings.length} rating(s)? This action cannot be undone.`)) {
-      const ratingIds = this.selectedRatings.map(r => r.id);
-      
-      let completed = 0;
-      let failed = 0;
-      
-      ratingIds.forEach(ratingId => {
-        this.adminService.deleteRating(ratingId).subscribe({
-          next: () => {
-            completed++;
-            if (completed + failed === ratingIds.length) {
-              this.handleBulkOperationComplete(completed, failed, 'deleted');
-            }
-          },
-          error: () => {
-            failed++;
-            if (completed + failed === ratingIds.length) {
-              this.handleBulkOperationComplete(completed, failed, 'deleted');
-            }
-          }
-        });
-      });
-    }
-  }
-
-  private handleBulkOperationComplete(completed: number, failed: number, action: string): void {
-    this.selectedRatings = [];
-    this.selection.clear();
-    
-    if (failed === 0) {
-      this.snackBar.open(`Successfully ${action} ${completed} rating(s)`, 'Close', {
-        duration: 3000
-      });
-    } else if (completed === 0) {
-      this.snackBar.open(`Failed to ${action} any ratings`, 'Close', {
-        duration: 5000
-      });
-    } else {
-      this.snackBar.open(`Successfully ${action} ${completed} rating(s), ${failed} failed`, 'Close', {
-        duration: 5000
-      });
-    }
-    
-    // Refresh the data
-    this.loadRatings();
-  }
-} 
+    if (confirm(`Are you sure you want to delete this rating?`

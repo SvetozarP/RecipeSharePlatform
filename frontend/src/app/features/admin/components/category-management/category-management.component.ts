@@ -83,6 +83,11 @@ export class CategoryManagementComponent implements OnInit {
   ngAfterViewInit(): void {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
+    
+    // Subscribe to pagination events
+    this.paginator.page.subscribe(() => {
+      this.loadCategories();
+    });
   }
 
   private loadCategories(): void {
