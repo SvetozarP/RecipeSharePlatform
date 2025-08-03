@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
@@ -49,7 +49,7 @@ import { MatTooltip } from '@angular/material/tooltip';
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './recipe-list.component.html',
   styleUrls: ['./recipe-list.component.scss']})
-export class RecipeListComponent implements OnInit, OnDestroy {
+export class RecipeListComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('scrollTrigger') scrollTrigger!: ElementRef;
   
   private destroy$ = new Subject<void>();
@@ -71,11 +71,11 @@ export class RecipeListComponent implements OnInit, OnDestroy {
   isAuthenticated$: Observable<boolean>;
   
   // Pagination vs Infinite Scroll
-  usePagination = true; // Toggle between pagination and infinite scroll
+  usePagination = false; // Changed default to infinite scroll
   
   // Pagination
   currentPage = 1;
-  pageSize = 24;
+  pageSize = 12; // Temporarily reduced to test infinite scroll
   totalRecipes: number | null = null;
   
   // View state
@@ -133,6 +133,13 @@ export class RecipeListComponent implements OnInit, OnDestroy {
     });
   }
 
+  ngAfterViewInit(): void {
+    // Setup infinite scroll after view is initialized
+    if (!this.usePagination) {
+      this.setupInfiniteScroll();
+    }
+  }
+
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
@@ -143,25 +150,42 @@ export class RecipeListComponent implements OnInit, OnDestroy {
     this.setupSearchSuggestions();
     this.setupSearchTrigger();
     this.setupFilterWatcher();
-    
-    // Setup infinite scroll after view init
-    setTimeout(() => {
-      if (!this.usePagination) {
-        this.setupInfiniteScroll();
-      }
-    }, 100);
   }
 
   private setupInfiniteScroll(): void {
-    if (!this.scrollTrigger?.nativeElement || this.intersectionObserver) {
+    console.log('RecipeListComponent: Setting up infinite scroll');
+    
+    // Clean up existing observer
+    this.cleanupInfiniteScroll();
+    
+    // Check if scroll trigger element exists
+    if (!this.scrollTrigger?.nativeElement) {
+      console.warn('RecipeListComponent: Scroll trigger element not found');
       return;
     }
 
     this.intersectionObserver = new IntersectionObserver(
       (entries) => {
         const [entry] = entries;
+        console.log('RecipeListComponent: Intersection observer triggered', {
+          isIntersecting: entry.isIntersecting,
+          loading: this.loading,
+          loadingMore: this.loadingMore,
+          hasMoreData: this.hasMoreData,
+          intersectionRatio: entry.intersectionRatio,
+          boundingClientRect: entry.boundingClientRect
+        });
+        
         if (entry.isIntersecting && !this.loading && !this.loadingMore && this.hasMoreData) {
+          console.log('RecipeListComponent: Loading more recipes via infinite scroll');
           this.loadMoreRecipes();
+        } else {
+          console.log('RecipeListComponent: Intersection observer triggered but conditions not met', {
+            isIntersecting: entry.isIntersecting,
+            loading: this.loading,
+            loadingMore: this.loadingMore,
+            hasMoreData: this.hasMoreData
+          });
         }
       },
       {
@@ -171,20 +195,51 @@ export class RecipeListComponent implements OnInit, OnDestroy {
     );
 
     this.intersectionObserver.observe(this.scrollTrigger.nativeElement);
+    console.log('RecipeListComponent: Infinite scroll observer attached');
+  }
+
+  private reSetupInfiniteScroll(): void {
+    if (!this.usePagination) {
+      // Use setTimeout to ensure the view has updated
+      setTimeout(() => {
+        this.setupInfiniteScroll();
+        this.logInfiniteScrollState();
+      }, 100);
+    }
+  }
+
+  private logInfiniteScrollState(): void {
+    console.log('RecipeListComponent: Infinite scroll state:', {
+      usePagination: this.usePagination,
+      hasMoreData: this.hasMoreData,
+      loading: this.loading,
+      loadingMore: this.loadingMore,
+      recipesCount: this.recipes.length,
+      totalRecipes: this.totalRecipes,
+      scrollTriggerExists: !!this.scrollTrigger?.nativeElement,
+      observerExists: !!this.intersectionObserver
+    });
   }
 
   private cleanupInfiniteScroll(): void {
     if (this.intersectionObserver) {
       this.intersectionObserver.disconnect();
       this.intersectionObserver = undefined;
+      console.log('RecipeListComponent: Infinite scroll observer cleaned up');
     }
   }
 
-  private loadMoreRecipes(): void {
+  loadMoreRecipes(): void {
     if (this.loadingMore || !this.hasMoreData || this.usePagination) {
+      console.log('RecipeListComponent: Skipping loadMoreRecipes', {
+        loadingMore: this.loadingMore,
+        hasMoreData: this.hasMoreData,
+        usePagination: this.usePagination
+      });
       return;
     }
 
+    console.log('RecipeListComponent: Loading more recipes');
     this.loadingMore = true;
     const nextPage = Math.floor(this.recipes.length / this.pageSize) + 1;
     
@@ -202,23 +257,32 @@ export class RecipeListComponent implements OnInit, OnDestroy {
       takeUntil(this.destroy$)
     ).subscribe({
       next: (response) => {
+        console.log('RecipeListComponent: More recipes loaded successfully:', response);
         const newRecipes = response.results || [];
         this.recipes = [...this.recipes, ...newRecipes];
-        this.hasMoreData = newRecipes.length === this.pageSize;
+        
+        // Fix hasMoreData logic: check if there are more recipes available
+        this.hasMoreData = this.recipes.length < (response.count || 0);
+        
         this.loadingMore = false;
         this.cdr.markForCheck();
+        console.log('RecipeListComponent: Total recipes after loading more:', this.recipes.length, 'total:', response.count, 'hasMoreData:', this.hasMoreData);
+        
+        // Re-setup infinite scroll after loading more recipes
+        this.reSetupInfiniteScroll();
       },
       error: (error) => {
+        console.error('RecipeListComponent: Error loading more recipes:', error);
         this.loadingMore = false;
         this.snackBar.open('Failed to load more recipes', 'Close', { duration: 3000 });
         this.cdr.markForCheck();
-        console.error('Error loading more recipes:', error);
       }
     });
   }
 
   togglePaginationMode(): void {
     this.usePagination = !this.usePagination;
+    console.log('RecipeListComponent: Toggled pagination mode:', this.usePagination ? 'pagination' : 'infinite scroll');
     
     if (this.usePagination) {
       this.cleanupInfiniteScroll();
@@ -228,6 +292,7 @@ export class RecipeListComponent implements OnInit, OnDestroy {
       this.currentPage = 1;
       this.hasMoreData = true;
       this.loadRecipes();
+      // Setup infinite scroll after the view updates
       setTimeout(() => this.setupInfiniteScroll(), 100);
     }
   }
@@ -412,7 +477,16 @@ export class RecipeListComponent implements OnInit, OnDestroy {
         }
         
         this.totalRecipes = response.count || 0;
-        this.hasMoreData = newRecipes.length === this.pageSize;
+        
+        // Fix hasMoreData logic: check if there are more recipes available
+        if (this.usePagination) {
+          // For pagination mode, check if current page * page size < total
+          this.hasMoreData = (this.currentPage * this.pageSize) < this.totalRecipes;
+        } else {
+          // For infinite scroll mode, check if we have fewer recipes than total
+          this.hasMoreData = this.recipes.length < this.totalRecipes;
+        }
+        
         this.loading = false;
         
         // Mark initial load as complete
@@ -422,7 +496,13 @@ export class RecipeListComponent implements OnInit, OnDestroy {
         
         // The backend now provides is_favorited field directly, so no need to check manually
         this.cdr.markForCheck();
-        console.log('RecipeListComponent: Loading complete, recipes count:', this.recipes.length);
+        console.log('RecipeListComponent: Loading complete, recipes count:', this.recipes.length, 'total:', this.totalRecipes, 'hasMoreData:', this.hasMoreData);
+        
+        // Re-setup infinite scroll after loading recipes
+        this.reSetupInfiniteScroll();
+        
+        // Log state for debugging
+        this.logInfiniteScrollState();
       },
       error: (error) => {
         console.error('RecipeListComponent: Error loading recipes:', error);

@@ -186,6 +186,1264 @@ class Command(BaseCommand):
                     'fiber': 3
                 }
             },
+                        {
+                'title': 'Classic Spaghetti Carbonara',
+                'description': 'A traditional Italian pasta dish with eggs, cheese, and pancetta. Creamy, rich, and absolutely delicious.',
+                'prep_time': 10,
+                'cook_time': 15,
+                'servings': 4,
+                'difficulty': Recipe.DifficultyLevel.MEDIUM,
+                'cooking_method': Recipe.CookingMethod.BOILING,
+                'ingredients': [
+                    '400g spaghetti',
+                    '200g pancetta or guanciale, diced',
+                    '4 large eggs',
+                    '100g Pecorino Romano cheese, grated',
+                    '50g Parmesan cheese, grated',
+                    'Freshly ground black pepper',
+                    'Salt for pasta water',
+                    '2 cloves garlic (optional)'
+                ],
+                'instructions': [
+                    'Bring a large pot of salted water to boil and cook spaghetti according to package directions.',
+                    'While pasta cooks, heat a large skillet over medium heat and cook pancetta until crispy.',
+                    'In a bowl, whisk together eggs, Pecorino Romano, Parmesan, and plenty of black pepper.',
+                    'Reserve 1 cup of pasta cooking water, then drain the pasta.',
+                    'Add hot pasta to the skillet with pancetta and toss to combine.',
+                    'Remove from heat and quickly stir in the egg mixture, adding pasta water as needed.',
+                    'Serve immediately with extra cheese and black pepper.'
+                ],
+                'tags': ['italian', 'pasta', 'classic', 'comfort-food'],
+                'categories': ['main-dishes'],
+                'nutrition_info': {
+                    'calories': 520,
+                    'protein': 22,
+                    'carbs': 58,
+                    'fat': 23,
+                    'fiber': 3
+                }
+            },
+                                    {
+                'title': 'Classic Spaghetti Carbonara',
+                'description': 'A traditional Italian pasta dish with eggs, cheese, and pancetta. Creamy, rich, and absolutely delicious.',
+                'prep_time': 10,
+                'cook_time': 15,
+                'servings': 4,
+                'difficulty': Recipe.DifficultyLevel.MEDIUM,
+                'cooking_method': Recipe.CookingMethod.BOILING,
+                'ingredients': [
+                    '400g spaghetti',
+                    '200g pancetta or guanciale, diced',
+                    '4 large eggs',
+                    '100g Pecorino Romano cheese, grated',
+                    '50g Parmesan cheese, grated',
+                    'Freshly ground black pepper',
+                    'Salt for pasta water',
+                    '2 cloves garlic (optional)'
+                ],
+                'instructions': [
+                    'Bring a large pot of salted water to boil and cook spaghetti according to package directions.',
+                    'While pasta cooks, heat a large skillet over medium heat and cook pancetta until crispy.',
+                    'In a bowl, whisk together eggs, Pecorino Romano, Parmesan, and plenty of black pepper.',
+                    'Reserve 1 cup of pasta cooking water, then drain the pasta.',
+                    'Add hot pasta to the skillet with pancetta and toss to combine.',
+                    'Remove from heat and quickly stir in the egg mixture, adding pasta water as needed.',
+                    'Serve immediately with extra cheese and black pepper.'
+                ],
+                'tags': ['italian', 'pasta', 'classic', 'comfort-food'],
+                'categories': ['main-dishes'],
+                'nutrition_info': {
+                    'calories': 520,
+                    'protein': 22,
+                    'carbs': 58,
+                    'fat': 23,
+                    'fiber': 3
+                }
+            },
+                                                {
+                'title': 'Classic Spaghetti Carbonara',
+                'description': 'A traditional Italian pasta dish with eggs, cheese, and pancetta. Creamy, rich, and absolutely delicious.',
+                'prep_time': 10,
+                'cook_time': 15,
+                'servings': 4,
+                'difficulty': Recipe.DifficultyLevel.MEDIUM,
+                'cooking_method': Recipe.CookingMethod.BOILING,
+                'ingredients': [
+                    '400g spaghetti',
+                    '200g pancetta or guanciale, diced',
+                    '4 large eggs',
+                    '100g Pecorino Romano cheese, grated',
+                    '50g Parmesan cheese, grated',
+                    'Freshly ground black pepper',
+                    'Salt for pasta water',
+                    '2 cloves garlic (optional)'
+                ],
+                'instructions': [
+                    'Bring a large pot of salted water to boil and cook spaghetti according to package directions.',
+                    'While pasta cooks, heat a large skillet over medium heat and cook pancetta until crispy.',
+                    'In a bowl, whisk together eggs, Pecorino Romano, Parmesan, and plenty of black pepper.',
+                    'Reserve 1 cup of pasta cooking water, then drain the pasta.',
+                    'Add hot pasta to the skillet with pancetta and toss to combine.',
+                    'Remove from heat and quickly stir in the egg mixture, adding pasta water as needed.',
+                    'Serve immediately with extra cheese and black pepper.'
+                ],
+                'tags': ['italian', 'pasta', 'classic', 'comfort-food'],
+                'categories': ['main-dishes'],
+                'nutrition_info': {
+                    'calories': 520,
+                    'protein': 22,
+                    'carbs': 58,
+                    'fat': 23,
+                    'fiber': 3
+                }
+            },
+                                                            {
+                'title': 'Classic Spaghetti Carbonara',
+                'description': 'A traditional Italian pasta dish with eggs, cheese, and pancetta. Creamy, rich, and absolutely delicious.',
+                'prep_time': 10,
+                'cook_time': 15,
+                'servings': 4,
+                'difficulty': Recipe.DifficultyLevel.MEDIUM,
+                'cooking_method': Recipe.CookingMethod.BOILING,
+                'ingredients': [
+                    '400g spaghetti',
+                    '200g pancetta or guanciale, diced',
+                    '4 large eggs',
+                    '100g Pecorino Romano cheese, grated',
+                    '50g Parmesan cheese, grated',
+                    'Freshly ground black pepper',
+                    'Salt for pasta water',
+                    '2 cloves garlic (optional)'
+                ],
+                'instructions': [
+                    'Bring a large pot of salted water to boil and cook spaghetti according to package directions.',
+                    'While pasta cooks, heat a large skillet over medium heat and cook pancetta until crispy.',
+                    'In a bowl, whisk together eggs, Pecorino Romano, Parmesan, and plenty of black pepper.',
+                    'Reserve 1 cup of pasta cooking water, then drain the pasta.',
+                    'Add hot pasta to the skillet with pancetta and toss to combine.',
+                    'Remove from heat and quickly stir in the egg mixture, adding pasta water as needed.',
+                    'Serve immediately with extra cheese and black pepper.'
+                ],
+                'tags': ['italian', 'pasta', 'classic', 'comfort-food'],
+                'categories': ['main-dishes'],
+                'nutrition_info': {
+                    'calories': 520,
+                    'protein': 22,
+                    'carbs': 58,
+                    'fat': 23,
+                    'fiber': 3
+                }
+            },
+                                                                        {
+                'title': 'Classic Spaghetti Carbonara',
+                'description': 'A traditional Italian pasta dish with eggs, cheese, and pancetta. Creamy, rich, and absolutely delicious.',
+                'prep_time': 10,
+                'cook_time': 15,
+                'servings': 4,
+                'difficulty': Recipe.DifficultyLevel.MEDIUM,
+                'cooking_method': Recipe.CookingMethod.BOILING,
+                'ingredients': [
+                    '400g spaghetti',
+                    '200g pancetta or guanciale, diced',
+                    '4 large eggs',
+                    '100g Pecorino Romano cheese, grated',
+                    '50g Parmesan cheese, grated',
+                    'Freshly ground black pepper',
+                    'Salt for pasta water',
+                    '2 cloves garlic (optional)'
+                ],
+                'instructions': [
+                    'Bring a large pot of salted water to boil and cook spaghetti according to package directions.',
+                    'While pasta cooks, heat a large skillet over medium heat and cook pancetta until crispy.',
+                    'In a bowl, whisk together eggs, Pecorino Romano, Parmesan, and plenty of black pepper.',
+                    'Reserve 1 cup of pasta cooking water, then drain the pasta.',
+                    'Add hot pasta to the skillet with pancetta and toss to combine.',
+                    'Remove from heat and quickly stir in the egg mixture, adding pasta water as needed.',
+                    'Serve immediately with extra cheese and black pepper.'
+                ],
+                'tags': ['italian', 'pasta', 'classic', 'comfort-food'],
+                'categories': ['main-dishes'],
+                'nutrition_info': {
+                    'calories': 520,
+                    'protein': 22,
+                    'carbs': 58,
+                    'fat': 23,
+                    'fiber': 3
+                }
+            },
+                                                                                    {
+                'title': 'Classic Spaghetti Carbonara',
+                'description': 'A traditional Italian pasta dish with eggs, cheese, and pancetta. Creamy, rich, and absolutely delicious.',
+                'prep_time': 10,
+                'cook_time': 15,
+                'servings': 4,
+                'difficulty': Recipe.DifficultyLevel.MEDIUM,
+                'cooking_method': Recipe.CookingMethod.BOILING,
+                'ingredients': [
+                    '400g spaghetti',
+                    '200g pancetta or guanciale, diced',
+                    '4 large eggs',
+                    '100g Pecorino Romano cheese, grated',
+                    '50g Parmesan cheese, grated',
+                    'Freshly ground black pepper',
+                    'Salt for pasta water',
+                    '2 cloves garlic (optional)'
+                ],
+                'instructions': [
+                    'Bring a large pot of salted water to boil and cook spaghetti according to package directions.',
+                    'While pasta cooks, heat a large skillet over medium heat and cook pancetta until crispy.',
+                    'In a bowl, whisk together eggs, Pecorino Romano, Parmesan, and plenty of black pepper.',
+                    'Reserve 1 cup of pasta cooking water, then drain the pasta.',
+                    'Add hot pasta to the skillet with pancetta and toss to combine.',
+                    'Remove from heat and quickly stir in the egg mixture, adding pasta water as needed.',
+                    'Serve immediately with extra cheese and black pepper.'
+                ],
+                'tags': ['italian', 'pasta', 'classic', 'comfort-food'],
+                'categories': ['main-dishes'],
+                'nutrition_info': {
+                    'calories': 520,
+                    'protein': 22,
+                    'carbs': 58,
+                    'fat': 23,
+                    'fiber': 3
+                }
+            },
+                                                                                                {
+                'title': 'Classic Spaghetti Carbonara',
+                'description': 'A traditional Italian pasta dish with eggs, cheese, and pancetta. Creamy, rich, and absolutely delicious.',
+                'prep_time': 10,
+                'cook_time': 15,
+                'servings': 4,
+                'difficulty': Recipe.DifficultyLevel.MEDIUM,
+                'cooking_method': Recipe.CookingMethod.BOILING,
+                'ingredients': [
+                    '400g spaghetti',
+                    '200g pancetta or guanciale, diced',
+                    '4 large eggs',
+                    '100g Pecorino Romano cheese, grated',
+                    '50g Parmesan cheese, grated',
+                    'Freshly ground black pepper',
+                    'Salt for pasta water',
+                    '2 cloves garlic (optional)'
+                ],
+                'instructions': [
+                    'Bring a large pot of salted water to boil and cook spaghetti according to package directions.',
+                    'While pasta cooks, heat a large skillet over medium heat and cook pancetta until crispy.',
+                    'In a bowl, whisk together eggs, Pecorino Romano, Parmesan, and plenty of black pepper.',
+                    'Reserve 1 cup of pasta cooking water, then drain the pasta.',
+                    'Add hot pasta to the skillet with pancetta and toss to combine.',
+                    'Remove from heat and quickly stir in the egg mixture, adding pasta water as needed.',
+                    'Serve immediately with extra cheese and black pepper.'
+                ],
+                'tags': ['italian', 'pasta', 'classic', 'comfort-food'],
+                'categories': ['main-dishes'],
+                'nutrition_info': {
+                    'calories': 520,
+                    'protein': 22,
+                    'carbs': 58,
+                    'fat': 23,
+                    'fiber': 3
+                }
+            },
+                                                                                                            {
+                'title': 'Classic Spaghetti Carbonara',
+                'description': 'A traditional Italian pasta dish with eggs, cheese, and pancetta. Creamy, rich, and absolutely delicious.',
+                'prep_time': 10,
+                'cook_time': 15,
+                'servings': 4,
+                'difficulty': Recipe.DifficultyLevel.MEDIUM,
+                'cooking_method': Recipe.CookingMethod.BOILING,
+                'ingredients': [
+                    '400g spaghetti',
+                    '200g pancetta or guanciale, diced',
+                    '4 large eggs',
+                    '100g Pecorino Romano cheese, grated',
+                    '50g Parmesan cheese, grated',
+                    'Freshly ground black pepper',
+                    'Salt for pasta water',
+                    '2 cloves garlic (optional)'
+                ],
+                'instructions': [
+                    'Bring a large pot of salted water to boil and cook spaghetti according to package directions.',
+                    'While pasta cooks, heat a large skillet over medium heat and cook pancetta until crispy.',
+                    'In a bowl, whisk together eggs, Pecorino Romano, Parmesan, and plenty of black pepper.',
+                    'Reserve 1 cup of pasta cooking water, then drain the pasta.',
+                    'Add hot pasta to the skillet with pancetta and toss to combine.',
+                    'Remove from heat and quickly stir in the egg mixture, adding pasta water as needed.',
+                    'Serve immediately with extra cheese and black pepper.'
+                ],
+                'tags': ['italian', 'pasta', 'classic', 'comfort-food'],
+                'categories': ['main-dishes'],
+                'nutrition_info': {
+                    'calories': 520,
+                    'protein': 22,
+                    'carbs': 58,
+                    'fat': 23,
+                    'fiber': 3
+                }
+            },
+                                                                                                                        {
+                'title': 'Classic Spaghetti Carbonara',
+                'description': 'A traditional Italian pasta dish with eggs, cheese, and pancetta. Creamy, rich, and absolutely delicious.',
+                'prep_time': 10,
+                'cook_time': 15,
+                'servings': 4,
+                'difficulty': Recipe.DifficultyLevel.MEDIUM,
+                'cooking_method': Recipe.CookingMethod.BOILING,
+                'ingredients': [
+                    '400g spaghetti',
+                    '200g pancetta or guanciale, diced',
+                    '4 large eggs',
+                    '100g Pecorino Romano cheese, grated',
+                    '50g Parmesan cheese, grated',
+                    'Freshly ground black pepper',
+                    'Salt for pasta water',
+                    '2 cloves garlic (optional)'
+                ],
+                'instructions': [
+                    'Bring a large pot of salted water to boil and cook spaghetti according to package directions.',
+                    'While pasta cooks, heat a large skillet over medium heat and cook pancetta until crispy.',
+                    'In a bowl, whisk together eggs, Pecorino Romano, Parmesan, and plenty of black pepper.',
+                    'Reserve 1 cup of pasta cooking water, then drain the pasta.',
+                    'Add hot pasta to the skillet with pancetta and toss to combine.',
+                    'Remove from heat and quickly stir in the egg mixture, adding pasta water as needed.',
+                    'Serve immediately with extra cheese and black pepper.'
+                ],
+                'tags': ['italian', 'pasta', 'classic', 'comfort-food'],
+                'categories': ['main-dishes'],
+                'nutrition_info': {
+                    'calories': 520,
+                    'protein': 22,
+                    'carbs': 58,
+                    'fat': 23,
+                    'fiber': 3
+                }
+            },
+                                                                                                                                    {
+                'title': 'Classic Spaghetti Carbonara',
+                'description': 'A traditional Italian pasta dish with eggs, cheese, and pancetta. Creamy, rich, and absolutely delicious.',
+                'prep_time': 10,
+                'cook_time': 15,
+                'servings': 4,
+                'difficulty': Recipe.DifficultyLevel.MEDIUM,
+                'cooking_method': Recipe.CookingMethod.BOILING,
+                'ingredients': [
+                    '400g spaghetti',
+                    '200g pancetta or guanciale, diced',
+                    '4 large eggs',
+                    '100g Pecorino Romano cheese, grated',
+                    '50g Parmesan cheese, grated',
+                    'Freshly ground black pepper',
+                    'Salt for pasta water',
+                    '2 cloves garlic (optional)'
+                ],
+                'instructions': [
+                    'Bring a large pot of salted water to boil and cook spaghetti according to package directions.',
+                    'While pasta cooks, heat a large skillet over medium heat and cook pancetta until crispy.',
+                    'In a bowl, whisk together eggs, Pecorino Romano, Parmesan, and plenty of black pepper.',
+                    'Reserve 1 cup of pasta cooking water, then drain the pasta.',
+                    'Add hot pasta to the skillet with pancetta and toss to combine.',
+                    'Remove from heat and quickly stir in the egg mixture, adding pasta water as needed.',
+                    'Serve immediately with extra cheese and black pepper.'
+                ],
+                'tags': ['italian', 'pasta', 'classic', 'comfort-food'],
+                'categories': ['main-dishes'],
+                'nutrition_info': {
+                    'calories': 520,
+                    'protein': 22,
+                    'carbs': 58,
+                    'fat': 23,
+                    'fiber': 3
+                }
+            },
+                                                                                                                                                {
+                'title': 'Classic Spaghetti Carbonara',
+                'description': 'A traditional Italian pasta dish with eggs, cheese, and pancetta. Creamy, rich, and absolutely delicious.',
+                'prep_time': 10,
+                'cook_time': 15,
+                'servings': 4,
+                'difficulty': Recipe.DifficultyLevel.MEDIUM,
+                'cooking_method': Recipe.CookingMethod.BOILING,
+                'ingredients': [
+                    '400g spaghetti',
+                    '200g pancetta or guanciale, diced',
+                    '4 large eggs',
+                    '100g Pecorino Romano cheese, grated',
+                    '50g Parmesan cheese, grated',
+                    'Freshly ground black pepper',
+                    'Salt for pasta water',
+                    '2 cloves garlic (optional)'
+                ],
+                'instructions': [
+                    'Bring a large pot of salted water to boil and cook spaghetti according to package directions.',
+                    'While pasta cooks, heat a large skillet over medium heat and cook pancetta until crispy.',
+                    'In a bowl, whisk together eggs, Pecorino Romano, Parmesan, and plenty of black pepper.',
+                    'Reserve 1 cup of pasta cooking water, then drain the pasta.',
+                    'Add hot pasta to the skillet with pancetta and toss to combine.',
+                    'Remove from heat and quickly stir in the egg mixture, adding pasta water as needed.',
+                    'Serve immediately with extra cheese and black pepper.'
+                ],
+                'tags': ['italian', 'pasta', 'classic', 'comfort-food'],
+                'categories': ['main-dishes'],
+                'nutrition_info': {
+                    'calories': 520,
+                    'protein': 22,
+                    'carbs': 58,
+                    'fat': 23,
+                    'fiber': 3
+                }
+            },
+                                                                                                                                                            {
+                'title': 'Classic Spaghetti Carbonara',
+                'description': 'A traditional Italian pasta dish with eggs, cheese, and pancetta. Creamy, rich, and absolutely delicious.',
+                'prep_time': 10,
+                'cook_time': 15,
+                'servings': 4,
+                'difficulty': Recipe.DifficultyLevel.MEDIUM,
+                'cooking_method': Recipe.CookingMethod.BOILING,
+                'ingredients': [
+                    '400g spaghetti',
+                    '200g pancetta or guanciale, diced',
+                    '4 large eggs',
+                    '100g Pecorino Romano cheese, grated',
+                    '50g Parmesan cheese, grated',
+                    'Freshly ground black pepper',
+                    'Salt for pasta water',
+                    '2 cloves garlic (optional)'
+                ],
+                'instructions': [
+                    'Bring a large pot of salted water to boil and cook spaghetti according to package directions.',
+                    'While pasta cooks, heat a large skillet over medium heat and cook pancetta until crispy.',
+                    'In a bowl, whisk together eggs, Pecorino Romano, Parmesan, and plenty of black pepper.',
+                    'Reserve 1 cup of pasta cooking water, then drain the pasta.',
+                    'Add hot pasta to the skillet with pancetta and toss to combine.',
+                    'Remove from heat and quickly stir in the egg mixture, adding pasta water as needed.',
+                    'Serve immediately with extra cheese and black pepper.'
+                ],
+                'tags': ['italian', 'pasta', 'classic', 'comfort-food'],
+                'categories': ['main-dishes'],
+                'nutrition_info': {
+                    'calories': 520,
+                    'protein': 22,
+                    'carbs': 58,
+                    'fat': 23,
+                    'fiber': 3
+                }
+            },
+                                                                                                                                                                        {
+                'title': 'Classic Spaghetti Carbonara',
+                'description': 'A traditional Italian pasta dish with eggs, cheese, and pancetta. Creamy, rich, and absolutely delicious.',
+                'prep_time': 10,
+                'cook_time': 15,
+                'servings': 4,
+                'difficulty': Recipe.DifficultyLevel.MEDIUM,
+                'cooking_method': Recipe.CookingMethod.BOILING,
+                'ingredients': [
+                    '400g spaghetti',
+                    '200g pancetta or guanciale, diced',
+                    '4 large eggs',
+                    '100g Pecorino Romano cheese, grated',
+                    '50g Parmesan cheese, grated',
+                    'Freshly ground black pepper',
+                    'Salt for pasta water',
+                    '2 cloves garlic (optional)'
+                ],
+                'instructions': [
+                    'Bring a large pot of salted water to boil and cook spaghetti according to package directions.',
+                    'While pasta cooks, heat a large skillet over medium heat and cook pancetta until crispy.',
+                    'In a bowl, whisk together eggs, Pecorino Romano, Parmesan, and plenty of black pepper.',
+                    'Reserve 1 cup of pasta cooking water, then drain the pasta.',
+                    'Add hot pasta to the skillet with pancetta and toss to combine.',
+                    'Remove from heat and quickly stir in the egg mixture, adding pasta water as needed.',
+                    'Serve immediately with extra cheese and black pepper.'
+                ],
+                'tags': ['italian', 'pasta', 'classic', 'comfort-food'],
+                'categories': ['main-dishes'],
+                'nutrition_info': {
+                    'calories': 520,
+                    'protein': 22,
+                    'carbs': 58,
+                    'fat': 23,
+                    'fiber': 3
+                }
+            },
+                                                                                                                                                                                    {
+                'title': 'Classic Spaghetti Carbonara',
+                'description': 'A traditional Italian pasta dish with eggs, cheese, and pancetta. Creamy, rich, and absolutely delicious.',
+                'prep_time': 10,
+                'cook_time': 15,
+                'servings': 4,
+                'difficulty': Recipe.DifficultyLevel.MEDIUM,
+                'cooking_method': Recipe.CookingMethod.BOILING,
+                'ingredients': [
+                    '400g spaghetti',
+                    '200g pancetta or guanciale, diced',
+                    '4 large eggs',
+                    '100g Pecorino Romano cheese, grated',
+                    '50g Parmesan cheese, grated',
+                    'Freshly ground black pepper',
+                    'Salt for pasta water',
+                    '2 cloves garlic (optional)'
+                ],
+                'instructions': [
+                    'Bring a large pot of salted water to boil and cook spaghetti according to package directions.',
+                    'While pasta cooks, heat a large skillet over medium heat and cook pancetta until crispy.',
+                    'In a bowl, whisk together eggs, Pecorino Romano, Parmesan, and plenty of black pepper.',
+                    'Reserve 1 cup of pasta cooking water, then drain the pasta.',
+                    'Add hot pasta to the skillet with pancetta and toss to combine.',
+                    'Remove from heat and quickly stir in the egg mixture, adding pasta water as needed.',
+                    'Serve immediately with extra cheese and black pepper.'
+                ],
+                'tags': ['italian', 'pasta', 'classic', 'comfort-food'],
+                'categories': ['main-dishes'],
+                'nutrition_info': {
+                    'calories': 520,
+                    'protein': 22,
+                    'carbs': 58,
+                    'fat': 23,
+                    'fiber': 3
+                }
+            },
+                                                                                                                                                                                                {
+                'title': 'Classic Spaghetti Carbonara',
+                'description': 'A traditional Italian pasta dish with eggs, cheese, and pancetta. Creamy, rich, and absolutely delicious.',
+                'prep_time': 10,
+                'cook_time': 15,
+                'servings': 4,
+                'difficulty': Recipe.DifficultyLevel.MEDIUM,
+                'cooking_method': Recipe.CookingMethod.BOILING,
+                'ingredients': [
+                    '400g spaghetti',
+                    '200g pancetta or guanciale, diced',
+                    '4 large eggs',
+                    '100g Pecorino Romano cheese, grated',
+                    '50g Parmesan cheese, grated',
+                    'Freshly ground black pepper',
+                    'Salt for pasta water',
+                    '2 cloves garlic (optional)'
+                ],
+                'instructions': [
+                    'Bring a large pot of salted water to boil and cook spaghetti according to package directions.',
+                    'While pasta cooks, heat a large skillet over medium heat and cook pancetta until crispy.',
+                    'In a bowl, whisk together eggs, Pecorino Romano, Parmesan, and plenty of black pepper.',
+                    'Reserve 1 cup of pasta cooking water, then drain the pasta.',
+                    'Add hot pasta to the skillet with pancetta and toss to combine.',
+                    'Remove from heat and quickly stir in the egg mixture, adding pasta water as needed.',
+                    'Serve immediately with extra cheese and black pepper.'
+                ],
+                'tags': ['italian', 'pasta', 'classic', 'comfort-food'],
+                'categories': ['main-dishes'],
+                'nutrition_info': {
+                    'calories': 520,
+                    'protein': 22,
+                    'carbs': 58,
+                    'fat': 23,
+                    'fiber': 3
+                }
+            },
+                                                                                                                                                                                                            {
+                'title': 'Classic Spaghetti Carbonara',
+                'description': 'A traditional Italian pasta dish with eggs, cheese, and pancetta. Creamy, rich, and absolutely delicious.',
+                'prep_time': 10,
+                'cook_time': 15,
+                'servings': 4,
+                'difficulty': Recipe.DifficultyLevel.MEDIUM,
+                'cooking_method': Recipe.CookingMethod.BOILING,
+                'ingredients': [
+                    '400g spaghetti',
+                    '200g pancetta or guanciale, diced',
+                    '4 large eggs',
+                    '100g Pecorino Romano cheese, grated',
+                    '50g Parmesan cheese, grated',
+                    'Freshly ground black pepper',
+                    'Salt for pasta water',
+                    '2 cloves garlic (optional)'
+                ],
+                'instructions': [
+                    'Bring a large pot of salted water to boil and cook spaghetti according to package directions.',
+                    'While pasta cooks, heat a large skillet over medium heat and cook pancetta until crispy.',
+                    'In a bowl, whisk together eggs, Pecorino Romano, Parmesan, and plenty of black pepper.',
+                    'Reserve 1 cup of pasta cooking water, then drain the pasta.',
+                    'Add hot pasta to the skillet with pancetta and toss to combine.',
+                    'Remove from heat and quickly stir in the egg mixture, adding pasta water as needed.',
+                    'Serve immediately with extra cheese and black pepper.'
+                ],
+                'tags': ['italian', 'pasta', 'classic', 'comfort-food'],
+                'categories': ['main-dishes'],
+                'nutrition_info': {
+                    'calories': 520,
+                    'protein': 22,
+                    'carbs': 58,
+                    'fat': 23,
+                    'fiber': 3
+                }
+            },
+                                                                                                                                                                                                                        {
+                'title': 'Classic Spaghetti Carbonara',
+                'description': 'A traditional Italian pasta dish with eggs, cheese, and pancetta. Creamy, rich, and absolutely delicious.',
+                'prep_time': 10,
+                'cook_time': 15,
+                'servings': 4,
+                'difficulty': Recipe.DifficultyLevel.MEDIUM,
+                'cooking_method': Recipe.CookingMethod.BOILING,
+                'ingredients': [
+                    '400g spaghetti',
+                    '200g pancetta or guanciale, diced',
+                    '4 large eggs',
+                    '100g Pecorino Romano cheese, grated',
+                    '50g Parmesan cheese, grated',
+                    'Freshly ground black pepper',
+                    'Salt for pasta water',
+                    '2 cloves garlic (optional)'
+                ],
+                'instructions': [
+                    'Bring a large pot of salted water to boil and cook spaghetti according to package directions.',
+                    'While pasta cooks, heat a large skillet over medium heat and cook pancetta until crispy.',
+                    'In a bowl, whisk together eggs, Pecorino Romano, Parmesan, and plenty of black pepper.',
+                    'Reserve 1 cup of pasta cooking water, then drain the pasta.',
+                    'Add hot pasta to the skillet with pancetta and toss to combine.',
+                    'Remove from heat and quickly stir in the egg mixture, adding pasta water as needed.',
+                    'Serve immediately with extra cheese and black pepper.'
+                ],
+                'tags': ['italian', 'pasta', 'classic', 'comfort-food'],
+                'categories': ['main-dishes'],
+                'nutrition_info': {
+                    'calories': 520,
+                    'protein': 22,
+                    'carbs': 58,
+                    'fat': 23,
+                    'fiber': 3
+                }
+            },
+                                                                                                                                                                                                                                    {
+                'title': 'Classic Spaghetti Carbonara',
+                'description': 'A traditional Italian pasta dish with eggs, cheese, and pancetta. Creamy, rich, and absolutely delicious.',
+                'prep_time': 10,
+                'cook_time': 15,
+                'servings': 4,
+                'difficulty': Recipe.DifficultyLevel.MEDIUM,
+                'cooking_method': Recipe.CookingMethod.BOILING,
+                'ingredients': [
+                    '400g spaghetti',
+                    '200g pancetta or guanciale, diced',
+                    '4 large eggs',
+                    '100g Pecorino Romano cheese, grated',
+                    '50g Parmesan cheese, grated',
+                    'Freshly ground black pepper',
+                    'Salt for pasta water',
+                    '2 cloves garlic (optional)'
+                ],
+                'instructions': [
+                    'Bring a large pot of salted water to boil and cook spaghetti according to package directions.',
+                    'While pasta cooks, heat a large skillet over medium heat and cook pancetta until crispy.',
+                    'In a bowl, whisk together eggs, Pecorino Romano, Parmesan, and plenty of black pepper.',
+                    'Reserve 1 cup of pasta cooking water, then drain the pasta.',
+                    'Add hot pasta to the skillet with pancetta and toss to combine.',
+                    'Remove from heat and quickly stir in the egg mixture, adding pasta water as needed.',
+                    'Serve immediately with extra cheese and black pepper.'
+                ],
+                'tags': ['italian', 'pasta', 'classic', 'comfort-food'],
+                'categories': ['main-dishes'],
+                'nutrition_info': {
+                    'calories': 520,
+                    'protein': 22,
+                    'carbs': 58,
+                    'fat': 23,
+                    'fiber': 3
+                }
+            },
+                                                                                                                                                                                                                                                {
+                'title': 'Classic Spaghetti Carbonara',
+                'description': 'A traditional Italian pasta dish with eggs, cheese, and pancetta. Creamy, rich, and absolutely delicious.',
+                'prep_time': 10,
+                'cook_time': 15,
+                'servings': 4,
+                'difficulty': Recipe.DifficultyLevel.MEDIUM,
+                'cooking_method': Recipe.CookingMethod.BOILING,
+                'ingredients': [
+                    '400g spaghetti',
+                    '200g pancetta or guanciale, diced',
+                    '4 large eggs',
+                    '100g Pecorino Romano cheese, grated',
+                    '50g Parmesan cheese, grated',
+                    'Freshly ground black pepper',
+                    'Salt for pasta water',
+                    '2 cloves garlic (optional)'
+                ],
+                'instructions': [
+                    'Bring a large pot of salted water to boil and cook spaghetti according to package directions.',
+                    'While pasta cooks, heat a large skillet over medium heat and cook pancetta until crispy.',
+                    'In a bowl, whisk together eggs, Pecorino Romano, Parmesan, and plenty of black pepper.',
+                    'Reserve 1 cup of pasta cooking water, then drain the pasta.',
+                    'Add hot pasta to the skillet with pancetta and toss to combine.',
+                    'Remove from heat and quickly stir in the egg mixture, adding pasta water as needed.',
+                    'Serve immediately with extra cheese and black pepper.'
+                ],
+                'tags': ['italian', 'pasta', 'classic', 'comfort-food'],
+                'categories': ['main-dishes'],
+                'nutrition_info': {
+                    'calories': 520,
+                    'protein': 22,
+                    'carbs': 58,
+                    'fat': 23,
+                    'fiber': 3
+                }
+            },
+                                                                                                                                                                                                                                                            {
+                'title': 'Classic Spaghetti Carbonara',
+                'description': 'A traditional Italian pasta dish with eggs, cheese, and pancetta. Creamy, rich, and absolutely delicious.',
+                'prep_time': 10,
+                'cook_time': 15,
+                'servings': 4,
+                'difficulty': Recipe.DifficultyLevel.MEDIUM,
+                'cooking_method': Recipe.CookingMethod.BOILING,
+                'ingredients': [
+                    '400g spaghetti',
+                    '200g pancetta or guanciale, diced',
+                    '4 large eggs',
+                    '100g Pecorino Romano cheese, grated',
+                    '50g Parmesan cheese, grated',
+                    'Freshly ground black pepper',
+                    'Salt for pasta water',
+                    '2 cloves garlic (optional)'
+                ],
+                'instructions': [
+                    'Bring a large pot of salted water to boil and cook spaghetti according to package directions.',
+                    'While pasta cooks, heat a large skillet over medium heat and cook pancetta until crispy.',
+                    'In a bowl, whisk together eggs, Pecorino Romano, Parmesan, and plenty of black pepper.',
+                    'Reserve 1 cup of pasta cooking water, then drain the pasta.',
+                    'Add hot pasta to the skillet with pancetta and toss to combine.',
+                    'Remove from heat and quickly stir in the egg mixture, adding pasta water as needed.',
+                    'Serve immediately with extra cheese and black pepper.'
+                ],
+                'tags': ['italian', 'pasta', 'classic', 'comfort-food'],
+                'categories': ['main-dishes'],
+                'nutrition_info': {
+                    'calories': 520,
+                    'protein': 22,
+                    'carbs': 58,
+                    'fat': 23,
+                    'fiber': 3
+                }
+            },
+                                                                                                                                                                                                                                                                        {
+                'title': 'Classic Spaghetti Carbonara',
+                'description': 'A traditional Italian pasta dish with eggs, cheese, and pancetta. Creamy, rich, and absolutely delicious.',
+                'prep_time': 10,
+                'cook_time': 15,
+                'servings': 4,
+                'difficulty': Recipe.DifficultyLevel.MEDIUM,
+                'cooking_method': Recipe.CookingMethod.BOILING,
+                'ingredients': [
+                    '400g spaghetti',
+                    '200g pancetta or guanciale, diced',
+                    '4 large eggs',
+                    '100g Pecorino Romano cheese, grated',
+                    '50g Parmesan cheese, grated',
+                    'Freshly ground black pepper',
+                    'Salt for pasta water',
+                    '2 cloves garlic (optional)'
+                ],
+                'instructions': [
+                    'Bring a large pot of salted water to boil and cook spaghetti according to package directions.',
+                    'While pasta cooks, heat a large skillet over medium heat and cook pancetta until crispy.',
+                    'In a bowl, whisk together eggs, Pecorino Romano, Parmesan, and plenty of black pepper.',
+                    'Reserve 1 cup of pasta cooking water, then drain the pasta.',
+                    'Add hot pasta to the skillet with pancetta and toss to combine.',
+                    'Remove from heat and quickly stir in the egg mixture, adding pasta water as needed.',
+                    'Serve immediately with extra cheese and black pepper.'
+                ],
+                'tags': ['italian', 'pasta', 'classic', 'comfort-food'],
+                'categories': ['main-dishes'],
+                'nutrition_info': {
+                    'calories': 520,
+                    'protein': 22,
+                    'carbs': 58,
+                    'fat': 23,
+                    'fiber': 3
+                }
+            },
+                                                                                                                                                                                                                                                                                    {
+                'title': 'Classic Spaghetti Carbonara',
+                'description': 'A traditional Italian pasta dish with eggs, cheese, and pancetta. Creamy, rich, and absolutely delicious.',
+                'prep_time': 10,
+                'cook_time': 15,
+                'servings': 4,
+                'difficulty': Recipe.DifficultyLevel.MEDIUM,
+                'cooking_method': Recipe.CookingMethod.BOILING,
+                'ingredients': [
+                    '400g spaghetti',
+                    '200g pancetta or guanciale, diced',
+                    '4 large eggs',
+                    '100g Pecorino Romano cheese, grated',
+                    '50g Parmesan cheese, grated',
+                    'Freshly ground black pepper',
+                    'Salt for pasta water',
+                    '2 cloves garlic (optional)'
+                ],
+                'instructions': [
+                    'Bring a large pot of salted water to boil and cook spaghetti according to package directions.',
+                    'While pasta cooks, heat a large skillet over medium heat and cook pancetta until crispy.',
+                    'In a bowl, whisk together eggs, Pecorino Romano, Parmesan, and plenty of black pepper.',
+                    'Reserve 1 cup of pasta cooking water, then drain the pasta.',
+                    'Add hot pasta to the skillet with pancetta and toss to combine.',
+                    'Remove from heat and quickly stir in the egg mixture, adding pasta water as needed.',
+                    'Serve immediately with extra cheese and black pepper.'
+                ],
+                'tags': ['italian', 'pasta', 'classic', 'comfort-food'],
+                'categories': ['main-dishes'],
+                'nutrition_info': {
+                    'calories': 520,
+                    'protein': 22,
+                    'carbs': 58,
+                    'fat': 23,
+                    'fiber': 3
+                }
+            },
+                                                                                                                                                                                                                                                                                                {
+                'title': 'Classic Spaghetti Carbonara',
+                'description': 'A traditional Italian pasta dish with eggs, cheese, and pancetta. Creamy, rich, and absolutely delicious.',
+                'prep_time': 10,
+                'cook_time': 15,
+                'servings': 4,
+                'difficulty': Recipe.DifficultyLevel.MEDIUM,
+                'cooking_method': Recipe.CookingMethod.BOILING,
+                'ingredients': [
+                    '400g spaghetti',
+                    '200g pancetta or guanciale, diced',
+                    '4 large eggs',
+                    '100g Pecorino Romano cheese, grated',
+                    '50g Parmesan cheese, grated',
+                    'Freshly ground black pepper',
+                    'Salt for pasta water',
+                    '2 cloves garlic (optional)'
+                ],
+                'instructions': [
+                    'Bring a large pot of salted water to boil and cook spaghetti according to package directions.',
+                    'While pasta cooks, heat a large skillet over medium heat and cook pancetta until crispy.',
+                    'In a bowl, whisk together eggs, Pecorino Romano, Parmesan, and plenty of black pepper.',
+                    'Reserve 1 cup of pasta cooking water, then drain the pasta.',
+                    'Add hot pasta to the skillet with pancetta and toss to combine.',
+                    'Remove from heat and quickly stir in the egg mixture, adding pasta water as needed.',
+                    'Serve immediately with extra cheese and black pepper.'
+                ],
+                'tags': ['italian', 'pasta', 'classic', 'comfort-food'],
+                'categories': ['main-dishes'],
+                'nutrition_info': {
+                    'calories': 520,
+                    'protein': 22,
+                    'carbs': 58,
+                    'fat': 23,
+                    'fiber': 3
+                }
+            },
+                                                                                                                                                                                                                                                                                                            {
+                'title': 'Classic Spaghetti Carbonara',
+                'description': 'A traditional Italian pasta dish with eggs, cheese, and pancetta. Creamy, rich, and absolutely delicious.',
+                'prep_time': 10,
+                'cook_time': 15,
+                'servings': 4,
+                'difficulty': Recipe.DifficultyLevel.MEDIUM,
+                'cooking_method': Recipe.CookingMethod.BOILING,
+                'ingredients': [
+                    '400g spaghetti',
+                    '200g pancetta or guanciale, diced',
+                    '4 large eggs',
+                    '100g Pecorino Romano cheese, grated',
+                    '50g Parmesan cheese, grated',
+                    'Freshly ground black pepper',
+                    'Salt for pasta water',
+                    '2 cloves garlic (optional)'
+                ],
+                'instructions': [
+                    'Bring a large pot of salted water to boil and cook spaghetti according to package directions.',
+                    'While pasta cooks, heat a large skillet over medium heat and cook pancetta until crispy.',
+                    'In a bowl, whisk together eggs, Pecorino Romano, Parmesan, and plenty of black pepper.',
+                    'Reserve 1 cup of pasta cooking water, then drain the pasta.',
+                    'Add hot pasta to the skillet with pancetta and toss to combine.',
+                    'Remove from heat and quickly stir in the egg mixture, adding pasta water as needed.',
+                    'Serve immediately with extra cheese and black pepper.'
+                ],
+                'tags': ['italian', 'pasta', 'classic', 'comfort-food'],
+                'categories': ['main-dishes'],
+                'nutrition_info': {
+                    'calories': 520,
+                    'protein': 22,
+                    'carbs': 58,
+                    'fat': 23,
+                    'fiber': 3
+                }
+            },
+                                                                                                                                                                                                                                                                                                                        {
+                'title': 'Classic Spaghetti Carbonara',
+                'description': 'A traditional Italian pasta dish with eggs, cheese, and pancetta. Creamy, rich, and absolutely delicious.',
+                'prep_time': 10,
+                'cook_time': 15,
+                'servings': 4,
+                'difficulty': Recipe.DifficultyLevel.MEDIUM,
+                'cooking_method': Recipe.CookingMethod.BOILING,
+                'ingredients': [
+                    '400g spaghetti',
+                    '200g pancetta or guanciale, diced',
+                    '4 large eggs',
+                    '100g Pecorino Romano cheese, grated',
+                    '50g Parmesan cheese, grated',
+                    'Freshly ground black pepper',
+                    'Salt for pasta water',
+                    '2 cloves garlic (optional)'
+                ],
+                'instructions': [
+                    'Bring a large pot of salted water to boil and cook spaghetti according to package directions.',
+                    'While pasta cooks, heat a large skillet over medium heat and cook pancetta until crispy.',
+                    'In a bowl, whisk together eggs, Pecorino Romano, Parmesan, and plenty of black pepper.',
+                    'Reserve 1 cup of pasta cooking water, then drain the pasta.',
+                    'Add hot pasta to the skillet with pancetta and toss to combine.',
+                    'Remove from heat and quickly stir in the egg mixture, adding pasta water as needed.',
+                    'Serve immediately with extra cheese and black pepper.'
+                ],
+                'tags': ['italian', 'pasta', 'classic', 'comfort-food'],
+                'categories': ['main-dishes'],
+                'nutrition_info': {
+                    'calories': 520,
+                    'protein': 22,
+                    'carbs': 58,
+                    'fat': 23,
+                    'fiber': 3
+                }
+            },
+                                                                                                                                                                                                                                                                                                                                    {
+                'title': 'Classic Spaghetti Carbonara',
+                'description': 'A traditional Italian pasta dish with eggs, cheese, and pancetta. Creamy, rich, and absolutely delicious.',
+                'prep_time': 10,
+                'cook_time': 15,
+                'servings': 4,
+                'difficulty': Recipe.DifficultyLevel.MEDIUM,
+                'cooking_method': Recipe.CookingMethod.BOILING,
+                'ingredients': [
+                    '400g spaghetti',
+                    '200g pancetta or guanciale, diced',
+                    '4 large eggs',
+                    '100g Pecorino Romano cheese, grated',
+                    '50g Parmesan cheese, grated',
+                    'Freshly ground black pepper',
+                    'Salt for pasta water',
+                    '2 cloves garlic (optional)'
+                ],
+                'instructions': [
+                    'Bring a large pot of salted water to boil and cook spaghetti according to package directions.',
+                    'While pasta cooks, heat a large skillet over medium heat and cook pancetta until crispy.',
+                    'In a bowl, whisk together eggs, Pecorino Romano, Parmesan, and plenty of black pepper.',
+                    'Reserve 1 cup of pasta cooking water, then drain the pasta.',
+                    'Add hot pasta to the skillet with pancetta and toss to combine.',
+                    'Remove from heat and quickly stir in the egg mixture, adding pasta water as needed.',
+                    'Serve immediately with extra cheese and black pepper.'
+                ],
+                'tags': ['italian', 'pasta', 'classic', 'comfort-food'],
+                'categories': ['main-dishes'],
+                'nutrition_info': {
+                    'calories': 520,
+                    'protein': 22,
+                    'carbs': 58,
+                    'fat': 23,
+                    'fiber': 3
+                }
+            },
+                                                                                                                                                                                                                                                                                                                                                {
+                'title': 'Classic Spaghetti Carbonara',
+                'description': 'A traditional Italian pasta dish with eggs, cheese, and pancetta. Creamy, rich, and absolutely delicious.',
+                'prep_time': 10,
+                'cook_time': 15,
+                'servings': 4,
+                'difficulty': Recipe.DifficultyLevel.MEDIUM,
+                'cooking_method': Recipe.CookingMethod.BOILING,
+                'ingredients': [
+                    '400g spaghetti',
+                    '200g pancetta or guanciale, diced',
+                    '4 large eggs',
+                    '100g Pecorino Romano cheese, grated',
+                    '50g Parmesan cheese, grated',
+                    'Freshly ground black pepper',
+                    'Salt for pasta water',
+                    '2 cloves garlic (optional)'
+                ],
+                'instructions': [
+                    'Bring a large pot of salted water to boil and cook spaghetti according to package directions.',
+                    'While pasta cooks, heat a large skillet over medium heat and cook pancetta until crispy.',
+                    'In a bowl, whisk together eggs, Pecorino Romano, Parmesan, and plenty of black pepper.',
+                    'Reserve 1 cup of pasta cooking water, then drain the pasta.',
+                    'Add hot pasta to the skillet with pancetta and toss to combine.',
+                    'Remove from heat and quickly stir in the egg mixture, adding pasta water as needed.',
+                    'Serve immediately with extra cheese and black pepper.'
+                ],
+                'tags': ['italian', 'pasta', 'classic', 'comfort-food'],
+                'categories': ['main-dishes'],
+                'nutrition_info': {
+                    'calories': 520,
+                    'protein': 22,
+                    'carbs': 58,
+                    'fat': 23,
+                    'fiber': 3
+                }
+            },
+                                                                                                                                                                                                                                                                                                                                                            {
+                'title': 'Classic Spaghetti Carbonara',
+                'description': 'A traditional Italian pasta dish with eggs, cheese, and pancetta. Creamy, rich, and absolutely delicious.',
+                'prep_time': 10,
+                'cook_time': 15,
+                'servings': 4,
+                'difficulty': Recipe.DifficultyLevel.MEDIUM,
+                'cooking_method': Recipe.CookingMethod.BOILING,
+                'ingredients': [
+                    '400g spaghetti',
+                    '200g pancetta or guanciale, diced',
+                    '4 large eggs',
+                    '100g Pecorino Romano cheese, grated',
+                    '50g Parmesan cheese, grated',
+                    'Freshly ground black pepper',
+                    'Salt for pasta water',
+                    '2 cloves garlic (optional)'
+                ],
+                'instructions': [
+                    'Bring a large pot of salted water to boil and cook spaghetti according to package directions.',
+                    'While pasta cooks, heat a large skillet over medium heat and cook pancetta until crispy.',
+                    'In a bowl, whisk together eggs, Pecorino Romano, Parmesan, and plenty of black pepper.',
+                    'Reserve 1 cup of pasta cooking water, then drain the pasta.',
+                    'Add hot pasta to the skillet with pancetta and toss to combine.',
+                    'Remove from heat and quickly stir in the egg mixture, adding pasta water as needed.',
+                    'Serve immediately with extra cheese and black pepper.'
+                ],
+                'tags': ['italian', 'pasta', 'classic', 'comfort-food'],
+                'categories': ['main-dishes'],
+                'nutrition_info': {
+                    'calories': 520,
+                    'protein': 22,
+                    'carbs': 58,
+                    'fat': 23,
+                    'fiber': 3
+                }
+            },
+                                                                                                                                                                                                                                                                                                                                                                        {
+                'title': 'Classic Spaghetti Carbonara',
+                'description': 'A traditional Italian pasta dish with eggs, cheese, and pancetta. Creamy, rich, and absolutely delicious.',
+                'prep_time': 10,
+                'cook_time': 15,
+                'servings': 4,
+                'difficulty': Recipe.DifficultyLevel.MEDIUM,
+                'cooking_method': Recipe.CookingMethod.BOILING,
+                'ingredients': [
+                    '400g spaghetti',
+                    '200g pancetta or guanciale, diced',
+                    '4 large eggs',
+                    '100g Pecorino Romano cheese, grated',
+                    '50g Parmesan cheese, grated',
+                    'Freshly ground black pepper',
+                    'Salt for pasta water',
+                    '2 cloves garlic (optional)'
+                ],
+                'instructions': [
+                    'Bring a large pot of salted water to boil and cook spaghetti according to package directions.',
+                    'While pasta cooks, heat a large skillet over medium heat and cook pancetta until crispy.',
+                    'In a bowl, whisk together eggs, Pecorino Romano, Parmesan, and plenty of black pepper.',
+                    'Reserve 1 cup of pasta cooking water, then drain the pasta.',
+                    'Add hot pasta to the skillet with pancetta and toss to combine.',
+                    'Remove from heat and quickly stir in the egg mixture, adding pasta water as needed.',
+                    'Serve immediately with extra cheese and black pepper.'
+                ],
+                'tags': ['italian', 'pasta', 'classic', 'comfort-food'],
+                'categories': ['main-dishes'],
+                'nutrition_info': {
+                    'calories': 520,
+                    'protein': 22,
+                    'carbs': 58,
+                    'fat': 23,
+                    'fiber': 3
+                }
+            },
+                                                                                                                                                                                                                                                                                                                                                                                    {
+                'title': 'Classic Spaghetti Carbonara',
+                'description': 'A traditional Italian pasta dish with eggs, cheese, and pancetta. Creamy, rich, and absolutely delicious.',
+                'prep_time': 10,
+                'cook_time': 15,
+                'servings': 4,
+                'difficulty': Recipe.DifficultyLevel.MEDIUM,
+                'cooking_method': Recipe.CookingMethod.BOILING,
+                'ingredients': [
+                    '400g spaghetti',
+                    '200g pancetta or guanciale, diced',
+                    '4 large eggs',
+                    '100g Pecorino Romano cheese, grated',
+                    '50g Parmesan cheese, grated',
+                    'Freshly ground black pepper',
+                    'Salt for pasta water',
+                    '2 cloves garlic (optional)'
+                ],
+                'instructions': [
+                    'Bring a large pot of salted water to boil and cook spaghetti according to package directions.',
+                    'While pasta cooks, heat a large skillet over medium heat and cook pancetta until crispy.',
+                    'In a bowl, whisk together eggs, Pecorino Romano, Parmesan, and plenty of black pepper.',
+                    'Reserve 1 cup of pasta cooking water, then drain the pasta.',
+                    'Add hot pasta to the skillet with pancetta and toss to combine.',
+                    'Remove from heat and quickly stir in the egg mixture, adding pasta water as needed.',
+                    'Serve immediately with extra cheese and black pepper.'
+                ],
+                'tags': ['italian', 'pasta', 'classic', 'comfort-food'],
+                'categories': ['main-dishes'],
+                'nutrition_info': {
+                    'calories': 520,
+                    'protein': 22,
+                    'carbs': 58,
+                    'fat': 23,
+                    'fiber': 3
+                }
+            },
+                                                                                                                                                                                                                                                                                                                                                                                                {
+                'title': 'Classic Spaghetti Carbonara',
+                'description': 'A traditional Italian pasta dish with eggs, cheese, and pancetta. Creamy, rich, and absolutely delicious.',
+                'prep_time': 10,
+                'cook_time': 15,
+                'servings': 4,
+                'difficulty': Recipe.DifficultyLevel.MEDIUM,
+                'cooking_method': Recipe.CookingMethod.BOILING,
+                'ingredients': [
+                    '400g spaghetti',
+                    '200g pancetta or guanciale, diced',
+                    '4 large eggs',
+                    '100g Pecorino Romano cheese, grated',
+                    '50g Parmesan cheese, grated',
+                    'Freshly ground black pepper',
+                    'Salt for pasta water',
+                    '2 cloves garlic (optional)'
+                ],
+                'instructions': [
+                    'Bring a large pot of salted water to boil and cook spaghetti according to package directions.',
+                    'While pasta cooks, heat a large skillet over medium heat and cook pancetta until crispy.',
+                    'In a bowl, whisk together eggs, Pecorino Romano, Parmesan, and plenty of black pepper.',
+                    'Reserve 1 cup of pasta cooking water, then drain the pasta.',
+                    'Add hot pasta to the skillet with pancetta and toss to combine.',
+                    'Remove from heat and quickly stir in the egg mixture, adding pasta water as needed.',
+                    'Serve immediately with extra cheese and black pepper.'
+                ],
+                'tags': ['italian', 'pasta', 'classic', 'comfort-food'],
+                'categories': ['main-dishes'],
+                'nutrition_info': {
+                    'calories': 520,
+                    'protein': 22,
+                    'carbs': 58,
+                    'fat': 23,
+                    'fiber': 3
+                }
+            },
+                                                                                                                                                                                                                                                                                                                                                                                                            {
+                'title': 'Classic Spaghetti Carbonara',
+                'description': 'A traditional Italian pasta dish with eggs, cheese, and pancetta. Creamy, rich, and absolutely delicious.',
+                'prep_time': 10,
+                'cook_time': 15,
+                'servings': 4,
+                'difficulty': Recipe.DifficultyLevel.MEDIUM,
+                'cooking_method': Recipe.CookingMethod.BOILING,
+                'ingredients': [
+                    '400g spaghetti',
+                    '200g pancetta or guanciale, diced',
+                    '4 large eggs',
+                    '100g Pecorino Romano cheese, grated',
+                    '50g Parmesan cheese, grated',
+                    'Freshly ground black pepper',
+                    'Salt for pasta water',
+                    '2 cloves garlic (optional)'
+                ],
+                'instructions': [
+                    'Bring a large pot of salted water to boil and cook spaghetti according to package directions.',
+                    'While pasta cooks, heat a large skillet over medium heat and cook pancetta until crispy.',
+                    'In a bowl, whisk together eggs, Pecorino Romano, Parmesan, and plenty of black pepper.',
+                    'Reserve 1 cup of pasta cooking water, then drain the pasta.',
+                    'Add hot pasta to the skillet with pancetta and toss to combine.',
+                    'Remove from heat and quickly stir in the egg mixture, adding pasta water as needed.',
+                    'Serve immediately with extra cheese and black pepper.'
+                ],
+                'tags': ['italian', 'pasta', 'classic', 'comfort-food'],
+                'categories': ['main-dishes'],
+                'nutrition_info': {
+                    'calories': 520,
+                    'protein': 22,
+                    'carbs': 58,
+                    'fat': 23,
+                    'fiber': 3
+                }
+            },
+                                                                                                                                                                                                                                                                                                                                                                                                                        {
+                'title': 'Classic Spaghetti Carbonara',
+                'description': 'A traditional Italian pasta dish with eggs, cheese, and pancetta. Creamy, rich, and absolutely delicious.',
+                'prep_time': 10,
+                'cook_time': 15,
+                'servings': 4,
+                'difficulty': Recipe.DifficultyLevel.MEDIUM,
+                'cooking_method': Recipe.CookingMethod.BOILING,
+                'ingredients': [
+                    '400g spaghetti',
+                    '200g pancetta or guanciale, diced',
+                    '4 large eggs',
+                    '100g Pecorino Romano cheese, grated',
+                    '50g Parmesan cheese, grated',
+                    'Freshly ground black pepper',
+                    'Salt for pasta water',
+                    '2 cloves garlic (optional)'
+                ],
+                'instructions': [
+                    'Bring a large pot of salted water to boil and cook spaghetti according to package directions.',
+                    'While pasta cooks, heat a large skillet over medium heat and cook pancetta until crispy.',
+                    'In a bowl, whisk together eggs, Pecorino Romano, Parmesan, and plenty of black pepper.',
+                    'Reserve 1 cup of pasta cooking water, then drain the pasta.',
+                    'Add hot pasta to the skillet with pancetta and toss to combine.',
+                    'Remove from heat and quickly stir in the egg mixture, adding pasta water as needed.',
+                    'Serve immediately with extra cheese and black pepper.'
+                ],
+                'tags': ['italian', 'pasta', 'classic', 'comfort-food'],
+                'categories': ['main-dishes'],
+                'nutrition_info': {
+                    'calories': 520,
+                    'protein': 22,
+                    'carbs': 58,
+                    'fat': 23,
+                    'fiber': 3
+                }
+            },
+                                                                                                                                                                                                                                                                                                                                                                                                                                    {
+                'title': 'Classic Spaghetti Carbonara',
+                'description': 'A traditional Italian pasta dish with eggs, cheese, and pancetta. Creamy, rich, and absolutely delicious.',
+                'prep_time': 10,
+                'cook_time': 15,
+                'servings': 4,
+                'difficulty': Recipe.DifficultyLevel.MEDIUM,
+                'cooking_method': Recipe.CookingMethod.BOILING,
+                'ingredients': [
+                    '400g spaghetti',
+                    '200g pancetta or guanciale, diced',
+                    '4 large eggs',
+                    '100g Pecorino Romano cheese, grated',
+                    '50g Parmesan cheese, grated',
+                    'Freshly ground black pepper',
+                    'Salt for pasta water',
+                    '2 cloves garlic (optional)'
+                ],
+                'instructions': [
+                    'Bring a large pot of salted water to boil and cook spaghetti according to package directions.',
+                    'While pasta cooks, heat a large skillet over medium heat and cook pancetta until crispy.',
+                    'In a bowl, whisk together eggs, Pecorino Romano, Parmesan, and plenty of black pepper.',
+                    'Reserve 1 cup of pasta cooking water, then drain the pasta.',
+                    'Add hot pasta to the skillet with pancetta and toss to combine.',
+                    'Remove from heat and quickly stir in the egg mixture, adding pasta water as needed.',
+                    'Serve immediately with extra cheese and black pepper.'
+                ],
+                'tags': ['italian', 'pasta', 'classic', 'comfort-food'],
+                'categories': ['main-dishes'],
+                'nutrition_info': {
+                    'calories': 520,
+                    'protein': 22,
+                    'carbs': 58,
+                    'fat': 23,
+                    'fiber': 3
+                }
+            },
             {
                 'title': 'Chocolate Chip Cookies',
                 'description': 'Soft, chewy chocolate chip cookies that are perfect for any occasion. A timeless classic everyone loves.',
