@@ -86,6 +86,8 @@ export class RecipeService extends ApiService {
    * Search recipes with text query
    */
   searchRecipes(params: RecipeSearchParams): Observable<RecipeListResponse> {
+    this.loadingSubject.next(true);
+    
     // Use the search endpoint for text queries
     const searchParams: any = {
       q: params.q,
@@ -95,7 +97,9 @@ export class RecipeService extends ApiService {
     };
 
     return this.get<RecipeListResponse>('/recipes/search/', searchParams).pipe(
+      tap(() => this.loadingSubject.next(false)),
       catchError(error => {
+        this.loadingSubject.next(false);
         console.error('Search error:', error);
         throw error;
       })

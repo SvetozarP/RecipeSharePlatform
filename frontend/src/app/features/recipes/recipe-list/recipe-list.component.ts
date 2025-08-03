@@ -114,14 +114,23 @@ export class RecipeListComponent implements OnInit, OnDestroy {
     this.isAuthenticated$ = this.authService.isAuthenticated$;
   }
 
-  async ngOnInit(): Promise<void> {
-    // Refresh favorites cache to ensure it's up to date
-    await this.favoritesService.refreshCache();
+  ngOnInit(): void {
+    console.log('RecipeListComponent: ngOnInit started');
+    
+    // Initialize component and load recipes immediately
     this.initializeComponent();
     this.setupRouteSubscription();
     
     // Load recipes immediately to show loading state
+    console.log('RecipeListComponent: Calling loadRecipes()');
     this.loadRecipes();
+    
+    // Refresh favorites cache in background (non-blocking)
+    this.favoritesService.refreshCache().then(() => {
+      console.log('RecipeListComponent: favorites cache refreshed');
+    }).catch(error => {
+      console.error('RecipeListComponent: Error refreshing favorites cache:', error);
+    });
   }
 
   ngOnDestroy(): void {
@@ -362,8 +371,15 @@ export class RecipeListComponent implements OnInit, OnDestroy {
   }
 
   loadRecipes(): void {
-    if (this.loading) return;
+    console.log('RecipeListComponent: loadRecipes() called, loading:', this.loading, 'isInitialLoad:', this.isInitialLoad);
     
+    // Don't prevent loading if this is the initial load
+    if (this.loading && !this.isInitialLoad) {
+      console.log('RecipeListComponent: Skipping loadRecipes() - already loading and not initial load');
+      return;
+    }
+    
+    console.log('RecipeListComponent: Starting to load recipes');
     this.loading = true;
     this.error = null;
     
@@ -386,6 +402,7 @@ export class RecipeListComponent implements OnInit, OnDestroy {
       takeUntil(this.destroy$)
     ).subscribe({
       next: (response) => {
+        console.log('RecipeListComponent: Recipes loaded successfully:', response);
         const newRecipes = response.results || [];
         
         if (this.usePagination || this.currentPage === 1) {
@@ -405,8 +422,10 @@ export class RecipeListComponent implements OnInit, OnDestroy {
         
         // The backend now provides is_favorited field directly, so no need to check manually
         this.cdr.markForCheck();
+        console.log('RecipeListComponent: Loading complete, recipes count:', this.recipes.length);
       },
       error: (error) => {
+        console.error('RecipeListComponent: Error loading recipes:', error);
         this.error = 'Failed to load recipes. Please try again.';
         this.loading = false;
         
@@ -416,7 +435,6 @@ export class RecipeListComponent implements OnInit, OnDestroy {
         }
         
         this.cdr.markForCheck();
-        console.error('Error loading recipes:', error);
       }
     });
   }

@@ -33,8 +33,17 @@ export class FavoritesService {
 
   async getFavoriteRecipes(params?: FavoriteParams): Promise<PaginatedResponse<Recipe>> {
     try {
-      // Use backend API to get favorites
-      const response = await firstValueFrom(this.apiService.get<any>('/recipes/favorites/', { params }));
+      console.log('FavoritesService: getFavoriteRecipes() called');
+      
+      // Use backend API to get favorites with timeout
+      const response = await Promise.race([
+        firstValueFrom(this.apiService.get<any>('/recipes/favorites/', { params })),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Favorites API timeout')), 5000)
+        )
+      ]);
+      
+      console.log('FavoritesService: getFavoriteRecipes() response received');
       
       // The backend returns UserFavorite objects with a 'recipe' property
       // We need to extract the recipe objects from the results
@@ -60,7 +69,7 @@ export class FavoritesService {
         results: []
       };
     } catch (error) {
-      console.error('Failed to load favorite recipes:', error);
+      console.error('FavoritesService: Failed to load favorite recipes:', error);
       return {
         count: 0,
         next: null,
@@ -145,17 +154,25 @@ export class FavoritesService {
   private async loadFavoritesFromBackend(): Promise<void> {
     try {
       const currentUser = this.authService.getCurrentUser();
-      if (!currentUser) return;
+      if (!currentUser) {
+        console.log('FavoritesService: No current user, skipping favorites load');
+        this.favoritesCache = [];
+        this.favoriteRecipesSubject.next([]);
+        return;
+      }
 
+      console.log('FavoritesService: Loading favorites for user:', currentUser.username);
       // Load favorites from backend
       const response = await this.getFavoriteRecipes();
       if (response && response.results) {
         this.favoritesCache = response.results.map(recipe => recipe.id);
         this.favoriteRecipesSubject.next([...this.favoritesCache]);
+        console.log('FavoritesService: Loaded', this.favoritesCache.length, 'favorites');
       }
     } catch (error) {
-      console.error('Failed to load favorites from backend:', error);
+      console.error('FavoritesService: Failed to load favorites from backend:', error);
       this.favoritesCache = [];
+      this.favoriteRecipesSubject.next([]);
     }
   }
 
@@ -214,7 +231,9 @@ export class FavoritesService {
 
   // Refresh favorites cache from backend
   async refreshCache(): Promise<void> {
+    console.log('FavoritesService: refreshCache() called');
     await this.loadFavoritesFromBackend();
+    console.log('FavoritesService: refreshCache() completed');
   }
 
   async toggleFavorite(recipeId: string): Promise<{is_favorite: boolean, message: string}> {
