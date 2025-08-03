@@ -233,19 +233,29 @@ Create `.env` files in both frontend and backend directories with appropriate co
 
 ## 📱 Screenshots
 
-*[Placeholder for application screenshots]*
+<img width="1907" height="917" alt="image" src="https://github.com/user-attachments/assets/36ed6464-3173-4df5-a1d9-a8b754297f8d" />
+
+<img width="1906" height="916" alt="image" src="https://github.com/user-attachments/assets/32fd5d46-ab24-4c34-a010-6505a2859a0d" />
+
+<img width="375" height="834" alt="image" src="https://github.com/user-attachments/assets/afd8153d-01b5-4f97-9dd0-c9407907eb7e" />
+
 
 ### Recipe Catalog
-*[Screenshot of recipe listing with search and filters]*
+<img width="1908" height="920" alt="image" src="https://github.com/user-attachments/assets/5423900b-b605-4972-ac54-78739bb3efcf" />
+
 
 ### Recipe Details
-*[Screenshot of detailed recipe view with ratings and reviews]*
+<img width="1172" height="921" alt="image" src="https://github.com/user-attachments/assets/555971b3-6281-4aa3-8a82-f7d498646892" />
+<img width="1168" height="804" alt="image" src="https://github.com/user-attachments/assets/e2afd55f-615e-40c4-91a5-3f426847ca3b" />
+
 
 ### User Dashboard
-*[Screenshot of personalized user dashboard with achievements and statistics]*
+<img width="1909" height="788" alt="image" src="https://github.com/user-attachments/assets/4d889d47-0d3c-45c0-93e1-7dfa77cf1de0" />
+
 
 ### Recipe Creation
-*[Screenshot of recipe creation form with image upload]*
+<img width="1178" height="849" alt="image" src="https://github.com/user-attachments/assets/543f429d-03d2-49a5-aa4e-0b5259318d50" />
+
 
 ## 🔧 API Documentation
 
