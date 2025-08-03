@@ -15,4 +15,5 @@ django-filter>=23.5,<23.6
 
 # Performance monitoring and optimization
 psutil>=5.9,<5.10
-redis>=4.6,<4.7 
+redis>=4.6,<4.7
+django-redis>=5.4,<5.5 
