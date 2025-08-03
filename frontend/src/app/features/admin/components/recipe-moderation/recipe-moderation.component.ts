@@ -90,17 +90,11 @@ export class RecipeModerationComponent implements OnInit {
     // Don't connect dataSource.paginator to avoid conflicts with server-side pagination
     this.dataSource.sort = this.sort;
     
-    console.log('ngAfterViewInit - Paginator available:', !!this.paginator);
-    
     // Subscribe to pagination events first
     if (this.paginator) {
-      console.log('Setting up pagination event listener');
       this.paginator.page.subscribe((event) => {
-        console.log('Pagination event:', event);
         this.loadRecipes();
       });
-    } else {
-      console.log('Paginator not available in ngAfterViewInit');
     }
     
     // Load initial data after setting up event listeners
@@ -114,33 +108,19 @@ export class RecipeModerationComponent implements OnInit {
     const pageSize = this.paginator?.pageSize || 25;
     const filters = this.getFiltersFromForm();
 
-    console.log('Loading recipes - Page:', page, 'PageSize:', pageSize, 'Filters:', filters);
-
     this.adminService.getRecipes(page, pageSize, filters).subscribe({
       next: (response) => {
-        console.log('Recipes response:', response);
         this.dataSource.data = response.results;
         
         // Set paginator length with a small delay to ensure paginator is fully initialized
         setTimeout(() => {
           if (this.paginator && response.count !== undefined) {
             this.paginator.length = response.count;
-            console.log('Set paginator length to:', response.count);
-            console.log('Paginator state after setting length:', {
-              length: this.paginator.length,
-              pageIndex: this.paginator.pageIndex,
-              pageSize: this.paginator.pageSize
-            });
           } else {
-            console.log('Paginator not available or count undefined:', {
-              paginator: !!this.paginator,
-              count: response.count
-            });
             // Try again after a longer delay if paginator is still not available
             setTimeout(() => {
               if (this.paginator && response.count !== undefined) {
                 this.paginator.length = response.count;
-                console.log('Set paginator length to (retry):', response.count);
               }
             }, 100);
           }

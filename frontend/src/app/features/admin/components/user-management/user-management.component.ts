@@ -87,7 +87,6 @@ export class UserManagementComponent implements OnInit {
     // Subscribe to pagination events first
     if (this.paginator) {
       this.paginator.page.subscribe((event) => {
-        console.log('Pagination event:', event);
         this.loadUsers();
       });
     }
@@ -107,21 +106,19 @@ export class UserManagementComponent implements OnInit {
       next: (response) => {
         this.dataSource.data = response.results;
         
-        // Set paginator length immediately after data is loaded
-        if (this.paginator && response.count !== undefined) {
-          this.paginator.length = response.count;
-          console.log('Set paginator length to:', response.count);
-          console.log('Paginator state after setting length:', {
-            length: this.paginator.length,
-            pageIndex: this.paginator.pageIndex,
-            pageSize: this.paginator.pageSize
-          });
-        } else {
-          console.log('Paginator not available or count undefined:', {
-            paginator: !!this.paginator,
-            count: response.count
-          });
-        }
+        // Set paginator length with a small delay to ensure paginator is fully initialized
+        setTimeout(() => {
+          if (this.paginator && response.count !== undefined) {
+            this.paginator.length = response.count;
+          } else {
+            // Try again after a longer delay if paginator is still not available
+            setTimeout(() => {
+              if (this.paginator && response.count !== undefined) {
+                this.paginator.length = response.count;
+              }
+            }, 100);
+          }
+        }, 50);
         
         this.loading = false;
       },
