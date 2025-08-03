@@ -1,0 +1,38 @@
+<div class="verify-email-container">
+  <div class="verify-email-card">
+    <div class="verify-email-header">
+      <h1>Email Verification</h1>
+    </div>
+
+    <div class="verify-email-content">
+      <app-loading *ngIf="isLoading"></app-loading>
+
+      <div *ngIf="!isLoading" class="verification-result">
+        <!-- Success State -->
+        <div *ngIf="isSuccess" class="success-state">
+          <mat-icon class="success-icon">check_circle</mat-icon>
+          <h2>Email Verified Successfully!</h2>
+          <p>{{ message }}</p>
+          <button mat-raised-button color="primary" (click)="onLoginClick()">
+            Continue to Login
+          </button>
+        </div>
+
+        <!-- Error State -->
+        <div *ngIf="isError" class="error-state">
+          <mat-icon class="error-icon">error</mat-icon>
+          <h2>Verification Failed</h2>
+          <p>{{ message }}</p>
+          <div class="error-actions">
+            <button mat-raised-button color="primary" (click)="onResendClick()">
+              Resend Verification Email
+            </button>
+            <button mat-stroked-button (click)="onLoginClick()">
+              Back to Login
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> 

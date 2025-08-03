@@ -60,9 +60,16 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     """Custom token serializer that includes user data."""
 
     def validate(self, attrs):
-        """Add user data to token payload."""
+        """Add user data to token payload and check email verification."""
         data = super().validate(attrs)
         user = self.user
+        
+        # Check if email is verified
+        if not user.is_email_verified:
+            raise serializers.ValidationError({
+                'email': 'Please verify your email address before logging in. Check your inbox for a verification link.'
+            })
+        
         data.update({
             'user': {
                 'id': str(user.id),

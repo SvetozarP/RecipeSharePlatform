@@ -23,6 +23,16 @@ export const authRoutes: Routes = [
     loadComponent: () => import('./reset-password/reset-password.component').then(m => m.ResetPasswordComponent)
   },
   {
+    path: 'verify-email/:uidb64/:token',
+    canActivate: [GuestGuard],
+    loadComponent: () => import('./verify-email/verify-email.component').then(m => m.VerifyEmailComponent)
+  },
+  {
+    path: 'resend-verification',
+    canActivate: [GuestGuard],
+    loadComponent: () => import('./resend-verification/resend-verification.component').then(m => m.ResendVerificationComponent)
+  },
+  {
     path: '',
     redirectTo: 'login',
     pathMatch: 'full'

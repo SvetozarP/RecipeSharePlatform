@@ -21,6 +21,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   errorMessage = '';
   returnUrl = '/dashboard';
   showPassword = false;
+  isEmailVerificationError = false;
 
   private destroy$ = new Subject<void>();
 
@@ -62,6 +63,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     if (this.loginForm.valid && !this.isLoading) {
       this.isLoading = true;
       this.errorMessage = '';
+      this.isEmailVerificationError = false;
 
       const loginData: LoginRequest = {
         email: this.loginForm.value.email,
@@ -96,8 +98,16 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   private handleLoginError(error: any): void {
+    this.isEmailVerificationError = false;
+    
     if (error.status === 401) {
-      this.errorMessage = 'Invalid email or password. Please try again.';
+      // Check if it's an email verification error
+      if (error.error?.email) {
+        this.errorMessage = error.error.email;
+        this.isEmailVerificationError = true;
+      } else {
+        this.errorMessage = 'Invalid email or password. Please try again.';
+      }
     } else if (error.status === 429) {
       this.errorMessage = 'Too many login attempts. Please try again later.';
     } else if (error.status === 0) {

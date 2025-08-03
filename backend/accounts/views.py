@@ -287,4 +287,77 @@ class EmailVerificationView(generics.GenericAPIView):
             return Response(
                 {"detail": "Invalid verification link."},
                 status=status.HTTP_400_BAD_REQUEST
-            ) 
+            )
+
+
+class ResendVerificationEmailView(generics.GenericAPIView):
+    """
+    Resend email verification link
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        """Resend verification email to user."""
+        email = request.data.get('email')
+        if not email:
+            return Response(
+                {"detail": "Email is required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            user = User.objects.get(email=email)
+            
+            # Check if email is already verified
+            if user.is_email_verified:
+                return Response(
+                    {"detail": "Email is already verified."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Send verification email
+            self._send_verification_email(user)
+            
+            return Response(
+                {"detail": "Verification email sent successfully. Please check your inbox."},
+                status=status.HTTP_200_OK
+            )
+            
+        except User.DoesNotExist:
+            # Don't reveal whether a user exists
+            return Response(
+                {"detail": "If an account with this email exists, a verification link has been sent."},
+                status=status.HTTP_200_OK
+            )
+    
+    def _send_verification_email(self, user):
+        """Send email verification link to the user."""
+        try:
+            # Only send if not using console backend
+            if settings.EMAIL_BACKEND == 'django.core.mail.backends.console.EmailBackend':
+                print(f"📧 Email verification would be sent to {user.email}")
+                return
+            
+            # Generate verification token
+            token = default_token_generator.make_token(user)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            
+            # Build verification link
+            verification_link = f"{settings.FRONTEND_URL}/auth/verify-email/{uid}/{token}"
+            
+            # Send email
+            send_mail(
+                f'{settings.EMAIL_SUBJECT_PREFIX}Please verify your email',
+                f'Click the following link to verify your email: {verification_link}',
+                settings.DEFAULT_FROM_EMAIL,
+                [user.email],
+                fail_silently=True,  # Don't break if email fails
+                html_message=f'''
+                <h2>Email Verification</h2>
+                <p>Please click the link below to verify your email address:</p>
+                <p><a href="{verification_link}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Verify Email</a></p>
+                <p>If you didn't request this verification, you can safely ignore this email.</p>
+                '''
+            )
+        except Exception as e:
+            print(f"Failed to send verification email: {e}") 

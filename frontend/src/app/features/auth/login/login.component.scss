@@ -9,6 +9,36 @@
     }
     
     .mat-card {
-      border-radius: 12px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+
+.error-message-container {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.verification-help {
+  margin-top: 12px;
+  padding: 12px;
+  background-color: #f3f4f6;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+
+  p {
+    margin: 0 0 8px 0;
+    color: #6b7280;
+    font-size: 14px;
+  }
+
+  .resend-link {
+    color: #3b82f6;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 14px;
+
+    &:hover {
+      text-decoration: underline;
     }
+  }
+}

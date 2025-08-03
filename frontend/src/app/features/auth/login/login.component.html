@@ -75,10 +75,19 @@
               </div>
 
               <!-- Error Message Display -->
-              <mat-error *ngIf="errorMessage" class="text-center">
-                <mat-icon>error</mat-icon>
-                {{ errorMessage }}
-              </mat-error>
+              <div *ngIf="errorMessage" class="error-message-container">
+                <mat-error class="text-center">
+                  <mat-icon>error</mat-icon>
+                  {{ errorMessage }}
+                </mat-error>
+                <!-- Show resend verification link if it's an email verification error -->
+                <div *ngIf="isEmailVerificationError" class="verification-help">
+                  <p>Need a new verification email?</p>
+                  <a routerLink="/auth/resend-verification" class="resend-link">
+                    Resend verification email
+                  </a>
+                </div>
+              </div>
 
               <!-- Submit Button -->
               <button 

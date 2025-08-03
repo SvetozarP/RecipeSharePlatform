@@ -199,6 +199,17 @@ export class AuthService {
     );
   }
 
+  resendVerificationEmail(email: string): Observable<{ detail: string }> {
+    return this.http.post<{ detail: string }>(`${environment.apiUrl}/auth/resend-verification/`, {
+      email: email
+    }).pipe(
+      catchError(error => {
+        console.error('Resend verification email error:', error);
+        throw error;
+      })
+    );
+  }
+
   confirmPasswordReset(uidb64: string, token: string, newPassword: string): Observable<{ detail: string }> {
     return this.http.post<{ detail: string }>(`${environment.apiUrl}/auth/password/reset/confirm/`, {
       uidb64: uidb64,

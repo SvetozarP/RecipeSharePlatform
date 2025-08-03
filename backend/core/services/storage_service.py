@@ -176,6 +176,7 @@ class StorageService:
                 logger.info(f"Saving original image to: {original_path}")
                 saved_path = default_storage.save(original_path, original_content)
                 original_url = default_storage.url(saved_path)
+                logger.info(f"Default storage returned URL: {original_url}")
                 # Ensure we return full URLs for Azure blob storage
                 results['original'] = self._ensure_absolute_url(original_url)
                 logger.info(f"Original image saved: {results['original']}")
@@ -196,6 +197,7 @@ class StorageService:
                     logger.info(f"Saving thumbnail {size_name} to: {thumb_path}")
                     saved_thumb_path = default_storage.save(thumb_path, thumb_content)
                     thumb_url = default_storage.url(saved_thumb_path)
+                    logger.info(f"Default storage returned thumbnail URL: {thumb_url}")
                     # Ensure we return full URLs for Azure blob storage
                     results[size_name] = self._ensure_absolute_url(thumb_url)
                     logger.info(f"Thumbnail {size_name} saved: {results[size_name]}")
@@ -246,10 +248,23 @@ class StorageService:
         azure_account = getattr(settings, 'AZURE_STORAGE_ACCOUNT_NAME', None)
         azure_container = getattr(settings, 'AZURE_STORAGE_CONTAINER_NAME', 'media')
         
+        logger.info(f"Ensuring absolute URL for: {url}")
+        logger.info(f"Azure account: {azure_account}, container: {azure_container}")
+        
         if azure_account and url.startswith('/'):
             # Remove leading slash and construct Azure URL
-            return f"https://{azure_account}.blob.core.windows.net/{azure_container}{url}"
+            # If URL starts with /media/, remove it to avoid double path
+            if url.startswith('/media/'):
+                clean_url = url[7:]  # Remove '/media/' prefix
+            else:
+                clean_url = url[1:]  # Remove leading slash
+            
+            absolute_url = f"https://{azure_account}.blob.core.windows.net/{azure_container}/{clean_url}"
+            logger.info(f"Converted to absolute URL: {absolute_url}")
+            return absolute_url
         
+        # If not Azure or not a relative URL, return as-is
+        logger.info(f"Returning URL as-is: {url}")
         return url
 
     def get_supported_formats(self) -> List[str]:

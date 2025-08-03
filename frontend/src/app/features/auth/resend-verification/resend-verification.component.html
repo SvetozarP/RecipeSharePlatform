@@ -1,0 +1,57 @@
+<div class="resend-verification-container">
+  <div class="resend-verification-card">
+    <div class="resend-verification-header">
+      <h1>Resend Verification Email</h1>
+      <p>Enter your email address to receive a new verification link.</p>
+    </div>
+
+    <div class="resend-verification-content">
+      <app-loading *ngIf="isLoading"></app-loading>
+
+      <div *ngIf="!isLoading" class="form-container">
+        <!-- Success Message -->
+        <div *ngIf="isSuccess" class="success-message">
+          <mat-icon class="success-icon">check_circle</mat-icon>
+          <h2>Email Sent!</h2>
+          <p>{{ successMessage }}</p>
+          <button mat-raised-button color="primary" (click)="onLoginClick()">
+            Back to Login
+          </button>
+        </div>
+
+        <!-- Form -->
+        <form *ngIf="!isSuccess" [formGroup]="resendForm" (ngSubmit)="onSubmit()" class="resend-form">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Email Address</mat-label>
+            <input matInput formControlName="email" type="email" placeholder="Enter your email">
+            <mat-error *ngIf="resendForm.get('email')?.hasError('required')">
+              Email is required
+            </mat-error>
+            <mat-error *ngIf="resendForm.get('email')?.hasError('email')">
+              Please enter a valid email address
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Error Message -->
+          <div *ngIf="errorMessage" class="error-message">
+            <mat-icon class="error-icon">error</mat-icon>
+            <span>{{ errorMessage }}</span>
+          </div>
+
+          <button 
+            mat-raised-button 
+            color="primary" 
+            type="submit" 
+            class="submit-button"
+            [disabled]="resendForm.invalid || isLoading">
+            Send Verification Email
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="resend-verification-footer">
+      <p>Already have an account? <a routerLink="/auth/login">Sign in</a></p>
+    </div>
+  </div>
+</div> 

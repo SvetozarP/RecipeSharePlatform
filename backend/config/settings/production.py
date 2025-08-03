@@ -176,7 +176,7 @@ DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
 AZURE_ACCOUNT_NAME = os.getenv('AZURE_ACCOUNT_NAME')
 AZURE_ACCOUNT_KEY = os.getenv('AZURE_ACCOUNT_KEY')
 AZURE_CUSTOM_DOMAIN = os.getenv('AZURE_CUSTOM_DOMAIN')
-AZURE_CONTAINER = os.getenv('AZURE_CONTAINER', 'media')
+AZURE_CONTAINER = os.getenv('AZURE_CONTAINER', 'recipe-images')
 
 # Azure Blob Storage configuration for media files
 if AZURE_ACCOUNT_NAME and AZURE_ACCOUNT_KEY:

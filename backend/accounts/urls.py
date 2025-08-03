@@ -23,4 +23,5 @@ urlpatterns = [
     
     # Email verification
     path('verify-email/<str:uidb64>/<str:token>/', views.EmailVerificationView.as_view(), name='verify_email'),
+    path('resend-verification/', views.ResendVerificationEmailView.as_view(), name='resend_verification'),
 ] 
