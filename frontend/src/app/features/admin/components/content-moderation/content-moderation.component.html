@@ -56,23 +56,6 @@
     </mat-card-content>
   </mat-card>
 
-  <!-- Bulk Actions -->
-  <div class="bulk-actions" *ngIf="selectedRatings.length > 0">
-    <mat-card>
-      <mat-card-content>
-        <div class="bulk-actions-content">
-          <span>{{ selectedRatings.length }} rating(s) selected</span>
-          <div class="bulk-buttons">
-            <button mat-button color="warn" (click)="bulkDelete()">
-              <mat-icon>delete</mat-icon>
-              Delete
-            </button>
-          </div>
-        </div>
-      </mat-card-content>
-    </mat-card>
-  </div>
-
   <!-- Ratings Table -->
   <mat-card class="table-card">
     <mat-card-content>
@@ -85,22 +68,6 @@
       <!-- Table -->
       <div class="table-container">
         <table mat-table [dataSource]="dataSource" matSort class="ratings-table" *ngIf="!loading">
-          <!-- Checkbox Column -->
-          <ng-container matColumnDef="select">
-            <th mat-header-cell *matHeaderCellDef>
-              <mat-checkbox (change)="$event ? masterToggle() : null"
-                           [checked]="selection.hasValue() && isAllSelected()"
-                           [indeterminate]="selection.hasValue() && !isAllSelected()">
-              </mat-checkbox>
-            </th>
-            <td mat-cell *matCellDef="let row">
-              <mat-checkbox (click)="$event.stopPropagation()"
-                           (change)="$event ? selection.toggle(row) : null"
-                           [checked]="selection.isSelected(row)">
-              </mat-checkbox>
-            </td>
-          </ng-container>
-
           <!-- Recipe Column -->
           <ng-container matColumnDef="recipe">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>Recipe</th>
@@ -204,10 +171,7 @@
           </ng-container>
 
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns;"
-              [class.selected-row]="selection.isSelected(row)"
-              (click)="selection.toggle(row)">
-          </tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
         </table>
 
         <mat-paginator #paginator

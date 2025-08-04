@@ -36,21 +36,6 @@
   justify-content: flex-end;
 }
 
-.bulk-actions {
-  margin-bottom: 24px;
-}
-
-.bulk-actions-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.bulk-buttons {
-  display: flex;
-  gap: 8px;
-}
-
 .table-card {
   margin-bottom: 24px;
 }
@@ -168,10 +153,6 @@
   height: 1rem;
 }
 
-.selected-row {
-  background-color: #e3f2fd;
-}
-
 .delete-action {
   color: #f44336;
 }
@@ -193,17 +174,6 @@ mat-chip {
 
   .filters-actions {
     flex-direction: column;
-  }
-
-  .bulk-actions-content {
-    flex-direction: column;
-    gap: 16px;
-    align-items: stretch;
-  }
-
-  .bulk-buttons {
-    justify-content: center;
-    flex-wrap: wrap;
   }
 
   .review-content {

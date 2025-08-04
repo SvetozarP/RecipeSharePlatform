@@ -15,11 +15,9 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { SelectionModel } from '@angular/cdk/collections';
 import { AdminService } from '../../services/admin.service';
 import { AdminRating, AdminFilters } from '../../models/admin.models';
 import { RatingDetailDialogComponent } from '../rating-detail-dialog/rating-detail-dialog.component';
@@ -46,7 +44,6 @@ import { ReviewDetailDialogComponent } from '../review-detail-dialog/review-deta
     MatChipsModule,
     MatMenuModule,
     MatDialogModule,
-    MatCheckboxModule,
     MatTooltipModule,
     MatProgressSpinnerModule,
     MatExpansionModule
@@ -60,10 +57,8 @@ export class ContentModerationComponent implements OnInit {
 
   loading = false;
   dataSource = new MatTableDataSource<AdminRating>();
-  displayedColumns: string[] = ['select', 'recipe', 'user', 'rating', 'review', 'status', 'helpful_votes', 'actions'];
+  displayedColumns: string[] = ['recipe', 'user', 'rating', 'review', 'status', 'helpful_votes', 'actions'];
   filtersForm: FormGroup;
-  selectedRatings: AdminRating[] = [];
-  selection = new SelectionModel<AdminRating>(true, []);
 
   constructor(
     private adminService: AdminService,
@@ -159,36 +154,6 @@ export class ContentModerationComponent implements OnInit {
     this.applyFilters();
   }
 
-  // Selection methods
-  isAllSelected(): boolean {
-    const numSelected = this.selectedRatings.length;
-    const numRows = this.dataSource.data?.length || 0;
-    return numSelected === numRows;
-  }
-
-  masterToggle(): void {
-    if (this.isAllSelected()) {
-      this.selection.clear();
-      this.selectedRatings = [];
-    } else {
-      (this.dataSource.data || []).forEach(row => this.selection.select(row));
-      this.selectedRatings = [...(this.dataSource.data || [])];
-    }
-  }
-
-  onSelectionChange(): void {
-    this.selectedRatings = this.selection.selected || [];
-  }
-
-  onCheckboxChange(event: any, row: AdminRating): void {
-    if (event.checked) {
-      this.selection?.select(row);
-    } else {
-      this.selection?.deselect(row);
-    }
-    this.onSelectionChange();
-  }
-
   // Rating actions
   viewRating(rating: AdminRating): void {
     const dialogRef = this.dialog.open(RatingDetailDialogComponent, {
@@ -259,56 +224,5 @@ export class ContentModerationComponent implements OnInit {
         }
       });
     }
-  }
-
-  // Bulk actions
-  bulkDelete(): void {
-    if (!this.selectedRatings || this.selectedRatings.length === 0) return;
-    
-    if (confirm(`Delete ${this.selectedRatings.length} rating(s)? This action cannot be undone.`)) {
-      const ratingIds = this.selectedRatings.map(r => r.id);
-      
-      let completed = 0;
-      let failed = 0;
-      
-      ratingIds.forEach(ratingId => {
-        this.adminService.deleteRating(ratingId).subscribe({
-          next: () => {
-            completed++;
-            if (completed + failed === ratingIds.length) {
-              this.handleBulkOperationComplete(completed, failed, 'deleted');
-            }
-          },
-          error: () => {
-            failed++;
-            if (completed + failed === ratingIds.length) {
-              this.handleBulkOperationComplete(completed, failed, 'deleted');
-            }
-          }
-        });
-      });
-    }
-  }
-
-  private handleBulkOperationComplete(completed: number, failed: number, action: string): void {
-    this.selectedRatings = [];
-    this.selection?.clear();
-    
-    if (failed === 0) {
-      this.snackBar.open(`Successfully ${action} ${completed} rating(s)`, 'Close', {
-        duration: 3000
-      });
-    } else if (completed === 0) {
-      this.snackBar.open(`Failed to ${action} any ratings`, 'Close', {
-        duration: 5000
-      });
-    } else {
-      this.snackBar.open(`Successfully ${action} ${completed} rating(s), ${failed} failed`, 'Close', {
-        duration: 5000
-      });
-    }
-    
-    // Refresh the data
-    this.loadRatings();
   }
 }

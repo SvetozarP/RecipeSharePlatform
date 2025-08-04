@@ -15,10 +15,8 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { SelectionModel } from '@angular/cdk/collections';
 import { AdminService } from '../../services/admin.service';
 import { AdminUser, AdminFilters } from '../../models/admin.models';
 import { UserDetailDialogComponent } from '../user-detail-dialog/user-detail-dialog.component';
@@ -44,7 +42,6 @@ import { AuthService } from '../../../../core/services/auth.service';
     MatChipsModule,
     MatMenuModule,
     MatDialogModule,
-    MatCheckboxModule,
     MatTooltipModule,
     MatProgressSpinnerModule,
   ],
@@ -56,10 +53,8 @@ export class UserManagementComponent implements OnInit {
 
   loading = false;
   dataSource = new MatTableDataSource<AdminUser>();
-  displayedColumns: string[] = ['select', 'username', 'email', 'first_name', 'last_name', 'status', 'date_joined', 'last_login', 'actions'];
+  displayedColumns: string[] = ['username', 'email', 'first_name', 'last_name', 'status', 'date_joined', 'last_login', 'actions'];
   filtersForm: FormGroup;
-  selectedUsers: AdminUser[] = [];
-  selection = new SelectionModel<AdminUser>(true, []);
 
   constructor(
     private adminService: AdminService,
@@ -150,21 +145,6 @@ export class UserManagementComponent implements OnInit {
   clearFilters(): void {
     this.filtersForm.reset();
     this.applyFilters();
-  }
-
-  // Selection methods
-  isAllSelected(): boolean {
-    const numSelected = this.selectedUsers.length;
-    const numRows = this.dataSource.data.length;
-    return numSelected === numRows;
-  }
-
-  masterToggle(): void {
-    if (this.isAllSelected()) {
-      this.selectedUsers = [];
-    } else {
-      this.selectedUsers = [...this.dataSource.data];
-    }
   }
 
   // Permission check methods
@@ -341,43 +321,6 @@ export class UserManagementComponent implements OnInit {
           });
         }
       });
-    }
-  }
-
-  // Bulk actions
-  bulkActivate(): void {
-    if (this.selectedUsers.length === 0) return;
-    
-    if (confirm(`Activate ${this.selectedUsers.length} user(s)?`)) {
-      // TODO: Implement bulk activate
-      console.log('Bulk activate users:', this.selectedUsers);
-    }
-  }
-
-  bulkDeactivate(): void {
-    if (this.selectedUsers.length === 0) return;
-    
-    if (confirm(`Deactivate ${this.selectedUsers.length} user(s)?`)) {
-      // TODO: Implement bulk deactivate
-      console.log('Bulk deactivate users:', this.selectedUsers);
-    }
-  }
-
-  bulkMakeStaff(): void {
-    if (this.selectedUsers.length === 0) return;
-    
-    if (confirm(`Make ${this.selectedUsers.length} user(s) staff?`)) {
-      // TODO: Implement bulk make staff
-      console.log('Bulk make staff users:', this.selectedUsers);
-    }
-  }
-
-  bulkDelete(): void {
-    if (this.selectedUsers.length === 0) return;
-    
-    if (confirm(`Delete ${this.selectedUsers.length} user(s)? This action cannot be undone.`)) {
-      // TODO: Implement bulk delete
-      console.log('Bulk delete users:', this.selectedUsers);
     }
   }
 } 
