@@ -204,31 +204,7 @@ backend/
 
 ## 🚀 Getting Started
 
-### Prerequisites
-- Node.js 20.0.0+
-- Python 3.9+
-- PostgreSQL
-- Redis
-
-### Frontend Setup
-```bash
-cd frontend
-npm install
-npm start
-```
-
-### Backend Setup
-```bash
-cd backend
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -r requirements/development.txt
-python manage.py migrate
-python manage.py runserver
-```
-
-### Environment Variables
-Create `.env` files in both frontend and backend directories with appropriate configuration for your environment.
+Please follow the [Development guide](https://github.com/SvetozarP/RecipeSharePlatform/blob/main/DEVELOPMENT.md) in order to set up the app and run locally.
 
 ## 📱 Screenshots
 
