@@ -172,17 +172,23 @@ export class RecipeModerationComponent implements OnInit {
 
   // Selection methods
   isAllSelected(): boolean {
-    const numSelected = this.selectedRecipes.length;
+    const numSelected = this.selection.selected.length;
     const numRows = this.dataSource.data.length;
     return numSelected === numRows;
   }
 
   masterToggle(): void {
     if (this.isAllSelected()) {
+      this.selection.clear();
       this.selectedRecipes = [];
     } else {
+      this.dataSource.data.forEach(row => this.selection.select(row));
       this.selectedRecipes = [...this.dataSource.data];
     }
+  }
+
+  onSelectionChange(): void {
+    this.selectedRecipes = this.selection.selected;
   }
 
   // Recipe actions
@@ -311,8 +317,34 @@ export class RecipeModerationComponent implements OnInit {
     if (this.selectedRecipes.length === 0) return;
     
     if (confirm(`Approve ${this.selectedRecipes.length} recipe(s)?`)) {
-      // TODO: Implement bulk approve
-      console.log('Bulk approve recipes:', this.selectedRecipes);
+      const recipeIds = this.selectedRecipes.map(r => r.id);
+      
+      let completed = 0;
+      let failed = 0;
+      
+      recipeIds.forEach(recipeId => {
+        this.adminService.approveRecipe(recipeId).subscribe({
+          next: (updatedRecipe) => {
+            completed++;
+            // Update the recipe in the data source
+            const index = this.dataSource.data.findIndex(r => r.id === recipeId);
+            if (index !== -1) {
+              this.dataSource.data[index] = updatedRecipe;
+            }
+            
+            if (completed + failed === recipeIds.length) {
+              this.handleBulkOperationComplete(completed, failed, 'approved');
+            }
+          },
+          error: (error) => {
+            console.error('Failed to approve recipe:', error);
+            failed++;
+            if (completed + failed === recipeIds.length) {
+              this.handleBulkOperationComplete(completed, failed, 'approved');
+            }
+          }
+        });
+      });
     }
   }
 
@@ -320,9 +352,35 @@ export class RecipeModerationComponent implements OnInit {
     if (this.selectedRecipes.length === 0) return;
     
     const reason = prompt('Please provide a reason for rejection:');
-    if (reason !== null) {
-      // TODO: Implement bulk reject
-      console.log('Bulk reject recipes:', this.selectedRecipes, 'Reason:', reason);
+    if (reason !== null && reason.trim() !== '') {
+      const recipeIds = this.selectedRecipes.map(r => r.id);
+      
+      let completed = 0;
+      let failed = 0;
+      
+      recipeIds.forEach(recipeId => {
+        this.adminService.rejectRecipe(recipeId, reason).subscribe({
+          next: (updatedRecipe) => {
+            completed++;
+            // Update the recipe in the data source
+            const index = this.dataSource.data.findIndex(r => r.id === recipeId);
+            if (index !== -1) {
+              this.dataSource.data[index] = updatedRecipe;
+            }
+            
+            if (completed + failed === recipeIds.length) {
+              this.handleBulkOperationComplete(completed, failed, 'rejected');
+            }
+          },
+          error: (error) => {
+            console.error('Failed to reject recipe:', error);
+            failed++;
+            if (completed + failed === recipeIds.length) {
+              this.handleBulkOperationComplete(completed, failed, 'rejected');
+            }
+          }
+        });
+      });
     }
   }
 
@@ -330,8 +388,34 @@ export class RecipeModerationComponent implements OnInit {
     if (this.selectedRecipes.length === 0) return;
     
     if (confirm(`Publish ${this.selectedRecipes.length} recipe(s)?`)) {
-      // TODO: Implement bulk publish
-      console.log('Bulk publish recipes:', this.selectedRecipes);
+      const recipeIds = this.selectedRecipes.map(r => r.id);
+      
+      let completed = 0;
+      let failed = 0;
+      
+      recipeIds.forEach(recipeId => {
+        this.adminService.updateRecipe(recipeId, { is_published: true }).subscribe({
+          next: (updatedRecipe) => {
+            completed++;
+            // Update the recipe in the data source
+            const index = this.dataSource.data.findIndex(r => r.id === recipeId);
+            if (index !== -1) {
+              this.dataSource.data[index] = updatedRecipe;
+            }
+            
+            if (completed + failed === recipeIds.length) {
+              this.handleBulkOperationComplete(completed, failed, 'published');
+            }
+          },
+          error: (error) => {
+            console.error('Failed to publish recipe:', error);
+            failed++;
+            if (completed + failed === recipeIds.length) {
+              this.handleBulkOperationComplete(completed, failed, 'published');
+            }
+          }
+        });
+      });
     }
   }
 
@@ -339,8 +423,61 @@ export class RecipeModerationComponent implements OnInit {
     if (this.selectedRecipes.length === 0) return;
     
     if (confirm(`Delete ${this.selectedRecipes.length} recipe(s)? This action cannot be undone.`)) {
-      // TODO: Implement bulk delete
-      console.log('Bulk delete recipes:', this.selectedRecipes);
+      const recipeIds = this.selectedRecipes.map(r => r.id);
+      
+      let completed = 0;
+      let failed = 0;
+      
+      recipeIds.forEach(recipeId => {
+        this.adminService.deleteRecipe(recipeId).subscribe({
+          next: () => {
+            completed++;
+            // Remove the recipe from the data source
+            const index = this.dataSource.data.findIndex(r => r.id === recipeId);
+            if (index !== -1) {
+              this.dataSource.data.splice(index, 1);
+            }
+            
+            if (completed + failed === recipeIds.length) {
+              this.handleBulkOperationComplete(completed, failed, 'deleted');
+            }
+          },
+          error: (error) => {
+            console.error('Failed to delete recipe:', error);
+            failed++;
+            if (completed + failed === recipeIds.length) {
+              this.handleBulkOperationComplete(completed, failed, 'deleted');
+            }
+          }
+        });
+      });
     }
+  }
+
+  private handleBulkOperationComplete(completed: number, failed: number, action: string): void {
+    // Clear selection
+    this.selectedRecipes = [];
+    this.selection.clear();
+    
+    // Update the data source to reflect changes
+    this.dataSource._updateChangeSubscription();
+    
+    // Show appropriate message
+    if (failed === 0) {
+      this.snackBar.open(`Successfully ${action} ${completed} recipe(s)`, 'Close', {
+        duration: 3000
+      });
+    } else if (completed === 0) {
+      this.snackBar.open(`Failed to ${action} any recipes`, 'Close', {
+        duration: 5000
+      });
+    } else {
+      this.snackBar.open(`Successfully ${action} ${completed} recipe(s), ${failed} failed`, 'Close', {
+        duration: 5000
+      });
+    }
+    
+    // Refresh the data to ensure consistency
+    this.loadRecipes();
   }
 } 
