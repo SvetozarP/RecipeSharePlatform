@@ -48,7 +48,8 @@ SIMPLE_JWT = {
 # Frontend URL for password reset
 FRONTEND_URL = 'http://localhost:4200'
 
-# Email configuration
+# Email configuration - Disabled for development
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'noreply@recipe-sharing.com'
 EMAIL_SUBJECT_PREFIX = '[Recipe Sharing] '
 
@@ -68,4 +69,66 @@ MIDDLEWARE += [
 
 INTERNAL_IPS = [
     '127.0.0.1',
-] 
+]
+
+# Development-specific cache configuration (no Redis)
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+        'TIMEOUT': 300,  # 5 minutes default
+        'OPTIONS': {
+            'MAX_ENTRIES': 1000,
+            'CULL_FREQUENCY': 3,  # Remove 1/3 of entries when max is reached
+        }
+    }
+}
+
+# Disable performance monitoring in development
+PERFORMANCE_MONITORING_ENABLED = False
+
+# Ensure media and static files are served locally
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Development logging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'django.db.backends': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+} 

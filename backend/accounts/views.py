@@ -64,17 +64,20 @@ class RegisterView(generics.CreateAPIView):
     def _send_verification_email(self, user):
         """Send email verification link to the user."""
         try:
-            # Only send if not using console backend
-            if settings.EMAIL_BACKEND == 'django.core.mail.backends.console.EmailBackend':
-                print(f"📧 Email verification would be sent to {user.email}")
-                return
-            
             # Generate verification token
             token = default_token_generator.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             
             # Build verification link
-            verification_link = f"{settings.FRONTEND_URL}/verify-email/{uid}/{token}"
+            verification_link = f"{settings.FRONTEND_URL}/auth/verify-email/{uid}/{token}"
+            
+            # If using console backend, print the link for development
+            if settings.EMAIL_BACKEND == 'django.core.mail.backends.console.EmailBackend':
+                print(f"📧 Email verification would be sent to {user.email}")
+                print(f"🔗 Verification link: {verification_link}")
+                print(f"📝 Email subject: {settings.EMAIL_SUBJECT_PREFIX}Please verify your email")
+                print("=" * 80)
+                return
             
             # Send email
             send_mail(
@@ -182,6 +185,14 @@ class PasswordResetRequestView(generics.GenericAPIView):
                 
                 # Try to send email with comprehensive error handling
                 try:
+                    # If using console backend, print the link for development
+                    if settings.EMAIL_BACKEND == 'django.core.mail.backends.console.EmailBackend':
+                        print(f"📧 Password reset email would be sent to {email}")
+                        print(f"🔗 Reset link: {reset_link}")
+                        print(f"📝 Email subject: {settings.EMAIL_SUBJECT_PREFIX}Password Reset Request")
+                        print("=" * 80)
+                        return
+                    
                     # Check if template exists, otherwise use simple HTML
                     try:
                         html_message = render_to_string('accounts/password_reset_email.html', {
@@ -333,17 +344,20 @@ class ResendVerificationEmailView(generics.GenericAPIView):
     def _send_verification_email(self, user):
         """Send email verification link to the user."""
         try:
-            # Only send if not using console backend
-            if settings.EMAIL_BACKEND == 'django.core.mail.backends.console.EmailBackend':
-                print(f"📧 Email verification would be sent to {user.email}")
-                return
-            
             # Generate verification token
             token = default_token_generator.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             
             # Build verification link
             verification_link = f"{settings.FRONTEND_URL}/auth/verify-email/{uid}/{token}"
+            
+            # If using console backend, print the link for development
+            if settings.EMAIL_BACKEND == 'django.core.mail.backends.console.EmailBackend':
+                print(f"📧 Email verification would be sent to {user.email}")
+                print(f"🔗 Verification link: {verification_link}")
+                print(f"📝 Email subject: {settings.EMAIL_SUBJECT_PREFIX}Please verify your email")
+                print("=" * 80)
+                return
             
             # Send email
             send_mail(
