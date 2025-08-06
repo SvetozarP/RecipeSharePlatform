@@ -17,7 +17,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { NgChartsModule, BaseChartDirective } from 'ng2-charts';
 import { Chart, ChartConfiguration, ChartData, ChartType } from 'chart.js';
 import { AdminService } from '../../services/admin.service';
-import { AnalyticsData, PlatformStatistics } from '../../models/admin.models';
+import { AnalyticsData } from '../../models/admin.models';
 
 // Register Chart.js plugins
 import { registerables } from 'chart.js';
@@ -52,7 +52,6 @@ export class AnalyticsComponent implements OnInit {
   loading = false;
   analyticsData?: AnalyticsData;
   periodForm: FormGroup;
-  statistics?: PlatformStatistics;
   
   @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
 
