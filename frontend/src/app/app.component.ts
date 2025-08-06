@@ -4,6 +4,7 @@ import { RouterOutlet, Router, RouterLink } from '@angular/router';
 import { MatSidenav } from '@angular/material/sidenav';
 import { MaterialModule } from './shared/material.module';
 import { AuthService, User } from './core/services/auth.service';
+import { TitleService } from './core/services/title.service';
 import { Observable } from 'rxjs';
 
 @Component({
@@ -23,7 +24,8 @@ export class AppComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private titleService: TitleService
   ) {
     this.currentUser$ = this.authService.currentUser$;
     this.isAuthenticated$ = this.authService.isAuthenticated$;
@@ -32,6 +34,9 @@ export class AppComponent implements OnInit {
   ngOnInit() {
     this.checkMobileView();
     window.addEventListener('resize', () => this.checkMobileView());
+    
+    // Initialize with default title
+    this.titleService.resetTitle();
   }
 
   navigateHome() {

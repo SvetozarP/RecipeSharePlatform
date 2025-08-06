@@ -9,24 +9,28 @@ export const dashboardRoutes: Routes = [
     children: [
       {
         path: '',
-        loadComponent: () => import('./components/dashboard-overview/dashboard-overview.component').then(m => m.DashboardOverviewComponent)
+        loadComponent: () => import('./components/dashboard-overview/dashboard-overview.component').then(m => m.DashboardOverviewComponent),
+        data: { title: 'Dashboard Overview' }
       },
       {
         path: 'recipes',
-        loadComponent: () => import('./components/recipe-management-dashboard/recipe-management-dashboard.component').then(m => m.RecipeManagementDashboardComponent)
+        loadComponent: () => import('./components/recipe-management-dashboard/recipe-management-dashboard.component').then(m => m.RecipeManagementDashboardComponent),
+        data: { title: 'My Recipes' }
       },
       {
         path: 'favorites',
-        loadComponent: () => import('./components/favorites-management/favorites-management.component').then(m => m.FavoritesManagementComponent)
+        loadComponent: () => import('./components/favorites-management/favorites-management.component').then(m => m.FavoritesManagementComponent),
+        data: { title: 'My Favorites' }
       },
-
       {
         path: 'statistics',
-        loadComponent: () => import('./components/basic-statistics/basic-statistics.component').then(m => m.BasicStatisticsComponent)
+        loadComponent: () => import('./components/basic-statistics/basic-statistics.component').then(m => m.BasicStatisticsComponent),
+        data: { title: 'Statistics' }
       },
       {
         path: 'activity',
-        loadComponent: () => import('./components/activity-feed/activity-feed.component').then(m => m.ActivityFeedComponent)
+        loadComponent: () => import('./components/activity-feed/activity-feed.component').then(m => m.ActivityFeedComponent),
+        data: { title: 'Activity Feed' }
       }
     ]
   }

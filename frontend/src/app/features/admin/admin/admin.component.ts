@@ -12,6 +12,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService } from '../../../core/services/auth.service';
 import { AdminService } from '../services/admin.service';
+import { TitleService } from '../../../core/services/title.service';
 import { ModerationQueue } from '../models/admin.models';
 
 @Component({
@@ -57,6 +58,7 @@ export class AdminComponent implements OnInit {
     private router: Router,
     private authService: AuthService,
     private adminService: AdminService,
+    private titleService: TitleService,
     private snackBar: MatSnackBar
   ) {}
 
@@ -65,6 +67,9 @@ export class AdminComponent implements OnInit {
     this.loadModerationQueue();
     this.checkScreenSize();
     window.addEventListener('resize', () => this.checkScreenSize());
+    
+    // Set admin title
+    this.titleService.setTitle('Admin Panel');
   }
 
   private checkScreenSize(): void {

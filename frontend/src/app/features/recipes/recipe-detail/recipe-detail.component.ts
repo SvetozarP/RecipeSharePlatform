@@ -5,6 +5,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MaterialModule } from '../../../shared/material.module';
 import { RecipeService } from '../../../core/services/recipe.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { TitleService } from '../../../core/services/title.service';
 import { Recipe, Rating, RatingListItem, RatingCreate, RatingUpdate } from '../../../shared/models/recipe.models';
 import { StarRatingComponent, ReviewDisplayComponent, RatingFormComponent } from '../../../shared/components';
 import { catchError, finalize } from 'rxjs/operators';
@@ -495,6 +496,7 @@ export class RecipeDetailComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private recipeService = inject(RecipeService);
   private authService = inject(AuthService);
+  private titleService = inject(TitleService);
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
   private recipeViewsService = inject(RecipeViewsService);
@@ -673,6 +675,9 @@ export class RecipeDetailComponent implements OnInit, OnDestroy {
       });
     }
     
+    // Reset title when leaving the page
+    this.titleService.resetTitle();
+    
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -697,6 +702,9 @@ export class RecipeDetailComponent implements OnInit, OnDestroy {
         const images = this.recipeImages();
         const primaryIndex = images.findIndex(img => img.is_primary);
         this.currentImageIndex.set(primaryIndex >= 0 ? primaryIndex : 0);
+
+        // Set dynamic title based on recipe name
+        this.titleService.setTitle(recipe.title);
 
         // Load rating and review data
         this.loadCurrentUserRating(recipe.id);

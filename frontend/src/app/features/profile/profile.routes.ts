@@ -5,6 +5,7 @@ export const profileRoutes: Routes = [
   {
     path: '',
     loadComponent: () => import('./profile/profile.component').then(m => m.ProfileComponent),
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard],
+    data: { title: 'User Profile' }
   }
 ]; 
