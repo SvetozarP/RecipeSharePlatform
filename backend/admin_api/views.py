@@ -344,193 +344,202 @@ class AdminAnalyticsView(viewsets.ViewSet):
     
     def list(self, request):
         """Get analytics data."""
-        period = request.query_params.get('period', '30d')
-        
-        # Calculate date range based on period
-        now = timezone.now()
-        
-        if period == '7d':
-            start_date = now - timedelta(days=7)
-            date_trunc = TruncDate
-        elif period == '30d':
-            start_date = now - timedelta(days=30)
-            date_trunc = TruncDate
-        elif period == '90d':
-            start_date = now - timedelta(days=90)
-            date_trunc = TruncDate
-        elif period == '1y':
-            start_date = now - timedelta(days=365)
-            date_trunc = TruncMonth
-        else:
-            start_date = now - timedelta(days=30)
-            date_trunc = TruncDate
-        
-        # User growth data
-        user_growth_data = User.objects.filter(
-            date_joined__gte=start_date
-        ).annotate(
-            date=date_trunc('date_joined')
-        ).values('date').annotate(
-            count=Count('id')
-        ).order_by('date')
-        
-        user_growth_labels = []
-        user_growth_values = []
-        cumulative_users = 0
-        
-        for entry in user_growth_data:
-            cumulative_users += entry['count']
-            if period == '1y':
-                user_growth_labels.append(entry['date'].strftime('%b %Y'))
+        try:
+            period = request.query_params.get('period', '30d')
+            
+            # Calculate date range based on period
+            now = timezone.now()
+            
+            if period == '7d':
+                start_date = now - timedelta(days=7)
+                date_trunc = TruncDate
+            elif period == '30d':
+                start_date = now - timedelta(days=30)
+                date_trunc = TruncDate
+            elif period == '90d':
+                start_date = now - timedelta(days=90)
+                date_trunc = TruncDate
+            elif period == '1y':
+                start_date = now - timedelta(days=365)
+                date_trunc = TruncMonth
             else:
-                user_growth_labels.append(entry['date'].strftime('%b %d'))
-            user_growth_values.append(cumulative_users)
-        
-        # Recipe activity data
-        recipe_activity_data = Recipe.objects.filter(
-            created_at__gte=start_date
-        ).annotate(
-            date=date_trunc('created_at')
-        ).values('date').annotate(
-            count=Count('id')
-        ).order_by('date')
-        
-        recipe_activity_labels = []
-        recipe_activity_values = []
-        cumulative_recipes = 0
-        
-        for entry in recipe_activity_data:
-            cumulative_recipes += entry['count']
-            if period == '1y':
-                recipe_activity_labels.append(entry['date'].strftime('%b %Y'))
-            else:
-                recipe_activity_labels.append(entry['date'].strftime('%b %d'))
-            recipe_activity_values.append(cumulative_recipes)
-        
-        # Rating distribution
-        rating_distribution = Rating.objects.values('rating').annotate(
-            count=Count('id')
-        ).order_by('rating')
-        
-        rating_labels = ['1★', '2★', '3★', '4★', '5★']
-        rating_values = [0, 0, 0, 0, 0]
-        
-        for entry in rating_distribution:
-            if 1 <= entry['rating'] <= 5:
-                rating_values[entry['rating'] - 1] = entry['count']
-        
-        # Top recipes (by rating count and average rating)
-        top_recipes = Recipe.objects.annotate(
-            calculated_avg_rating=Avg('ratings__rating'),
-            calculated_rating_count=Count('ratings'),
-            calculated_views=Count('views'),
-            calculated_favorites=Count('favorites')
-        ).filter(
-            calculated_rating_count__gt=0
-        ).order_by('-calculated_rating_count', '-calculated_avg_rating')[:10]
-        
-        top_recipes_data = []
-        for recipe in top_recipes:
-            top_recipes_data.append({
-                'id': str(recipe.id),
-                'title': recipe.title,
-                'views': recipe.calculated_views,
-                'favorites': recipe.calculated_favorites,
-                'average_rating': float(recipe.calculated_avg_rating or 0)
-            })
-        
-        # Top categories (by recipe count and average rating)
-        top_categories = Category.objects.annotate(
-            calculated_recipe_count=Count('recipes'),
-            calculated_avg_rating=Avg('recipes__ratings__rating')
-        ).filter(
-            calculated_recipe_count__gt=0
-        ).order_by('-calculated_recipe_count', '-calculated_avg_rating')[:10]
-        
-        top_categories_data = []
-        for category in top_categories:
-            top_categories_data.append({
-                'id': category.id,
-                'name': category.name,
-                'recipe_count': category.calculated_recipe_count,
-                'average_rating': float(category.calculated_avg_rating or 0)
-            })
-        
-        # Top users (by recipe count)
-        top_users = User.objects.annotate(
-            calculated_recipe_count=Count('recipes'),
-            calculated_avg_rating=Avg('recipes__ratings__rating'),
-            calculated_total_views=Count('recipes__views')
-        ).filter(
-            calculated_recipe_count__gt=0
-        ).order_by('-calculated_recipe_count')[:10]
-        
-        top_users_data = []
-        for user in top_users:
-            top_users_data.append({
-                'id': str(user.id),
-                'username': user.username,
-                'recipe_count': user.calculated_recipe_count,
-                'total_views': user.calculated_total_views,
-                'average_rating': float(user.calculated_avg_rating or 0)
-            })
-        
-        # Category distribution
-        category_distribution = Category.objects.annotate(
-            calculated_recipe_count=Count('recipes')
-        ).filter(
-            calculated_recipe_count__gt=0
-        ).order_by('-calculated_recipe_count')
-        
-        category_labels = []
-        category_values = []
-        
-        for category in category_distribution[:10]:  # Top 10 categories
-            category_labels.append(category.name)
-            category_values.append(category.calculated_recipe_count)
-        
-        analytics_data = {
-            'user_growth': {
-                'labels': user_growth_labels,
-                'datasets': [{
-                    'label': 'Users',
-                    'data': user_growth_values,
-                    'borderColor': '#1976d2',
-                    'backgroundColor': 'rgba(25, 118, 210, 0.1)'
-                }]
-            },
-            'recipe_activity': {
-                'labels': recipe_activity_labels,
-                'datasets': [{
-                    'label': 'Recipes',
-                    'data': recipe_activity_values,
-                    'borderColor': '#388e3c',
-                    'backgroundColor': 'rgba(56, 142, 60, 0.1)'
-                }]
-            },
-            'rating_distribution': {
-                'labels': rating_labels,
-                'datasets': [{
-                    'data': rating_values,
-                    'backgroundColor': ['#f44336', '#ff9800', '#ffc107', '#4caf50', '#2196f3']
-                }]
-            },
-            'category_distribution': {
-                'labels': category_labels,
-                'datasets': [{
-                    'data': category_values,
-                    'backgroundColor': [
-                        '#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5',
-                        '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4caf50'
-                    ]
-                }]
-            },
-            'top_recipes': top_recipes_data,
-            'top_categories': top_categories_data,
-            'top_users': top_users_data
-        }
-        
-        return Response(analytics_data)
+                start_date = now - timedelta(days=30)
+                date_trunc = TruncDate
+            
+            # User growth data
+            user_growth_data = User.objects.filter(
+                date_joined__gte=start_date
+            ).annotate(
+                date=date_trunc('date_joined')
+            ).values('date').annotate(
+                count=Count('id')
+            ).order_by('date')
+            
+            user_growth_labels = []
+            user_growth_values = []
+            cumulative_users = 0
+            
+            for entry in user_growth_data:
+                cumulative_users += entry['count']
+                if period == '1y':
+                    user_growth_labels.append(entry['date'].strftime('%b %Y'))
+                else:
+                    user_growth_labels.append(entry['date'].strftime('%b %d'))
+                user_growth_values.append(cumulative_users)
+            
+            # Recipe activity data
+            recipe_activity_data = Recipe.objects.filter(
+                created_at__gte=start_date
+            ).annotate(
+                date=date_trunc('created_at')
+            ).values('date').annotate(
+                count=Count('id')
+            ).order_by('date')
+            
+            recipe_activity_labels = []
+            recipe_activity_values = []
+            cumulative_recipes = 0
+            
+            for entry in recipe_activity_data:
+                cumulative_recipes += entry['count']
+                if period == '1y':
+                    recipe_activity_labels.append(entry['date'].strftime('%b %Y'))
+                else:
+                    recipe_activity_labels.append(entry['date'].strftime('%b %d'))
+                recipe_activity_values.append(cumulative_recipes)
+            
+            # Rating distribution
+            rating_distribution = Rating.objects.values('rating').annotate(
+                count=Count('id')
+            ).order_by('rating')
+            
+            rating_labels = ['1★', '2★', '3★', '4★', '5★']
+            rating_values = [0, 0, 0, 0, 0]
+            
+            for entry in rating_distribution:
+                if 1 <= entry['rating'] <= 5:
+                    rating_values[entry['rating'] - 1] = entry['count']
+            
+            # Top recipes (by rating count and average rating)
+            top_recipes = Recipe.objects.annotate(
+                calculated_avg_rating=Avg('ratings__rating'),
+                calculated_rating_count=Count('ratings'),
+                calculated_views=Count('views'),
+                calculated_favorites=Count('favorited_by')
+            ).filter(
+                calculated_rating_count__gt=0
+            ).order_by('-calculated_rating_count', '-calculated_avg_rating')[:10]
+            
+            top_recipes_data = []
+            for recipe in top_recipes:
+                top_recipes_data.append({
+                    'id': str(recipe.id),
+                    'title': recipe.title,
+                    'views': recipe.calculated_views,
+                    'favorites': recipe.calculated_favorites,
+                    'average_rating': float(recipe.calculated_avg_rating or 0)
+                })
+            
+            # Top categories (by recipe count and average rating)
+            top_categories = Category.objects.annotate(
+                calculated_recipe_count=Count('recipes'),
+                calculated_avg_rating=Avg('recipes__ratings__rating')
+            ).filter(
+                calculated_recipe_count__gt=0
+            ).order_by('-calculated_recipe_count', '-calculated_avg_rating')[:10]
+            
+            top_categories_data = []
+            for category in top_categories:
+                top_categories_data.append({
+                    'id': category.id,
+                    'name': category.name,
+                    'recipe_count': category.calculated_recipe_count,
+                    'average_rating': float(category.calculated_avg_rating or 0)
+                })
+            
+            # Top users (by recipe count)
+            top_users = User.objects.annotate(
+                calculated_recipe_count=Count('recipes'),
+                calculated_avg_rating=Avg('recipes__ratings__rating'),
+                calculated_total_views=Count('recipes__views')
+            ).filter(
+                calculated_recipe_count__gt=0
+            ).order_by('-calculated_recipe_count')[:10]
+            
+            top_users_data = []
+            for user in top_users:
+                top_users_data.append({
+                    'id': str(user.id),
+                    'username': user.username,
+                    'recipe_count': user.calculated_recipe_count,
+                    'total_views': user.calculated_total_views,
+                    'average_rating': float(user.calculated_avg_rating or 0)
+                })
+            
+            # Category distribution
+            category_distribution = Category.objects.annotate(
+                calculated_recipe_count=Count('recipes')
+            ).filter(
+                calculated_recipe_count__gt=0
+            ).order_by('-calculated_recipe_count')
+            
+            category_labels = []
+            category_values = []
+            
+            for category in category_distribution[:10]:  # Top 10 categories
+                category_labels.append(category.name)
+                category_values.append(category.calculated_recipe_count)
+            
+            analytics_data = {
+                'user_growth': {
+                    'labels': user_growth_labels,
+                    'datasets': [{
+                        'label': 'Users',
+                        'data': user_growth_values,
+                        'borderColor': '#1976d2',
+                        'backgroundColor': 'rgba(25, 118, 210, 0.1)'
+                    }]
+                },
+                'recipe_activity': {
+                    'labels': recipe_activity_labels,
+                    'datasets': [{
+                        'label': 'Recipes',
+                        'data': recipe_activity_values,
+                        'borderColor': '#388e3c',
+                        'backgroundColor': 'rgba(56, 142, 60, 0.1)'
+                    }]
+                },
+                'rating_distribution': {
+                    'labels': rating_labels,
+                    'datasets': [{
+                        'data': rating_values,
+                        'backgroundColor': ['#f44336', '#ff9800', '#ffc107', '#4caf50', '#2196f3']
+                    }]
+                },
+                'category_distribution': {
+                    'labels': category_labels,
+                    'datasets': [{
+                        'data': category_values,
+                        'backgroundColor': [
+                            '#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5',
+                            '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4caf50'
+                        ]
+                    }]
+                },
+                'top_recipes': top_recipes_data,
+                'top_categories': top_categories_data,
+                'top_users': top_users_data
+            }
+            
+            return Response(analytics_data)
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Analytics error: {str(e)}")
+            return Response(
+                {'error': 'Failed to load analytics data'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class AdminSettingsView(viewsets.ViewSet):
