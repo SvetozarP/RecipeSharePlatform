@@ -88,7 +88,8 @@
               <mat-icon>visibility</mat-icon>
             </div>
             <div class="metric-content">
-              <h3>{{ getTotalViews(topRecipes) }}</h3>
+              <!-- <h3>{{ getTotalViews(topRecipes) }}</h3> -->
+              <h3>{{ statistics?.engagement?.total_views || 0 }}</h3>
               <p>Total Views</p>
               <small>Across all recipes</small>
             </div>
