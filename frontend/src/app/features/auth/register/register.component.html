@@ -109,6 +109,8 @@
                   formControlName="password"
                   autocomplete="new-password"
                   [class.mat-form-field-invalid]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
+                  (focus)="passwordFocused = true"
+                  (blur)="passwordFocused = false"
                 >
                 <button 
                   type="button" 
@@ -120,17 +122,36 @@
                 >
                   <mat-icon>{{showPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
                 </button>
-                <mat-hint>Password must be at least 8 characters with numbers and letters</mat-hint>
+                <mat-hint>Password must be at least 10 characters with numbers, letters and at least one special character</mat-hint>
                 <mat-error *ngIf="registerForm.get('password')?.hasError('required')">
                   Password is required
                 </mat-error>
                 <mat-error *ngIf="registerForm.get('password')?.hasError('minlength')">
-                  Password must be at least 8 characters long
+                  Password must be at least 10 characters long
                 </mat-error>
                 <mat-error *ngIf="registerForm.get('password')?.hasError('pattern')">
-                  Password must contain at least one letter and one number
+                  Password must contain at least one letter, one number and one special character
                 </mat-error>
               </mat-form-field>
+
+              <div class="password-checker" *ngIf="passwordFocused || registerForm.get('password')?.dirty">
+                <div [ngClass]="passwordRules.length ? 'valid' : 'invalid'">
+                  <mat-icon>{{ passwordRules.length ? 'check_circle' : 'cancel' }}</mat-icon>
+                  At least 10 characters
+                </div>
+                <div [ngClass]="passwordRules.letter ? 'valid' : 'invalid'">
+                  <mat-icon>{{ passwordRules.letter ? 'check_circle' : 'cancel' }}</mat-icon>
+                  At least one letter
+                </div>
+                <div [ngClass]="passwordRules.number ? 'valid' : 'invalid'">
+                  <mat-icon>{{ passwordRules.number ? 'check_circle' : 'cancel' }}</mat-icon>
+                  At least one number
+                </div>
+                <div [ngClass]="passwordRules.special ? 'valid' : 'invalid'">
+                  <mat-icon>{{ passwordRules.special ? 'check_circle' : 'cancel' }}</mat-icon>
+                  At least one special character
+                </div>
+              </div>
 
               <!-- Confirm Password Field -->
               <mat-form-field appearance="fill" class="w-full">
