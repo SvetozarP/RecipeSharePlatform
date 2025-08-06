@@ -16,7 +16,7 @@ import json
 import uuid
 from datetime import datetime, timedelta
 
-from recipes.models import Recipe, Category, Rating
+from recipes.models import Recipe, Category, Rating, RecipeView, UserFavorite
 from .serializers import (
     AdminUserSerializer,
     AdminRecipeSerializer,
@@ -422,7 +422,9 @@ class AdminAnalyticsView(viewsets.ViewSet):
         # Top recipes (by rating count and average rating)
         top_recipes = Recipe.objects.annotate(
             calculated_avg_rating=Avg('ratings__rating'),
-            calculated_rating_count=Count('ratings')
+            calculated_rating_count=Count('ratings'),
+            calculated_views=Count('views'),
+            calculated_favorites=Count('favorites')
         ).filter(
             calculated_rating_count__gt=0
         ).order_by('-calculated_rating_count', '-calculated_avg_rating')[:10]
@@ -432,13 +434,12 @@ class AdminAnalyticsView(viewsets.ViewSet):
             top_recipes_data.append({
                 'id': str(recipe.id),
                 'title': recipe.title,
-                'views': 0,  # Placeholder for views
-                'favorites': 0,  # Placeholder for favorites
+                'views': recipe.calculated_views,
+                'favorites': recipe.calculated_favorites,
                 'average_rating': float(recipe.calculated_avg_rating or 0)
             })
         
         # Top categories (by recipe count and average rating)
-        from recipes.models import Category
         top_categories = Category.objects.annotate(
             calculated_recipe_count=Count('recipes'),
             calculated_avg_rating=Avg('recipes__ratings__rating')
@@ -458,7 +459,8 @@ class AdminAnalyticsView(viewsets.ViewSet):
         # Top users (by recipe count)
         top_users = User.objects.annotate(
             calculated_recipe_count=Count('recipes'),
-            calculated_avg_rating=Avg('recipes__ratings__rating')
+            calculated_avg_rating=Avg('recipes__ratings__rating'),
+            calculated_total_views=Count('recipes__views')
         ).filter(
             calculated_recipe_count__gt=0
         ).order_by('-calculated_recipe_count')[:10]
@@ -469,7 +471,7 @@ class AdminAnalyticsView(viewsets.ViewSet):
                 'id': str(user.id),
                 'username': user.username,
                 'recipe_count': user.calculated_recipe_count,
-                'total_views': 0,  # Placeholder for views
+                'total_views': user.calculated_total_views,
                 'average_rating': float(user.calculated_avg_rating or 0)
             })
         
