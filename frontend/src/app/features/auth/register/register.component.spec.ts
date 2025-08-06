@@ -134,13 +134,24 @@ describe('RegisterComponent', () => {
     it('should validate password requirements', () => {
       const passwordControl = component.registerForm.get('password');
       
+      // Test minimum length (10 characters)
       passwordControl?.setValue('short');
       expect(passwordControl?.errors?.['minlength']).toBeTruthy();
       
-      passwordControl?.setValue('onlyletters');
+      // Test missing letter (only numbers and special chars)
+      passwordControl?.setValue('123456789@');
       expect(passwordControl?.errors?.['pattern']).toBeTruthy();
       
+      // Test missing number (only letters and special chars)
+      passwordControl?.setValue('abcdefghij@');
+      expect(passwordControl?.errors?.['pattern']).toBeTruthy();
+      
+      // Test missing special character (only letters and numbers)
       passwordControl?.setValue('ValidPass123');
+      expect(passwordControl?.errors?.['pattern']).toBeTruthy();
+      
+      // Test valid password with all requirements
+      passwordControl?.setValue('ValidPass123!');
       expect(passwordControl?.errors).toBeFalsy();
     });
 
@@ -148,15 +159,15 @@ describe('RegisterComponent', () => {
       const form = component.registerForm;
       
       form.patchValue({
-        password: 'ValidPass123',
-        confirmPassword: 'DifferentPass123'
+        password: 'ValidPass123!',
+        confirmPassword: 'DifferentPass123!'
       });
       
       expect(form.errors?.['passwordMismatch']).toBeTruthy();
       
       form.patchValue({
-        password: 'ValidPass123',
-        confirmPassword: 'ValidPass123'
+        password: 'ValidPass123!',
+        confirmPassword: 'ValidPass123!'
       });
       
       expect(form.errors?.['passwordMismatch']).toBeFalsy();
@@ -193,8 +204,8 @@ describe('RegisterComponent', () => {
         lastName: 'User',
         email: 'test@example.com',
         username: 'testuser',
-        password: 'ValidPass123',
-        confirmPassword: 'ValidPass123',
+        password: 'ValidPass123!',
+        confirmPassword: 'ValidPass123!',
         acceptTerms: true
       });
     });
@@ -207,8 +218,8 @@ describe('RegisterComponent', () => {
       expect(authServiceSpy.register).toHaveBeenCalledWith({
         email: 'test@example.com',
         username: 'testuser',
-        password: 'ValidPass123',
-        password_confirm: 'ValidPass123',
+        password: 'ValidPass123!',
+        password_confirm: 'ValidPass123!',
         first_name: 'Test',
         last_name: 'User'
       });
