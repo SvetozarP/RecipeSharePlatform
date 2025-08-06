@@ -88,7 +88,7 @@
               <mat-icon>visibility</mat-icon>
             </div>
             <div class="metric-content">
-              <h3>{{ getTotalViews(topRecipes) }}</h3>
+              <h3>{{ getTotalViews(topRecipes?.slice(0, 5)) }}</h3>
               <p>Total Views</p>
               <small>Across top 5 recipes</small>
             </div>
