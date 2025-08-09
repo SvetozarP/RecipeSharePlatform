@@ -48,6 +48,7 @@ export class ProfileSecurityComponent implements OnInit {
   showPassword = false;
   showNewPassword = false;
   showConfirmPassword = false;
+  passwordFocused: boolean = false;
 
   constructor(
     private fb: FormBuilder,
@@ -64,7 +65,11 @@ export class ProfileSecurityComponent implements OnInit {
   private createPasswordForm(): FormGroup {
     return this.fb.group({
       current_password: ['', [Validators.required]],
-      new_password: ['', [Validators.required, Validators.minLength(8)]],
+      new_password: ['', [
+        Validators.required, 
+        Validators.minLength(10),
+        Validators.pattern(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z\d])/)
+      ]],
       confirm_password: ['', [Validators.required]]
     }, { validators: this.passwordMatchValidator });
   }
@@ -112,12 +117,20 @@ export class ProfileSecurityComponent implements OnInit {
     }
   }
 
+  get passwordValue(): string {
+    return this.passwordForm.get('new_password')?.value || '';
+  }
 
-
-
-
-
-
+  get passwordRules() {
+    const value = this.passwordValue;
+  
+    return {
+      length: value.length >= 10,
+      letter: /[A-Za-z]/.test(value),
+      number: /\d/.test(value),
+      special: /[^A-Za-z\d]/.test(value)
+    };
+  }
 
 
   private markFormGroupTouched(formGroup: FormGroup): void {
@@ -151,7 +164,7 @@ export class ProfileSecurityComponent implements OnInit {
     }
 
     let score = 0;
-    if (password.length >= 8) score += 25;
+    if (password.length >= 10) score += 25;
     if (/[a-z]/.test(password)) score += 25;
     if (/[A-Z]/.test(password)) score += 25;
     if (/[0-9]/.test(password)) score += 25;

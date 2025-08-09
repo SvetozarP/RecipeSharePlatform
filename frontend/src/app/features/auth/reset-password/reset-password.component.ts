@@ -22,6 +22,7 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
   isResetComplete = false;
   showPassword = false;
   showConfirmPassword = false;
+  passwordFocused: boolean = false;
   
   private uidb64 = '';
   private token = '';
@@ -55,8 +56,8 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
     return this.fb.group({
       password: ['', [
         Validators.required, 
-        Validators.minLength(8),
-        Validators.pattern(/^(?=.*[A-Za-z])(?=.*\d)/)
+        Validators.minLength(10),
+        Validators.pattern(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z\d])/)
       ]],
       confirmPassword: ['', [Validators.required]]
     }, { 
@@ -133,6 +134,21 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
     } else {
       this.errorMessage = 'An unexpected error occurred. Please try again.';
     }
+  }
+
+  get passwordValue(): string {
+    return this.resetPasswordForm.get('password')?.value || '';
+  }
+
+  get passwordRules() {
+    const value = this.passwordValue;
+  
+    return {
+      length: value.length >= 10,
+      letter: /[A-Za-z]/.test(value),
+      number: /\d/.test(value),
+      special: /[^A-Za-z\d]/.test(value)
+    };
   }
 
   private markFormGroupTouched(): void {

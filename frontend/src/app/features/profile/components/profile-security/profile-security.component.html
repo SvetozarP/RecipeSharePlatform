@@ -39,7 +39,9 @@
               matInput 
               type="password" 
               formControlName="new_password"
-              [type]="showNewPassword ? 'text' : 'password'">
+              [type]="showNewPassword ? 'text' : 'password'"
+              (focus)="passwordFocused = true"
+              (blur)="passwordFocused = false">
             <button 
               mat-icon-button 
               matSuffix 
@@ -51,6 +53,25 @@
               {{ getPasswordError('new_password') }}
             </mat-error>
           </mat-form-field>
+
+          <div class="password-checker" *ngIf="passwordFocused || passwordForm.get('new_password')?.dirty">
+            <div [ngClass]="passwordRules.length ? 'valid' : 'invalid'">
+              <mat-icon>{{ passwordRules.length ? 'check_circle' : 'cancel' }}</mat-icon>
+              At least 10 characters
+            </div>
+            <div [ngClass]="passwordRules.letter ? 'valid' : 'invalid'">
+              <mat-icon>{{ passwordRules.letter ? 'check_circle' : 'cancel' }}</mat-icon>
+              At least one letter
+            </div>
+            <div [ngClass]="passwordRules.number ? 'valid' : 'invalid'">
+              <mat-icon>{{ passwordRules.number ? 'check_circle' : 'cancel' }}</mat-icon>
+              At least one number
+            </div>
+            <div [ngClass]="passwordRules.special ? 'valid' : 'invalid'">
+              <mat-icon>{{ passwordRules.special ? 'check_circle' : 'cancel' }}</mat-icon>
+              At least one special character
+            </div>
+          </div>
           
           <mat-form-field appearance="fill" class="form-field">
             <mat-label>Confirm New Password</mat-label>
