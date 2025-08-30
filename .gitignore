@@ -123,3 +123,5 @@ backend/docs/api/categories.md
 project-plan.md
 future.md
 backend/docs/performance_optimization.md
+.github/workflows/README.md
+.github/workflows/re-enable-workflows.ps1

@@ -1,3 +1,7 @@
+# DISABLED: Build and deploy Django backend to Azure Web App
+# This workflow has been temporarily disabled while cleaning up Azure resources
+# To re-enable, change the 'if' condition from 'false' to 'true' below
+
 name: Build and deploy Django backend to Azure Web App
 
 on:
@@ -15,6 +19,8 @@ permissions:
 
 jobs:
   build:
+    # DISABLED: Set to 'false' to prevent this job from running
+    if: false
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -82,6 +88,8 @@ jobs:
           path: release.zip
 
   deploy:
+    # DISABLED: Set to 'false' to prevent this job from running
+    if: false
     runs-on: ubuntu-latest
     needs: build
     environment:

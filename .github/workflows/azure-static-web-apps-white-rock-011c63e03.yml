@@ -1,3 +1,7 @@
+# DISABLED: Deploy Angular frontend to Azure Static Web Apps (Production)
+# This workflow has been temporarily disabled while cleaning up Azure resources
+# To re-enable, change the 'if' condition from 'false' to 'true' below
+
 name: Deploy Angular frontend to Azure Static Web Apps (Production)
 
 on:
@@ -17,7 +21,8 @@ on:
 
 jobs:
   build_and_deploy_job:
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+    # DISABLED: Set to 'false' to prevent this job from running
+    if: false && (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed'))
     runs-on: ubuntu-latest
     name: Build and Deploy Job
     steps:
@@ -65,7 +70,8 @@ jobs:
           api_location: ""
 
   close_pull_request_job:
-    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    # DISABLED: Set to 'false' to prevent this job from running
+    if: false && github.event_name == 'pull_request' && github.event.action == 'closed'
     runs-on: ubuntu-latest
     name: Close Pull Request Job
     steps:

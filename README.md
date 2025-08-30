@@ -2,11 +2,15 @@
 
 A modern, full-stack recipe sharing application built with Angular and Django REST Framework. Users can discover, create, share, and rate recipes with a comprehensive social platform experience.
 
-## 🌐 Live Demo
+<!--## 🌐 Live Demo -->
 
+<!-- TEMPORARILY DISABLED: Azure services are being cleaned up -->
+<!-- The following services are currently unavailable while cleaning up Azure resources -->
+<!-- 
 - **Frontend**: [https://white-rock-011c63e03.2.azurestaticapps.net/](https://white-rock-011c63e03.2.azurestaticapps.net/)
 - **Backend API**: [https://recipe-api-dev98298.azurewebsites.net/](https://recipe-api-dev98298.azurewebsites.net/)
 - **API Health Check**: [https://recipe-api-dev98298.azurewebsites.net/api/health/](https://recipe-api-dev98298.azurewebsites.net/api/health/)
+-->
 
 ## 🚀 Features
 
